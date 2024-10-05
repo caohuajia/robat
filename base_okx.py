@@ -16,6 +16,8 @@ fundingAPI    = Funding.FundingAPI(api_key, secret_key, passphrase, False, flag)
 marketDataAPI = MarketData.MarketAPI(flag = flag)
 tradeAPI      = Trade.TradeAPI(api_key, secret_key, passphrase, False, flag)
 
+cur_ctime = ""
+
 def get_current_system_time(ms = 0, int_value = 0):
     result = PublicDataAPI.get_system_time()
     data = get_valid_data(result)
@@ -63,34 +65,14 @@ def get_k_line_piece(coin, end_time, interval, data_num = 100): ## data_num max 
         offset = 60 * 1000
     elif interval == "15m":
         offset = 15 * 60 * 1000
-    
-    ## time:  0 1 2 before  [data]  after 7 8
-    # ## 标记价格k线数据
-    # result = marketDataAPI.get_mark_price_candlesticks(
-    #     before= str(end_time - data_num * offset), 
-    #     after = str(end_time),
-    #     bar   = interval,      
-    #     # instId="PEPE-USDT-SWAP"
-    #     # instId="CETUS-USDT-SWAP"
-    #     instId="BTC-USDT-SWAP"
-    # )
 
     ## 交易产品k线数据
-    result = marketDataAPI.get_candlesticks(
+    result = marketDataAPI.get_candlesticks( ##  limit:40/2s  100num/time
         before= str(end_time - data_num * offset), 
         after = str(end_time),
         bar   = interval,      
         instId=coin+"-USDT-SWAP"
     )
-
-    # ## 指数k线数据
-    # result = marketDataAPI.get_index_candlesticks(
-    #     before= str(cur_time - 600000), 
-    #     after = str(cur_time),
-    #     bar   = "1m",
-    #     # instId="PEPE-USDT-SWAP"
-    #     instId="CETUS-USDT"
-    # )
     return result
 
 def get_k_line(coin, interval): ## 1m 3m 5m 15m 30m 1H 2H 4H
@@ -103,7 +85,7 @@ def get_k_line(coin, interval): ## 1m 3m 5m 15m 30m 1H 2H 4H
     elif interval == "15m":
         offset = 15 * min_1m_100_data
 
-    for i in range(10): ## 20次/2s
+    for i in range(2): # once: 2*coin_type_num = 4
         k_line_piece = get_k_line_piece(coin, cur_time - i * offset, interval)
         data = get_valid_data(k_line_piece)
         # print(i, data)

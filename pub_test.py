@@ -21,13 +21,13 @@ def create_order(coin, price, number, side, posSide, tp_px):
     if result["code"] == "0":
         data = result["data"][0]
         order_id = data["ordId"]
-        info = "["+time.ctime(get_current_system_time(ms=0, int_value=1)) + "] " + coin + " id:" + order_id + " " + side + " " + posSide + " create_success: " + \
+        info = "["+cur_ctime + "] " + coin + " id:" + order_id + " " + side + " " + posSide + " create_success: " + \
                "price : " + str(price) + " ->| " + str(tp_px)
         log_info(info)
         # print(info )
         return order_id
     else:
-        info = "["+time.ctime(get_current_system_time(ms=0, int_value=1)) + "] " + "create_order_fail: " + str(result)
+        info = "["+cur_ctime + "] " + "create_order_fail: " + str(result)
         log_info(info)
         print(result)
 
@@ -44,13 +44,13 @@ def modify_order(coin, order_id, price, tp_px):
     if result["code"] == "0":
         data = result["data"][0]
         order_id = data["ordId"]
-        info = "["+time.ctime(get_current_system_time(ms=0, int_value=1)) + "] " + coin + " id:" + order_id + " " + " modify_success: " + \
+        info = "["+cur_ctime + "] " + coin + " id:" + order_id + " " + " modify_success: " + \
                "price : " + str(price) + " ->| " + str(tp_px)        
         log_info(info)
         # print(info )
         return order_id
     else:
-        info = time.ctime(get_current_system_time(ms=0, int_value=1)) + " " + "modify_order_fail: " + str(result)
+        info = cur_ctime + " " + "modify_order_fail: " + str(result)
         log_info(info)
         print(result)
 
@@ -62,22 +62,18 @@ def cancel_order(coin):
     if result["code"] == "0":
         data = result["data"][0]
         cl_ord_id = data["clOrdId"]
-        print(time.ctime(get_current_system_time(ms=0, int_value=1)), 
-              coin + " cancel order : " + "orderid: " + cl_ord_id )
+        print(cur_ctime, coin + " cancel order : " + "orderid: " + cl_ord_id )
     else:
         print("cancen fail: ", result)
 
 
 
 def time_flag_per_minite():
-    cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1)) ## Thu Oct  3 20:56:01 2024
     cur_clock_str = cur_ctime.split(" ")[-2]
     cur_sec = cur_clock_str[-2:]
     cur_min = cur_clock_str[-5:-3]
     cur_sec_int = int(cur_sec)
-    # print(cur_ctime)
     time.sleep(60 - cur_sec_int)
-    # print(time.ctime(get_current_system_time(ms=0, int_value=1)))
 
     if cur_min == "14" or cur_min == "29" or cur_min == "44" or cur_min == "59":
         return 2
@@ -125,7 +121,7 @@ def order_control(coin, side, posSide, open_price ,open_num, tp_px, old_order_id
             modify_order_id = modify_order(coin, old_order_id, open_price, tp_px)
             return modify_order_id
         else:  ## unknown, modify fail, means deal. So does not return, buy a new one
-            log =  "["+time.ctime(get_current_system_time(ms=0, int_value=1)) + "] id:" + old_order_id + " modify fail"
+            log =  "["+cur_ctime + "] id:" + old_order_id + " modify fail"
             log_info(log)
 
     ## buy
@@ -136,6 +132,7 @@ def order_control(coin, side, posSide, open_price ,open_num, tp_px, old_order_id
 
 def trade_strategy():
     global coin_property
+    global cur_ctime
     coin_list = coin_property.keys()
     cur_run_order_id = {}
     for coin in coin_list:
@@ -149,6 +146,7 @@ def trade_strategy():
 
 
     while(1):
+        cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
         newest_history_price_dict = maintain_price_list_dict(coin_list) ## 1 min
         unfinish_order_list = get_unfinish_order()
 
@@ -201,7 +199,7 @@ def trade_strategy():
             cur_run_order_id[coin]["ma5_open_more_id"] = ma5_open_more_id
             cur_run_order_id[coin]["ma5_open_empy_id"] = ma5_open_empy_id
 
-            log1 = "["+time.ctime(get_current_system_time(ms=0, int_value=1)) + "] ma5:" + str(ma5) + " ma15_max:" + str(ma_15_max) + " ma15_min:" + str(ma_15_min) \
+            log1 = "["+cur_ctime + "] ma5:" + str(ma5) + " ma15_max:" + str(ma_15_max) + " ma15_min:" + str(ma_15_min) \
                                     +  " ma15_list:" + str(ma15_list) + "\n"
             log2 = " ma5 open more: "   + str(ma5_open_more_price) +  " ->| " + str(ma5_open_more_stop) + \
                 " ma5 open empty: "  + str(ma5_open_empy_price) +  " ->| " + str(ma5_open_empy_stop) + \

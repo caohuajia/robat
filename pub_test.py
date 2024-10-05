@@ -10,10 +10,10 @@ def create_order(coin, price, number, side, posSide, tp_px):
         posSide=posSide, 
         ordType="limit", ## 限价：limit 市价：market
         sz     =str(number), ## 委托数量
-        px     =str(price),   ## 委托价格 
+        px     =price,   ## 委托价格 
         # attachAlgoOrds=1,
-        tpTriggerPx=str(tp_px),
-        tpOrdPx    =str(tp_px),
+        tpTriggerPx=tp_px,
+        tpOrdPx    =tp_px,
         # tpOrdKind  ="limit",
         clOrdId="",  ## 自定义订单id
         instId =coin
@@ -22,7 +22,7 @@ def create_order(coin, price, number, side, posSide, tp_px):
         data = result["data"][0]
         order_id = data["ordId"]
         info = "["+cur_ctime + "] " + coin + " id:" + order_id + " " + side + " " + posSide + " create_success: " + \
-               "price : " + str(price) + " ->| " + str(tp_px)
+               "price : " + price + " ->| " + tp_px
         log_info(info)
         # print(info )
         return order_id
@@ -33,11 +33,11 @@ def create_order(coin, price, number, side, posSide, tp_px):
 
 def modify_order(coin, order_id, price, tp_px):
     result = tradeAPI.amend_order(
-        newPx  =str(price),   ## 委托价格 
+        newPx  =price,   ## 委托价格 
         ordId  =order_id,  
         # attachAlgoOrds=1,
-        newTpTriggerPx=str(tp_px),
-        newTpOrdPx    =str(tp_px),
+        newTpTriggerPx=tp_px,
+        newTpOrdPx    =tp_px,
         # newTpOrdOx    ="limit",
         instId =coin
     )
@@ -45,7 +45,7 @@ def modify_order(coin, order_id, price, tp_px):
         data = result["data"][0]
         order_id = data["ordId"]
         info = "["+cur_ctime + "] " + coin + " id:" + order_id + " " + " modify_success: " + \
-               "price : " + str(price) + " ->| " + str(tp_px)        
+               "price : " + price + " ->| " + tp_px
         log_info(info)
         # print(info )
         return order_id
@@ -115,6 +115,8 @@ def maintain_price_list_dict(coin_list):
     return price_list_dict
 
 def order_control(coin, side, posSide, open_price ,open_num, tp_px, old_order_id, unfinish_id, unfinish_order_num):
+    open_price = "{:.9f}".format(open_price)
+    tp_px      = "{:.9f}".format(tp_px)
     ## modify
     if old_order_id != "":
         if old_order_id in unfinish_id:  ## modify

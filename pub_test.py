@@ -6,6 +6,7 @@ from coins import *
 def create_order(coin, price, number, side, posSide, tp_px):
     result = tradeAPI.place_order(
         tdMode="cross", ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
+        ccy   ="USDT",
         side  =side,   ## 开多：bug long   开空：sell short   平多：sell long   平空：bug short
         posSide=posSide, 
         ordType="limit", ## 限价：limit 市价：market

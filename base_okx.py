@@ -32,7 +32,7 @@ def get_avail_funds():
     result = fundingAPI.get_currencies()
     print(result) 
 
-def get_market_data():    
+def get_swap_market_data():    
     result = marketDataAPI.get_tickers(instType = "SWAP")
     return result
 
@@ -46,18 +46,18 @@ def get_trade_data():
     result = tradeAPI.get_fills()
     return result
 
-def get_current_price():
-    market_result = get_market_data()
+def get_current_swap_price(coin):
+    market_result = get_swap_market_data()
     # print(market_result)
-    data_list = market_result['data']
+    data_list = get_valid_data(market_result)
     for i in data_list:
         ## i is inst dict
-        if "CETUS-USDT" in i["instId"]:
+        if coin in i["instId"]:
             ## i is the inst dict
             # print(i)
             return i["last"]
 
-def get_k_line_piece(end_time, interval, data_num = 100): ## data_num max is 100
+def get_k_line_piece(coin, end_time, interval, data_num = 100): ## data_num max is 100
     offset = 0
     if interval == "1m":
         offset = 60 * 1000
@@ -80,9 +80,7 @@ def get_k_line_piece(end_time, interval, data_num = 100): ## data_num max is 100
         before= str(end_time - data_num * offset), 
         after = str(end_time),
         bar   = interval,      
-        # instId="PEPE-USDT-SWAP"
-        instId="CETUS-USDT-SWAP"
-        # instId="BTC-USDT-SWAP"
+        instId=coin+"-USDT-SWAP"
     )
 
     # ## 指数k线数据
@@ -95,7 +93,7 @@ def get_k_line_piece(end_time, interval, data_num = 100): ## data_num max is 100
     # )
     return result
 
-def get_k_line(interval): ## 1m 3m 5m 15m 30m 1H 2H 4H
+def get_k_line(coin, interval): ## 1m 3m 5m 15m 30m 1H 2H 4H
     full_k_line = []
     cur_time = get_current_system_time(ms=1, int_value=1)
     offset   = 0
@@ -106,7 +104,7 @@ def get_k_line(interval): ## 1m 3m 5m 15m 30m 1H 2H 4H
         offset = 15 * min_1m_100_data
 
     for i in range(10): ## 20次/2s
-        k_line_piece = get_k_line_piece(cur_time - i * offset, interval)
+        k_line_piece = get_k_line_piece(coin, cur_time - i * offset, interval)
         data = get_valid_data(k_line_piece)
         # print(i, data)
         full_k_line += data
@@ -117,5 +115,4 @@ def get_k_line(interval): ## 1m 3m 5m 15m 30m 1H 2H 4H
 def get_unfinish_order():
     result = tradeAPI.get_order_list()
     data = get_valid_data(result)
-    # print(data)
     return data

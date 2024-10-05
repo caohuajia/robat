@@ -43,11 +43,13 @@ if __name__ == "__main__":
     #         print(maintain_price_list())
     # except:
     #     print(111)
-    num = 0
-    for i in get_basic_info():
-        if "-USDT-SWAP" in i["instId"]:
-            num += 1
-            print(str(num) + i["instId"])
+
+
+    # num = 0
+    # for i in get_basic_info():
+    #     if "-USDT-SWAP" in i["instId"]:
+    #         num += 1
+    #         print(i["instId"])
 
     # newest_30_price = maintain_price_list()
     # print(newest_30_price)

@@ -133,8 +133,11 @@ def order_control(coin, side, posSide, open_price ,open_num, tp_px, old_order_id
             log_info(log)
 
     ## buy
-    if unfinish_order_num < 10:
+    if unfinish_order_num <= 6:
         open_order_id = create_order(coin, open_price, open_num, side, posSide, tp_px)
+    else:
+        log = coin = " order num > 6, not create order"
+        log_info(log)
     return open_order_id
 
 
@@ -207,13 +210,13 @@ def trade_strategy():
             cur_run_order_id[coin]["ma5_open_more_id"] = ma5_open_more_id
             cur_run_order_id[coin]["ma5_open_empy_id"] = ma5_open_empy_id
 
-            log1 = "["+cur_ctime + "] ma5:" + str(ma5) + " ma15_max:" + str(ma_15_max) + " ma15_min:" + str(ma_15_min) \
+            log1 = "["+cur_ctime + "] " + coin +" ma5:" + str(ma5) + " ma15_max:" + str(ma_15_max) + " ma15_min:" + str(ma_15_min) \
                                     +  " ma15_list:" + str(ma15_list) + "\n"
-            log2 = " ma5 open more: "   + str(ma5_open_more_price) +  " ->| " + str(ma5_open_more_stop) + \
-                " ma5 open empty: "  + str(ma5_open_empy_price) +  " ->| " + str(ma5_open_empy_stop) + \
-                " ma15 open more: "  + str(ma15_open_more_price) + " ->| " + str(ma15_open_more_stop)   + \
-                " ma15 open empty: " + str(ma15_open_empy_price) + " ->| " + str(ma15_open_more_stop)   + \
-                " newest_80: " + str(newest_80_history_price)
+            log2 = " ma5 open more: "   + str(ma5_open_more_price) +  " ->| " + str(ma5_open_more_stop) + " open_num: " + str(open_num) +\
+                   " ma5 open empty: "  + str(ma5_open_empy_price) +  " ->| " + str(ma5_open_empy_stop) + \
+                   " ma15 open more: "  + str(ma15_open_more_price) + " ->| " + str(ma15_open_more_stop)   + \
+                   " ma15 open empty: " + str(ma15_open_empy_price) + " ->| " + str(ma15_open_more_stop)   + \
+                   " newest_80: " + str(newest_80_history_price)
             log_info(log1+log2)
             # print(ma5,ma15_list)
 

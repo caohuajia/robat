@@ -4,6 +4,7 @@ from base_okx import *
 from coins import *
 
 def create_order(coin, price, number, side, posSide, tp_px):
+    global cur_ctime
     result = tradeAPI.place_order(
         tdMode="cross", ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
         ccy   ="USDT",
@@ -33,6 +34,7 @@ def create_order(coin, price, number, side, posSide, tp_px):
         print(result)
 
 def modify_order(coin, order_id, price, tp_px):
+    global cur_ctime
     result = tradeAPI.amend_order(
         newPx  =price,   ## 委托价格 
         ordId  =order_id,  
@@ -56,6 +58,7 @@ def modify_order(coin, order_id, price, tp_px):
         print(result)
 
 def cancel_order(coin):
+    global cur_ctime
     result = tradeAPI.cancel_order(
         clOrdId="1",
         instId =(coin+"-USDT-SWAP")
@@ -70,6 +73,7 @@ def cancel_order(coin):
 
 
 def time_flag_per_minite():
+    global cur_ctime
     cur_clock_str = cur_ctime.split(" ")[-2]
     cur_sec = cur_clock_str[-2:]
     cur_min = cur_clock_str[-5:-3]
@@ -116,6 +120,7 @@ def maintain_price_list_dict(coin_list):
     return price_list_dict
 
 def order_control(coin, side, posSide, open_price ,open_num, tp_px, old_order_id, unfinish_id, unfinish_order_num):
+    global cur_ctime
     open_price = "{:.9f}".format(open_price)
     tp_px      = "{:.9f}".format(tp_px)
     ## modify
@@ -186,7 +191,7 @@ def trade_strategy():
                     unfinish_order_num += 1
 
             log = "unfinish price & id: " + str(ma5_open_more_price) + " " + str(ma5_open_empy_price) + " " + \
-                                str(ma5_open_more_price) + " " + str(ma5_open_empy_price) + " " +str(unfinish_id) + " "
+                                str(ma5_open_more_price) + " " + str(ma5_open_empy_price) + " " +str(unfinish_order_list) + " "
             
 
             log_info("\n" + log)

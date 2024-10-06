@@ -169,6 +169,8 @@ def trade_strategy():
             money_u = coin_property[coin]["money_u"]
             open_num = int(money_u // newest_80_history_price[-1])
             ma5 = sum(newest_80_history_price[-5:])/5
+            before_10_min_price = sum(newest_80_history_price[-11:-8])/3
+            threshold = ((ma5/before_10_min_price)-1)/5  ## for rise, it is positive
             ma15_list = []
             for i in range(15):
                 ma15 = sum(newest_80_history_price[0+i:15+i])/15
@@ -177,10 +179,10 @@ def trade_strategy():
             ma_15_max = max(ma15_list)
             ma_15_min = min(ma15_list)
 
-            ma5_open_more_price = ma5 * (1-burst)
-            ma5_open_empy_price = ma5 * (1+burst)
-            ma5_open_more_stop  = ma5_open_more_price * (1+burst)
-            ma5_open_empy_stop  = ma5_open_empy_price * (1-burst)
+            ma5_open_more_price = ma5 * (1-burst-threshold)
+            ma5_open_empy_price = ma5 * (1+burst-threshold)
+            ma5_open_more_stop  = ma5_open_more_price * (1+burst-2*threshold)
+            ma5_open_empy_stop  = ma5_open_empy_price * (1-burst-2*threshold)
 
             ma15_open_more_price = ma_15_min * 0.95
             ma15_open_empy_price = ma_15_max * 1.05

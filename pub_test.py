@@ -198,7 +198,7 @@ def trade_strategy():
                     unfinish_order_num += 1
 
             log = "unfinish price & id: " + str(ma5_open_more_price) + " " + str(ma5_open_empy_price) + " " + \
-                                str(ma5_open_more_price) + " " + str(ma5_open_empy_price) + " " +str(unfinish_order_list) + " "
+                                str(ma5_open_more_price) + " " + str(ma5_open_empy_price) + " " ##+str(unfinish_order_list) + " "
             log_info("\n" + log)
 
             ma5_open_more_id = cur_run_order_id[coin]["ma5_open_more_id"]

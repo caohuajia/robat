@@ -31,7 +31,7 @@ def create_order(coin, price, number, side, posSide, tp_px):
     else:
         info = "["+cur_ctime + "] " + "create_order_fail: " + str(result)
         log_info(info)
-        print(result)
+        return ""
 
 def modify_order(coin, order_id, price, tp_px):
     global cur_ctime
@@ -52,21 +52,23 @@ def modify_order(coin, order_id, price, tp_px):
         log_info(info)
         # print(info )
         return order_id
-    else:
+    else: ## modify fail, cancel order
+        cancel_order(coin, order_id)
         info = cur_ctime + " " + "modify_order_fail: " + str(result)
         log_info(info)
         print(result)
+        return ""
 
-def cancel_order(coin):
+def cancel_order(coin, order_id):
     global cur_ctime
     result = tradeAPI.cancel_order(
-        clOrdId="1",
-        instId =(coin+"-USDT-SWAP")
+        ordId  =order_id,  
+        instId =coin
     )
     if result["code"] == "0":
         data = result["data"][0]
         cl_ord_id = data["clOrdId"]
-        print(cur_ctime, coin + " cancel order : " + "orderid: " + cl_ord_id )
+        print(cur_ctime, coin + " cancel order : " + "orderid: " + order_id )
     else:
         print("cancen fail: ", result)
 
@@ -195,8 +197,6 @@ def trade_strategy():
 
             log = "unfinish price & id: " + str(ma5_open_more_price) + " " + str(ma5_open_empy_price) + " " + \
                                 str(ma5_open_more_price) + " " + str(ma5_open_empy_price) + " " +str(unfinish_order_list) + " "
-            
-
             log_info("\n" + log)
 
             ma5_open_more_id = cur_run_order_id[coin]["ma5_open_more_id"]

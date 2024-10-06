@@ -142,6 +142,17 @@ def order_control(coin, side, posSide, open_price ,open_num, tp_px, old_order_id
         log_info(log)
     return open_order_id
 
+def threshold_control(threshold):
+    if threshold > 0:
+        if threshold > 0.005:
+            return 0.005
+        else:
+            return threshold
+    else:
+        if threshold < (-0.005):
+            return -0.005
+        else:
+            return threshold    
 
 def trade_strategy():
     global coin_property
@@ -171,6 +182,7 @@ def trade_strategy():
             ma5 = sum(newest_80_history_price[-5:])/5
             before_10_min_price = sum(newest_80_history_price[-11:-8])/3
             threshold = ((ma5/before_10_min_price)-1)/5  ## for rise, it is positive
+            threshold = threshold_control(threshold)
             ma15_list = []
             for i in range(15):
                 ma15 = sum(newest_80_history_price[0+i:15+i])/15

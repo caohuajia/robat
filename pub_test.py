@@ -193,8 +193,8 @@ def trade_strategy():
 
             ma5_open_more_price = ma5 * (1-burst-threshold)
             ma5_open_empy_price = ma5 * (1+burst-threshold)
-            ma5_open_more_stop  = ma5_open_more_price * (1+burst-2*threshold)
-            ma5_open_empy_stop  = ma5_open_empy_price * (1-burst-2*threshold)
+            ma5_open_more_stop  = ma5_open_more_price * (1+burst-threshold)
+            ma5_open_empy_stop  = ma5_open_empy_price * (1-burst-threshold)
 
             ma15_open_more_price = ma_15_min * 0.95
             ma15_open_empy_price = ma_15_max * 1.05
@@ -224,7 +224,7 @@ def trade_strategy():
             cur_run_order_id[coin]["ma5_open_more_id"] = ma5_open_more_id
             cur_run_order_id[coin]["ma5_open_empy_id"] = ma5_open_empy_id
 
-            log1 = "["+cur_ctime + "] " + coin +" ma5:" + str(ma5) + " ma15_max:" + str(ma_15_max) + " ma15_min:" + str(ma_15_min) \
+            log1 = "["+cur_ctime + "] " + coin +" ma5:" + str(ma5) + " thold " + str(threshold) + " ma15_max:" + str(ma_15_max) + " ma15_min:" + str(ma_15_min) \
                                     +  " ma15_list:" + str(ma15_list) + "\n"
             log2 = " ma5 open more: "   + str(ma5_open_more_price) +  " ->| " + str(ma5_open_more_stop) + " open_num: " + str(open_num) +\
                    " ma5 open empty: "  + str(ma5_open_empy_price) +  " ->| " + str(ma5_open_empy_stop) + \

@@ -157,6 +157,8 @@ def threshold_control(threshold):
 def trade_strategy():
     global coin_property
     global cur_ctime
+    cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
+
     coin_list = coin_property.keys()
     cur_run_order_id = {}
     for coin in coin_list:
@@ -168,11 +170,10 @@ def trade_strategy():
 
         cur_run_order_id[coin] = coin_run_info
 
-
     while(1):
-        cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
         newest_history_price_dict = maintain_price_list_dict(coin_list) ## 1 min
         unfinish_order_list = get_unfinish_order()
+        cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
 
         for coin in coin_list:
             newest_80_history_price = newest_history_price_dict[coin]

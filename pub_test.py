@@ -181,7 +181,7 @@ def trade_strategy():
             open_num = int(money_u // newest_80_history_price[-1])
             ma5 = sum(newest_80_history_price[-5:])/5
             before_10_min_price = sum(newest_80_history_price[-11:-8])/3
-            threshold = ((ma5/before_10_min_price)-1)/5  ## for rise, it is positive
+            threshold = ((ma5/before_10_min_price)-1)/10  ## for rise, it is positive
             threshold = threshold_control(threshold)
             ma15_list = []
             for i in range(15):

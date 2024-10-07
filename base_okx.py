@@ -94,7 +94,13 @@ def get_k_line(coin, interval): ## 1m 3m 5m 15m 30m 1H 2H 4H
     return full_k_line
 
 
-def get_unfinish_order():
+def get_unfinish_order(): ## not include stop-order
     result = tradeAPI.get_order_list()
+    data = get_valid_data(result)
+    return data
+
+
+def get_current_positions():
+    result = accountAPI.get_positions()
     data = get_valid_data(result)
     return data

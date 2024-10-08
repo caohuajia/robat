@@ -25,7 +25,7 @@ def create_order(coin, price, number, side, posSide, tp_px):
         data = result["data"][0]
         order_id = data["ordId"]
         info = "["+cur_ctime + "] " + coin + " id:" + order_id + " " + side + " " + posSide + " create_success: " + \
-               "price : " + price + " ->| " + tp_px
+               "price : " + str(price) + " ->| " + str(tp_px)
         log_info(info)
         # print(info )
         return order_id

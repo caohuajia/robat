@@ -149,7 +149,7 @@ def get_variance(ls):
     for i in ls:
         percent = i/newest
         percent_list.append(percent)
-    return np.var(percent_list) * 100
+    return np.var(percent_list) * 100 / 2
 
 def trade_strategy():
     global coin_property
@@ -221,7 +221,7 @@ def trade_strategy():
             cur_run_order_id[coin]["ma5_open_more_id"] = ma5_open_more_id
             cur_run_order_id[coin]["ma5_open_empy_id"] = ma5_open_empy_id
 
-            log1 = "["+cur_ctime + "] " + coin +" ma5:" + str(ma5) + " thold " + str(threshold) + " ma15_max:" + str(ma_15_max) + " ma15_min:" + str(ma_15_min) \
+            log1 = "["+cur_ctime + "] " + coin +" ma5:" + str(ma5) + " thold " + str(threshold*100) + "% ma15_max:" + str(ma_15_max) + " ma15_min:" + str(ma_15_min) \
                                     +  " ma15_list:" + str(ma15_list) + "\n"
             log2 = " ma5 open more: "   + str(ma5_open_more_price) +  " ->| " + str(ma5_open_more_stop) + " open_num: " + str(open_num) +\
                    " ma5 open empty: "  + str(ma5_open_empy_price) +  " ->| " + str(ma5_open_empy_stop) + \

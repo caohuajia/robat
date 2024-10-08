@@ -1,5 +1,6 @@
 import time
 import json
+import numpy as np
 from base_okx import *
 from coins import *
 
@@ -142,17 +143,13 @@ def order_control(coin, side, posSide, open_price ,open_num, tp_px, old_order_id
         log_info(log)
     return open_order_id
 
-def threshold_control(threshold):
-    if threshold > 0:
-        if threshold > 0.005:
-            return 0.005
-        else:
-            return threshold
-    else:
-        if threshold < (-0.005):
-            return -0.005
-        else:
-            return threshold    
+def get_variance(ls):
+    newest = ls[-1]
+    percent_list = []
+    for i in ls:
+        percent = i/newest
+        percent_list.append(percent)
+    return np.var(percent_list) * 100
 
 def trade_strategy():
     global coin_property
@@ -181,9 +178,8 @@ def trade_strategy():
             money_u = coin_property[coin]["money_u"]
             open_num = int(money_u // newest_80_history_price[-1])
             ma5 = sum(newest_80_history_price[-5:])/5
-            before_10_min_price = sum(newest_80_history_price[-11:-8])/3
-            threshold = abs(((ma5/before_10_min_price)-1)*2)  ## for rise, it is positive
-            # threshold = threshold_control(threshold)
+            newest_10_history_price = newest_80_history_price[-10:]
+            threshold = get_variance(newest_10_history_price)
             ma15_list = []
             for i in range(15):
                 ma15 = sum(newest_80_history_price[0+i:15+i])/15
@@ -231,7 +227,7 @@ def trade_strategy():
                    " ma5 open empty: "  + str(ma5_open_empy_price) +  " ->| " + str(ma5_open_empy_stop) + \
                    " ma15 open more: "  + str(ma15_open_more_price) + " ->| " + str(ma15_open_more_stop)   + \
                    " ma15 open empty: " + str(ma15_open_empy_price) + " ->| " + str(ma15_open_more_stop)   + \
-                   " newest_80: " + str(newest_80_history_price)
+                   " newest_80: " + str(newest_10_history_price)
             log_info(log1+log2)
             # print(ma5,ma15_list)
 

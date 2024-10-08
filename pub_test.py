@@ -183,7 +183,8 @@ def trade_strategy():
             ma5 = sum(newest_80_history_price[-5:])/5
             before_10_min_price = sum(newest_80_history_price[-11:-8])/3
             threshold = ((ma5/before_10_min_price)-1)/10  ## for rise, it is positive
-            threshold = threshold_control(threshold)
+            # threshold = threshold_control(threshold)
+            threshold = 0
             ma15_list = []
             for i in range(15):
                 ma15 = sum(newest_80_history_price[0+i:15+i])/15

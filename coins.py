@@ -1,4 +1,4 @@
-
+# u / price must >= 1
 coin_property = {\
     "CETUS"     :{"burst"  :0.01,
                   "money_u":1\
@@ -6,7 +6,7 @@ coin_property = {\
     "PEOPLE"    :{"burst"  :0.01,
                   "money_u":1\
                  },\
-    "NMR"       :{"burst"  :0.01,
+    "ULTI"      :{"burst"  :0.01,
                   "money_u":1\
                  },\
     "UXLINK"    :{"burst"  :0.01,

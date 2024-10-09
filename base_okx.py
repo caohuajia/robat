@@ -104,3 +104,10 @@ def get_current_positions():
     result = accountAPI.get_positions()
     data = get_valid_data(result)
     return data
+
+def set_leverage(coin, lever):
+    accountAPI.set_leverage(
+        instId = coin,
+        lever  = str(lever),
+        mgnMode= "cross"
+    )

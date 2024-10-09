@@ -15,7 +15,7 @@ def create_order(coin, price, number, side, posSide, tp_px):
         sz     =str(number), ## 委托数量
         px     =price,   ## 委托价格 
         # attachAlgoOrds=1,
-        tpTriggerPx=tp_px,
+        tpTriggerPx=tp_px, ## 止盈价格
         tpOrdPx    =tp_px,
         # tpOrdKind  ="limit",
         clOrdId="",  ## 自定义订单id
@@ -30,7 +30,7 @@ def create_order(coin, price, number, side, posSide, tp_px):
         # print(info )
         return order_id
     else:
-        info = "["+cur_ctime + "] " + "create_order_fail: " + str(result)
+        info = "["+cur_ctime + "] " + "create_order_fail: " + str(result) + " price: " + str(price) + " num: " + str(number)
         log_info(info)
         return ""
 
@@ -159,6 +159,7 @@ def trade_strategy():
     coin_list = coin_property.keys()
     cur_run_order_id = {}
     for coin in coin_list:
+        set_leverage(coin,10)
         coin_run_info = {}
         coin_run_info["ma5_open_more_id"] = ""
         coin_run_info["ma5_open_empy_id"] = ""
@@ -226,7 +227,7 @@ def trade_strategy():
             log2 = " ma5 open more: "   + str(ma5_open_more_price) +  " ->| " + str(ma5_open_more_stop) + " open_num: " + str(open_num) +\
                    " ma5 open empty: "  + str(ma5_open_empy_price) +  " ->| " + str(ma5_open_empy_stop) + \
                    " ma15 open more: "  + str(ma15_open_more_price) + " ->| " + str(ma15_open_more_stop)   + \
-                   " ma15 open empty: " + str(ma15_open_empy_price) + " ->| " + str(ma15_open_more_stop)   + \
+                   " ma15 open empty: " + str(ma15_open_empy_price) + " ->| " + str(ma15_open_empy_stop)   + \
                    " newest_80: " + str(newest_10_history_price)
             log_info(log1+log2)
             # print(ma5,ma15_list)

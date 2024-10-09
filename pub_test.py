@@ -159,7 +159,8 @@ def trade_strategy():
     coin_list = coin_property.keys()
     cur_run_order_id = {}
     for coin in coin_list:
-        set_leverage(coin,10)
+        lever = coin_property[coin]["lever"]
+        set_leverage(coin,lever)
         coin_run_info = {}
         coin_run_info["ma5_open_more_id"] = ""
         coin_run_info["ma5_open_empy_id"] = ""

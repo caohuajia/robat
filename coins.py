@@ -1,21 +1,24 @@
 # u / price must >= 1
 coin_property = {\
-    "TURBO"     :{"burst"  :0.01,
-                  "money_u":1\
-                 },\
-    "CETUS"     :{"burst"  :0.01,
+    # "TURBO"     :{"burst"  :1 /100,
+    #               "money_u":10\
+    #              },\
+    "CETUS"     :{"burst"  :1 /100,
                   "money_u":5\
                  },\
-    # "PEOPLE"    :{"burst"  :0.01,
+    "CHZ"       :{"burst"  :1 /100,
+                  "money_u":1\
+                 },\
+    # "PEOPLE"    :{"burst"  :1 /100,
     #               "money_u":1\
     #              },\
-    "PEPE"      :{"burst"  :0.01,
+    "PEPE"      :{"burst"  :1 /100,
+                  "money_u":10\
+                 },\
+    "ULTI"      :{"burst"  :1 /100,
                   "money_u":1\
                  },\
-    "ULTI"      :{"burst"  :0.01,
-                  "money_u":1\
-                 },\
-    "UXLINK"    :{"burst"  :0.01,
+    "UXLINK"    :{"burst"  :0.8 /100,
                   "money_u":1\
                  }\
                 }

@@ -1,0 +1,23 @@
+[
+{
+    "CETUS"     :{"burst"  :0.01,
+                  "money_u":5,
+                  "lever"  :10
+                 },
+    "CHZ"       :{"burst"  :0.01,
+                  "money_u":2,
+                  "lever":10
+                 },
+    "ULTI"      :{"burst"  :0.01,
+                  "money_u":1,
+                  "lever":10
+                 },
+    "UXLINK"    :{"burst"  :0.008,
+                  "money_u":1,
+                  "lever":10
+                 }
+},
+{
+    "comment"   : "comment"
+}
+]

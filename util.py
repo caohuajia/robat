@@ -1,3 +1,4 @@
+import json
 
 def log_info(log, keep_cur_line=0):
     with open("run.log", "a+") as f:
@@ -40,3 +41,7 @@ def price_can_trade(price, k_history_piece):
         return 0
 
 
+def get_config():
+    with open("coins.json", "r") as f:
+        config = json.load(f)[0]
+    return config

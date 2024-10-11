@@ -1,5 +1,4 @@
 import time
-import json
 import numpy as np
 from base_okx import *
 from coins import *
@@ -152,14 +151,14 @@ def get_variance(ls):
     return np.var(percent_list) * 100 / 2
 
 def trade_strategy():
-    global coin_property
     global cur_ctime
     cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
 
-    coin_list = coin_property.keys()
+    config_dict = get_config()
+    coin_list = config_dict.keys()
     cur_run_order_id = {}
     for coin in coin_list:
-        lever = coin_property[coin]["lever"]
+        lever = config_dict[coin]["lever"]
         set_leverage(coin,lever)
         coin_run_info = {}
         coin_run_info["ma5_open_more_id"] = ""
@@ -173,11 +172,12 @@ def trade_strategy():
         newest_history_price_dict = maintain_price_list_dict(coin_list) ## 1 min
         unfinish_order_list = get_unfinish_order()
         cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
+        config_dict = get_config()
 
         for coin in coin_list:
             newest_80_history_price = newest_history_price_dict[coin]
-            burst   = coin_property[coin]["burst"]
-            money_u = coin_property[coin]["money_u"]
+            burst   = config_dict[coin]["burst"]
+            money_u = config_dict[coin]["money_u"]
             open_num = int(money_u // newest_80_history_price[-1])
             ma5 = sum(newest_80_history_price[-5:])/5
             newest_10_history_price = newest_80_history_price[-10:]

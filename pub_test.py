@@ -1,7 +1,6 @@
 import time
 import numpy as np
 from base_okx import *
-from coins import *
 
 def create_order(coin, price, number, side, posSide, tp_px):
     global cur_ctime

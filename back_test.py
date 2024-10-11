@@ -3,7 +3,8 @@ import json
 from base_okx import *
 
 def back_test():
-    k_line_100_history = get_k_line("1m")
+    coin = "CETUS"
+    k_line_100_history = get_k_line(coin,"1m")
     k_line_100_history.reverse()
     end_price = 0
     end_price_list= []

@@ -1,7 +1,10 @@
 import json
+import time
+import numpy as np
 
+log_file = "run.log"
 def log_info(log, keep_cur_line=0):
-    with open("run.log", "a+") as f:
+    with open(log_file, "a+") as f:
         f.write(log)
         if keep_cur_line:
             pass
@@ -45,3 +48,23 @@ def get_config():
     with open("coins.json", "r") as f:
         config = json.load(f)[0]
     return config
+
+def time_flag_per_minite(cur_ctime):
+    cur_clock_str = cur_ctime.split(" ")[-2]
+    cur_sec = cur_clock_str[-2:]
+    cur_min = cur_clock_str[-5:-3]
+    cur_sec_int = int(cur_sec)
+    time.sleep(60 - cur_sec_int)
+
+    if cur_min == "14" or cur_min == "29" or cur_min == "44" or cur_min == "59":
+        return 2
+    else:
+        return 1
+
+def get_variance(ls):
+    newest = ls[-1]
+    percent_list = []
+    for i in ls:
+        percent = i/newest
+        percent_list.append(percent)
+    return np.var(percent_list) * 100 / 2

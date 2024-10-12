@@ -16,7 +16,6 @@ fundingAPI    = Funding.FundingAPI(api_key, secret_key, passphrase, False, flag)
 marketDataAPI = MarketData.MarketAPI(flag = flag)
 tradeAPI      = Trade.TradeAPI(api_key, secret_key, passphrase, False, flag)
 
-cur_ctime = ""
 
 def get_current_system_time(ms = 0, int_value = 0):
     result = PublicDataAPI.get_system_time()

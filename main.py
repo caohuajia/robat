@@ -113,9 +113,9 @@ class Coin():
         if result["code"] == "0":
             data = result["data"][0]
             cl_ord_id = data["clOrdId"]
-            print(cur_ctime, self.coin_name + " cancel order : " + "orderid: " + order_id )
+            self.log += cur_ctime + " " +  self.coin_name + " cancel order : " + "orderid: " + order_id + "\n"
         else:
-            print("cancen fail: ", result)
+            self.log += cur_ctime + " " +  self.coin_name + " cancel fail: " + "orderid: " + str(result) + "\n"
 
     unfinish_order_num = 0
     def order_maintain(self, side, posSide, open_price, tp_px, old_order_id):
@@ -186,6 +186,7 @@ if __name__ == "__main__":
         except:
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].cancel_open_order()
+            log_info(cur_ctime + " some exception\n")
             break
     exit(0)
 

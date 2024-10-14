@@ -35,14 +35,18 @@ class coin_test():
                 f.write("\n")
 
     def blow_up(self):
-        if self.total_money < 0.01:
-            print(self.cur_ctime,"blow_up",self.total_money)
+        float_money = self.total_money
+        for i in self.hold_list:
+            if i["mode"] == 0: ## buy more
+                float_money += 0.1 * (self.cur_price / float(i["price"])) * 10
+            else:
+                float_money += 0.1 * (1- self.cur_price / float(i["price"])) * 10
+
+        if float_money < 0.01:
+            print(self.cur_ctime,"blow_up",self.total_money, self.cur_price)
             exit(0)
         else:
             pass
-
-    def price_hit():
-        pass
 
     def buy_long(self):
         if self.balance>0.1:
@@ -50,7 +54,8 @@ class coin_test():
                 trade_info = {"time":self.cur_ctime, "price":self.ma5_buy_long_price, "money":0.01, "stop_price":self.ma5_buy_long_stop, "mode":0}
                 self.balance -= 0.1
                 self.hold_list.append(trade_info)
-                self.log += str(trade_info) + "\n"
+                self.log += self.cur_ctime + " u:" + "{:.5f}".format(self.total_money) + "/" + "{:.5f}".format(self.balance) + \
+                                             " bug long: " +  "{:.5f}".format(self.ma5_buy_long_price) + "->|" "{:.5f}".format(self.ma5_buy_long_stop) + "\n"
 
     def sell_short(self):
         if self.balance>0.1:
@@ -58,9 +63,23 @@ class coin_test():
                 trade_info = {"time":self.cur_ctime, "price":self.ma5_sell_short_price, "money":0.01, "stop_price":self.ma5_sell_short_stop, "mode":1}
                 self.balance -=0.1
                 self.hold_list.append(trade_info)
+                self.log += self.cur_ctime + " u:" + "{:.5f}".format(self.total_money) + "/" + "{:.5f}".format(self.balance) + \
+                                             " sell short: " +  "{:.5f}".format(self.ma5_sell_short_price) + "->|" "{:.5f}".format(self.ma5_sell_short_stop) + "\n"
+
+
+    def deal(self):
+        for i in self.hold_list:
+            if self.price_can_trade(i["stop_price"]):
+                self.total_money += 0.01 
+                self.balance     += 0.11
+                self.hold_list.remove(i)
+                self.log += self.cur_ctime + " u:" + "{:.5f}".format(self.total_money) + "/" + "{:.5f}".format(self.balance) + " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
+            else:
+                pass
+
 
     def get_current_price(self):
-        return float(self.market_piece[1])
+        return float(self.cur_price)
 
     def get_self_config(self):
         self.burst   = 0.01
@@ -89,17 +108,11 @@ class coin_test():
                 return 1
         return 0
 
-    def deal(self):
-        for i in self.hold_list:
-            if self.price_can_trade(i["stop_price"]):
-                self.total_money += 0.01 
-                self.balance     += 0.11
-
-
     def run(self, current_market):
         ## ["Sun Oct 13 20:26:00 2024", "0.21326", "0.21388", "0.21323", "0.21368", "6935", "69350", "14809.0594", "1"],
         self.market_piece = current_market
         self.cur_ctime = current_market[0]
+        self.cur_price = float(current_market[1])
         self.gen_current_parameter()
 
         self.blow_up()
@@ -108,16 +121,21 @@ class coin_test():
         self.buy_long()
         self.sell_short()
 
-        self.log_info(self.log)
+        self.log_info(self.log, 1)
         self.log = ""
         pass
+
+
+
+
+
 
 if __name__ == "__main__":
     coin_name = "CETUS"
     price_json_file = "price_list.json"
     k_line_history = []
     if 0: ## save_history_to_file
-        k_line_history = get_history_k_line(coin_name, "1m", int(1 * 24*60/100)) ##[new ... old]  2s/200min  15s/day
+        k_line_history = get_history_k_line(coin_name, "1m", int(4 * 24*60/100)) ##[new ... old]  2s/200min  15s/day
         k_line_history.reverse()
         print(len(k_line_history))
         for i in k_line_history:
@@ -134,5 +152,5 @@ if __name__ == "__main__":
     coin = coin_test(coin_name, k_line_history[0:80])
     for market_piece in k_line_history[81:]:
         coin.run(market_piece)
-    print("finish: ",coin.total_money)
+    print("finish: total: ",coin.total_money, "balance: ", coin.balance)
     # pass

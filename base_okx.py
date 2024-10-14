@@ -58,7 +58,7 @@ def get_current_swap_price(coin):
             # print(i)
             return i["last"]
 
-def get_k_line_piece(coin, end_time, interval, data_num = 100): ## data_num max is 100
+def get_k_line_piece(coin, end_time, interval, data_num = 300): ## data_num max is 300
     offset = 0
     if interval == "1m":
         offset = 60 * 1000
@@ -70,27 +70,77 @@ def get_k_line_piece(coin, end_time, interval, data_num = 100): ## data_num max 
         before= str(end_time - data_num * offset), 
         after = str(end_time),
         bar   = interval,      
+        limit = str(data_num),
         instId=coin+"-USDT-SWAP"
     )
     return result
 
-def get_k_line(coin, interval): ## 1m 3m 5m 15m 30m 1H 2H 4H
+def get_k_line(coin, interval, num=1): ## 1m 3m 5m 15m 30m 1H 2H 4H
     full_k_line = []
     cur_time = get_current_system_time(ms=1, int_value=1)
     offset   = 0
-    min_1m_100_data = 60 * 1000  * 100
+    min_1m_300_data = 60 * 1000  * 300
     if interval == "1m":
-        offset = 1 * min_1m_100_data
+        offset = 1 * min_1m_300_data
     elif interval == "15m":
-        offset = 15 * min_1m_100_data
+        offset = 15 * min_1m_300_data
 
-    for i in range(2): # once: 2*coin_type_num = 4
+    for i in range(num): # once: num * coin_type_num
         k_line_piece = get_k_line_piece(coin, cur_time - i * offset, interval)
         data = get_valid_data(k_line_piece)
         # print(i, data)
         full_k_line += data
+        if ((i % 39) == 38):
+            time.sleep(2)
+        else:
+            pass
 
     return full_k_line
+
+
+def get_history_k_line_piece(coin, end_time, interval, data_num = 100): ## data_num max is 300
+    offset = 0
+    if interval == "1s":
+        offset = 1000
+    elif interval == "1m":
+        offset = 60 * 1000
+    elif interval == "15m":
+        offset = 15 * 60 * 1000
+
+    ## 交易产品k线数据
+    result = marketDataAPI.get_history_candlesticks( ##  limit:40/2s  100num/time
+        before= str(int(end_time) - data_num * offset), 
+        after = str(int(end_time)),
+        bar   = interval,
+        limit = str(data_num),
+        instId=coin+"-USDT-SWAP"
+    )
+    return result
+
+def get_history_k_line(coin, interval, num=1): ## 1s 1m 3m 5m 15m 30m 1H 2H 4H
+    full_k_line = []
+    cur_time = get_current_system_time(ms=1, int_value=1)
+    offset   = 0
+    min_1m_100_data = 60 * 1000  * 100
+    if interval == "1s":
+        offset = 1 * min_1m_100_data / 60
+    elif interval == "1m":
+        offset = 1 * min_1m_100_data
+    elif interval == "15m":
+        offset = 15 * min_1m_100_data
+
+    for i in range(num): # once: num * coin_type_num
+        k_line_piece = get_history_k_line_piece(coin, cur_time - i * offset, interval)
+        data = get_valid_data(k_line_piece)
+        # print(i, data)
+        full_k_line += data
+        if ((i % 20) == 19):
+            time.sleep(2)
+        else:
+            pass
+
+    return full_k_line
+
 
 
 def get_unfinish_order(): ## not include stop-order

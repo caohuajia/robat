@@ -38,7 +38,8 @@ def change_time_type(ts, ms = 0, int_value = 0):
 def price_can_trade(price, k_history_piece):
     cur_highest = float(k_history_piece[2])
     cur_lowest  = float(k_history_piece[3])
-    if price <= cur_highest and price >= cur_lowest:
+    price = float(price)
+    if (price <= cur_highest) and (price >= cur_lowest):
         return 1
     else:
         return 0

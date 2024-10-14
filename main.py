@@ -35,6 +35,8 @@ class Coin():
         self.lever   = config_dict[self.coin_name]["lever"]
         self.benefit = self.burst
 
+    def get_current_price(self):
+        return float(get_current_swap_price(self.coin_name))
 
     open_num = 0
     ma5_buy_long_price   = 0
@@ -45,7 +47,7 @@ class Coin():
         self.get_self_config()
 
         (self.newest_80_history_price).pop(0)
-        (self.newest_80_history_price).append(float(get_current_swap_price(self.coin_name)))
+        (self.newest_80_history_price).append(self.get_current_price())
         self.open_num = int(self.money_u // self.newest_80_history_price[-1])
         ma5 = sum(self.newest_80_history_price[-5:])/5
         newest_10_history_price = self.newest_80_history_price[-10:]

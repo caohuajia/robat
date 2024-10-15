@@ -35,9 +35,13 @@ class coin_test():
                 f.write("\n")
 
     def get_cur_hold(self):
-        hold_str = " hold:"
+        hold_str = " hold:{"
         for i in self.hold_list:
-            hold_str += "{:.5f}".format(i["price"]) + " "
+            if i["mode"] == 0:
+                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.2f}".format((i["price"]/self.cur_price-1)*100*self.lever) + "% "
+            else:
+                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.2f}".format((1-i["price"]/self.cur_price)*100*self.lever) + "% "
+        hold_str += "}"
         return hold_str
 
 
@@ -46,9 +50,9 @@ class coin_test():
         self.float_money = self.total_money
         for i in self.hold_list:
             if i["mode"] == 0: ## buy more
-                self.float_money += 0.1 * (self.cur_price / float(i["price"]) - 1) * 10
+                self.float_money += 0.1 * (self.cur_price / float(i["price"]) - 1) * self.lever
             else:
-                self.float_money += 0.1 * (1- self.cur_price / float(i["price"])) * 10
+                self.float_money += 0.1 * (1- self.cur_price / float(i["price"])) * self.lever
 
     def blow_up(self):
         self.get_float_money()
@@ -83,11 +87,11 @@ class coin_test():
     def deal(self):
         for i in self.hold_list:
             if self.price_can_trade(i["stop_price"]):
+                self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
+                                             " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
                 self.total_money += 0.01 
                 self.balance     += 0.11
                 self.hold_list.remove(i)
-                self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
-                                             " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
             else:
                 pass
 
@@ -97,6 +101,7 @@ class coin_test():
 
     def get_self_config(self):
         self.burst   = 0.01
+        self.lever   = 10
 
     def gen_current_parameter(self):
         self.get_self_config()

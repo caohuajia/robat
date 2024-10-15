@@ -46,6 +46,10 @@ class coin_test():
         hold_str += "}"
         return hold_str
 
+    def finish(self):
+        self.get_float_money()
+        self.log += "[finl] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
+        self.log_info(self.log, 1)
 
     float_money = 0
     def get_float_money(self):
@@ -107,8 +111,8 @@ class coin_test():
             if self.price_can_trade(i["stop_price"]):
                 self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
                                              " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
-                self.total_money += 0.01 
-                self.balance     += 0.11
+                self.total_money += 0.1 * self.burst * self.lever 
+                self.balance     += 0.1 + 0.1 * self.burst * self.lever 
                 self.hold_list.remove(i)
             else:
                 pass
@@ -194,5 +198,6 @@ if __name__ == "__main__":
     coin = coin_test(coin_name, k_line_history[0:80])
     for market_piece in k_line_history[81:]:
         coin.run(market_piece)
+    coin.finish()
     print(total_days,"days finish: total: ",coin.float_money, "balance: ", coin.balance)
     # pass

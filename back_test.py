@@ -37,10 +37,10 @@ class coin_test():
     def get_cur_hold(self):
         hold_str = " hold:{"
         for i in self.hold_list:
-            if i["mode"] == 0:
-                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.2f}".format((i["price"]/self.cur_price-1)*100*self.lever) + "% "
+            if i["mode"] == 0: ## buy more
+                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.2f}".format((self.cur_price/i["price"]-1)*100*self.lever) + "% "
             else:
-                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.2f}".format((1-i["price"]/self.cur_price)*100*self.lever) + "% "
+                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.2f}".format((1-self.cur_price/i["price"])*100*self.lever) + "% "
         hold_str += "}"
         return hold_str
 

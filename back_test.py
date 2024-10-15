@@ -57,6 +57,8 @@ class coin_test():
                 self.prefer_mode += benefit_rate
                 if self.each_order_mode:
                     if benefit_rate < -1:
+                        self.log += "[blow] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
+                                        "{:.5f}".format(self.cur_price) + self.get_cur_hold() + " order blow up\n"
                         self.hold_list.remove(i)
                         self.total_money -= 0.1
             else:
@@ -65,6 +67,8 @@ class coin_test():
                 self.prefer_mode -= benefit_rate
                 if self.each_order_mode:
                     if benefit_rate < -1:
+                        self.log += "[blow] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
+                                        "{:.5f}".format(self.cur_price) + self.get_cur_hold() + " order blow up\n"
                         self.hold_list.remove(i)
                         self.total_money -= 0.1
 
@@ -85,7 +89,7 @@ class coin_test():
                 trade_info = {"time":self.cur_ctime, "price":self.ma5_buy_long_price, "money":0.01, "stop_price":self.ma5_buy_long_stop, "mode":0}
                 self.balance -= 0.1
                 self.hold_list.append(trade_info)
-                self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
+                self.log += "[buy ] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
                                              " bug long: " +  "{:.5f}".format(self.ma5_buy_long_price) + "->|" "{:.5f}".format(self.ma5_buy_long_stop) + "\n"
 
     def sell_short(self):
@@ -94,14 +98,14 @@ class coin_test():
                 trade_info = {"time":self.cur_ctime, "price":self.ma5_sell_short_price, "money":0.01, "stop_price":self.ma5_sell_short_stop, "mode":1}
                 self.balance -=0.1
                 self.hold_list.append(trade_info)
-                self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
+                self.log += "[sell] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
                                              " sell short: " +  "{:.5f}".format(self.ma5_sell_short_price) + "->|" "{:.5f}".format(self.ma5_sell_short_stop) + "\n"
 
 
     def deal(self):
         for i in self.hold_list:
             if self.price_can_trade(i["stop_price"]):
-                self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
+                self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
                                              " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
                 self.total_money += 0.01 
                 self.balance     += 0.11
@@ -112,11 +116,6 @@ class coin_test():
 
     def get_current_price(self):
         return float(self.cur_price)
-
-    def get_self_config(self):
-        self.burst   = 0.01
-        self.lever   = 10
-        self.each_order_mode = 1
 
     def gen_current_parameter(self):
         self.get_self_config()
@@ -141,6 +140,11 @@ class coin_test():
             if price < highest:
                 return 1
         return 0
+
+    def get_self_config(self):
+        self.burst   = 0.01
+        self.lever   = 10
+        self.each_order_mode = 0
 
     def run(self, current_market):
         ## ["Sun Oct 13 20:26:00 2024", "0.21326", "0.21388", "0.21323", "0.21368", "6935", "69350", "14809.0594", "1"],
@@ -171,7 +175,7 @@ if __name__ == "__main__":
     coin_name = "CETUS"
     price_json_file = "price_list.json"
     k_line_history = []
-    total_days = 30
+    total_days = 3
     if 0: ## save_history_to_file
         k_line_history = get_history_k_line(coin_name, "1m", int(total_days * 24*60/100)) ##[new ... old]  2s/200min  15s/day
         k_line_history.reverse()

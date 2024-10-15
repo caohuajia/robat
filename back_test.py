@@ -34,16 +34,29 @@ class coin_test():
             else:
                 f.write("\n")
 
-    def blow_up(self):
-        float_money = self.total_money
+    def get_cur_hold(self):
+        hold_str = " hold:"
+        for i in self.hold_list:
+            hold_str += "{:.5f}".format(i["price"]) + " "
+        return hold_str
+
+
+    float_money = 0
+    def get_float_money(self):
+        self.float_money = self.total_money
         for i in self.hold_list:
             if i["mode"] == 0: ## buy more
-                float_money += 0.1 * (self.cur_price / float(i["price"])) * 10
+                self.float_money += 0.1 * (self.cur_price / float(i["price"]) - 1) * 10
             else:
-                float_money += 0.1 * (1- self.cur_price / float(i["price"])) * 10
+                self.float_money += 0.1 * (1- self.cur_price / float(i["price"])) * 10
 
-        if float_money < 0.01:
+    def blow_up(self):
+        self.get_float_money()
+        # self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
+        if self.float_money < 0.01:
+            self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
             print(self.cur_ctime,"blow_up",self.total_money, self.cur_price)
+            self.log_info(self.log, 1)
             exit(0)
         else:
             pass
@@ -54,7 +67,7 @@ class coin_test():
                 trade_info = {"time":self.cur_ctime, "price":self.ma5_buy_long_price, "money":0.01, "stop_price":self.ma5_buy_long_stop, "mode":0}
                 self.balance -= 0.1
                 self.hold_list.append(trade_info)
-                self.log += self.cur_ctime + " u:" + "{:.5f}".format(self.total_money) + "/" + "{:.5f}".format(self.balance) + \
+                self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
                                              " bug long: " +  "{:.5f}".format(self.ma5_buy_long_price) + "->|" "{:.5f}".format(self.ma5_buy_long_stop) + "\n"
 
     def sell_short(self):
@@ -63,7 +76,7 @@ class coin_test():
                 trade_info = {"time":self.cur_ctime, "price":self.ma5_sell_short_price, "money":0.01, "stop_price":self.ma5_sell_short_stop, "mode":1}
                 self.balance -=0.1
                 self.hold_list.append(trade_info)
-                self.log += self.cur_ctime + " u:" + "{:.5f}".format(self.total_money) + "/" + "{:.5f}".format(self.balance) + \
+                self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
                                              " sell short: " +  "{:.5f}".format(self.ma5_sell_short_price) + "->|" "{:.5f}".format(self.ma5_sell_short_stop) + "\n"
 
 
@@ -73,7 +86,8 @@ class coin_test():
                 self.total_money += 0.01 
                 self.balance     += 0.11
                 self.hold_list.remove(i)
-                self.log += self.cur_ctime + " u:" + "{:.5f}".format(self.total_money) + "/" + "{:.5f}".format(self.balance) + " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
+                self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
+                                             " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
             else:
                 pass
 

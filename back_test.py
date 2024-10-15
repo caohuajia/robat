@@ -10,6 +10,8 @@ class coin_test():
         self.coin_name = coin_name
         self.get_self_config()
 
+        self.prefer_mode = 0  ## >0, prefer bug long, <0 prefer sell short
+
         self.hold_list = []
         self.total_money = 1
         self.balance = 1
@@ -35,7 +37,7 @@ class coin_test():
                 f.write("\n")
 
     def get_cur_hold(self):
-        hold_str = " hold:{"
+        hold_str = " p_m: " + "{:.1f}".format(self.prefer_mode) + " hold:{"
         for i in self.hold_list:
             if i["mode"] == 0: ## buy more
                 hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}".format((self.cur_price/i["price"]-1)*100*self.lever) + "% "
@@ -50,16 +52,28 @@ class coin_test():
         self.float_money = self.total_money
         for i in self.hold_list:
             if i["mode"] == 0: ## buy more
-                self.float_money += 0.1 * (self.cur_price / float(i["price"]) - 1) * self.lever
+                benefit_rate = (self.cur_price / float(i["price"]) - 1) * self.lever
+                self.float_money += 0.1 * benefit_rate
+                self.prefer_mode += benefit_rate
+                if self.each_order_mode:
+                    if benefit_rate < -1:
+                        self.hold_list.remove(i)
+                        self.total_money -= 0.1
             else:
-                self.float_money += 0.1 * (1- self.cur_price / float(i["price"])) * self.lever
+                benefit_rate = (1- self.cur_price / float(i["price"])) * self.lever
+                self.float_money += 0.1 * benefit_rate
+                self.prefer_mode -= benefit_rate
+                if self.each_order_mode:
+                    if benefit_rate < -1:
+                        self.hold_list.remove(i)
+                        self.total_money -= 0.1
 
     def blow_up(self):
         self.get_float_money()
         # self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
         if self.float_money < 0.01:
             self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
-            print(self.cur_ctime,"blow_up",self.total_money, self.cur_price)
+            print(self.cur_ctime,"blow_up float_u:",self.float_money, "cur_price",self.cur_price)
             self.log_info(self.log, 1)
             exit(0)
         else:
@@ -102,6 +116,7 @@ class coin_test():
     def get_self_config(self):
         self.burst   = 0.01
         self.lever   = 10
+        self.each_order_mode = 1
 
     def gen_current_parameter(self):
         self.get_self_config()
@@ -137,11 +152,14 @@ class coin_test():
         self.blow_up()
         self.deal()
 
-        self.buy_long()
-        self.sell_short()
+        if self.prefer_mode > -1.0:
+            self.buy_long()
+        if self.prefer_mode < 1.0:
+            self.sell_short()
 
         self.log_info(self.log, 1)
         self.log = ""
+        self.prefer_mode = 0
         pass
 
 
@@ -153,8 +171,9 @@ if __name__ == "__main__":
     coin_name = "CETUS"
     price_json_file = "price_list.json"
     k_line_history = []
+    total_days = 30
     if 0: ## save_history_to_file
-        k_line_history = get_history_k_line(coin_name, "1m", int(4 * 24*60/100)) ##[new ... old]  2s/200min  15s/day
+        k_line_history = get_history_k_line(coin_name, "1m", int(total_days * 24*60/100)) ##[new ... old]  2s/200min  15s/day
         k_line_history.reverse()
         print(len(k_line_history))
         for i in k_line_history:
@@ -171,5 +190,5 @@ if __name__ == "__main__":
     coin = coin_test(coin_name, k_line_history[0:80])
     for market_piece in k_line_history[81:]:
         coin.run(market_piece)
-    print("finish: total: ",coin.total_money, "balance: ", coin.balance)
+    print(total_days,"days finish: total: ",coin.float_money, "balance: ", coin.balance)
     # pass

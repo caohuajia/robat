@@ -38,9 +38,9 @@ class coin_test():
         hold_str = " hold:{"
         for i in self.hold_list:
             if i["mode"] == 0: ## buy more
-                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.2f}".format((self.cur_price/i["price"]-1)*100*self.lever) + "% "
+                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}".format((self.cur_price/i["price"]-1)*100*self.lever) + "% "
             else:
-                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.2f}".format((1-self.cur_price/i["price"])*100*self.lever) + "% "
+                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}".format((1-self.cur_price/i["price"])*100*self.lever) + "% "
         hold_str += "}"
         return hold_str
 

@@ -89,7 +89,7 @@ class coin_test():
 
     def buy_long(self):
         if self.balance>0.1:
-            if self.price_can_trade(self.buy_long_price):
+            if self.buy_long_price > self.market_lowest:
                 trade_info = {"time":self.cur_ctime, "price":self.buy_long_price, "money":0.01, "stop_price":self.buy_long_stop, "mode":0}
                 self.balance -= 0.1
                 self.hold_list.append(trade_info)
@@ -98,7 +98,7 @@ class coin_test():
 
     def sell_short(self):
         if self.balance>0.1:
-            if self.price_can_trade(self.sell_short_price):
+            if self.sell_short_price < self.market_highest:
                 trade_info = {"time":self.cur_ctime, "price":self.sell_short_price, "money":0.01, "stop_price":self.sell_short_stop, "mode":1}
                 self.balance -=0.1
                 self.hold_list.append(trade_info)
@@ -108,7 +108,15 @@ class coin_test():
 
     def deal(self):
         for i in self.hold_list:
-            if self.price_can_trade(i["stop_price"]):
+            can_deal = 0
+            if i["mode"]: ## sell, stop need buy
+                if i["stop_price"] > self.market_lowest:
+                    can_deal = 1
+            else: ## buy, stop need sell
+                if i["stop_price"] < self.market_highest:
+                    can_deal = 1
+
+            if can_deal:
                 self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
                                              " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
                 self.total_money += 0.1 * self.gain * self.lever 
@@ -126,21 +134,23 @@ class coin_test():
 
         (self.newest_80_history_price).pop(0)
         (self.newest_80_history_price).append(self.get_current_price())
-        # ma5 = sum(self.newest_80_history_price[-5:])/5
-        # newest_10_history_price = self.newest_80_history_price[-10:]
-        # threshold = get_variance(newest_10_history_price)
-        # self.ma5_buy_long_price   = ma5 * (1 - (self.burst + threshold))
-        # self.ma5_sell_short_price = ma5 * (1 + (self.burst + threshold))
-        # self.ma5_buy_long_stop    = self.ma5_buy_long_price  * (1+(self.burst + 2 * threshold))
-        # self.ma5_sell_short_stop  = self.ma5_sell_short_price * (1-(self.burst + 2 * threshold))
 
-        self.one_day_before_average = sum(self.newest_80_history_price[-1499:-1380])/118
+        newest_5 = self.newest_80_history_price[-5:]
+        ma5 = sum(newest_5)/len(newest_5)
+        newest_10_history_price = self.newest_80_history_price[-8:]
+        threshold = get_variance(newest_10_history_price)
+        self.buy_long_price   = ma5 * (1 - (self.burst + 1 * threshold))
+        self.sell_short_price = ma5 * (1 + (self.burst + 1 * threshold))
+        self.buy_long_stop    = self.buy_long_price   * (1+self.gain)
+        self.sell_short_stop  = self.sell_short_price * (1-self.gain)
+
         # self.log += self.coin_name + " ma5: " + str(ma5) + " burst: " + str(self.burst) + " thold: " + "{:.5f}".format(threshold*100) + "% newest_10: " + str(newest_10_history_price) + "\n"
 
-        self.buy_long_price   = self.one_day_before_average * (1-self.burst - len(self.hold_list)*0.05)
-        self.sell_short_price = self.one_day_before_average * (1+self.burst - len(self.hold_list)*0.05)
-        self.buy_long_stop    = self.buy_long_price    * (1+self.gain)
-        self.sell_short_stop  = self.sell_short_price  * (1-self.gain)
+        # self.one_day_before_average = sum(self.newest_80_history_price[-1499:-1380])/118
+        # self.buy_long_price   = self.one_day_before_average * (1-self.burst - len(self.hold_list)*0.05)
+        # self.sell_short_price = self.one_day_before_average * (1+self.burst - len(self.hold_list)*0.05)
+        # self.buy_long_stop    = self.buy_long_price    * (1+self.gain)
+        # self.sell_short_stop  = self.sell_short_price  * (1-self.gain)
 
     def price_can_trade(self, price):
         highest = float(self.market_piece[2])
@@ -152,8 +162,8 @@ class coin_test():
         return 0
 
     def get_self_config(self):
-        self.burst   = 0.2
-        self.gain    = 0.1
+        self.burst   = 0.018
+        self.gain    = 0.012
         self.lever   = 10
         self.stable_slope    = 0.001
         self.each_order_mode = 1
@@ -161,6 +171,9 @@ class coin_test():
     def run(self, current_market):
         ## ["Sun Oct 13 20:26:00 2024", "0.21326", "0.21388", "0.21323", "0.21368", "6935", "69350", "14809.0594", "1"],
         self.market_piece = current_market
+        self.market_highest = float(self.market_piece[2])
+        self.market_lowest  = float(self.market_piece[3])
+
         self.cur_ctime = current_market[0]
         self.cur_price = float(current_market[1])
         self.gen_current_parameter()
@@ -168,14 +181,17 @@ class coin_test():
         self.blow_up()
         self.deal()
 
-        if abs(polyfit(self.newest_80_history_price[-10:],1)[0]) < self.stable_slope:
+        self.buy_long()
+        self.sell_short()
+
+        # if abs(polyfit(self.newest_80_history_price[-10:],1)[0]) < self.stable_slope:
             
-            if self.prefer_mode > -1.0:
-                if len(self.hold_list)<2:
-                    self.buy_long()
-            if self.prefer_mode < 1.0:
-                if len(self.hold_list)<2:
-                    self.sell_short()
+        #     if self.prefer_mode > -2.0:
+        #         if len(self.hold_list)<=6:
+        #             self.buy_long()
+        #     if self.prefer_mode < 2.0:
+        #         if len(self.hold_list)<=6:
+        #             self.sell_short()
 
         self.log_info(self.log, 1)
         self.log = ""
@@ -191,8 +207,8 @@ if __name__ == "__main__":
     coin_name = "CETUS"
     price_json_file = "price_list.json"
     k_line_history = []
-    total_days = 180
-    if 0: ## save_history_to_file
+    total_days = 90
+    if 1: ## save_history_to_file
         k_line_history = get_history_k_line(coin_name, "1m", int(total_days * 24*60/100)) ##[new ... old]  2s/200min  15s/day  1day=1440min
         k_line_history.reverse()
         print(len(k_line_history))

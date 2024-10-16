@@ -25,43 +25,38 @@ class Coin():
                 self.newest_80_history_price.append(float(end_price)) ##[new ... old]
         self.newest_80_history_price.reverse() ##[old ... new]
 
-    burst   = 0.01
-    money_u = 1
-    lever   = 10
-    benefit = 0.01
     def get_self_config(self):
         self.burst   = config_dict[self.coin_name]["burst"]
+        self.gain    = config_dict[self.coin_name]["gain"]
         self.money_u = config_dict[self.coin_name]["money_u"]
         self.lever   = config_dict[self.coin_name]["lever"]
-        self.benefit = self.burst
+        self.tdMode  = config_dict[self.coin_name]["tdMode"]
+        self.stable_slope    = 0.001
 
     def get_current_price(self):
         return float(get_current_swap_price(self.coin_name))
 
-    open_num = 0
-    ma5_buy_long_price   = 0
-    ma5_sell_short_price = 0
-    ma5_buy_long_stop    = 0
-    ma5_sell_short_stop  = 0
     def gen_current_parameter(self):
         self.get_self_config()
 
         (self.newest_80_history_price).pop(0)
         (self.newest_80_history_price).append(self.get_current_price())
         self.open_num = int(self.money_u // self.newest_80_history_price[-1])
-        ma5 = sum(self.newest_80_history_price[-5:])/5
-        newest_10_history_price = self.newest_80_history_price[-10:]
+
+        newest_5 = self.newest_80_history_price[-5:]
+        ma5 = sum(newest_5)/len(newest_5)
+        newest_10_history_price = self.newest_80_history_price[-8:]
         threshold = get_variance(newest_10_history_price)
-        self.ma5_buy_long_price   = ma5 * (1 - (self.burst + threshold))
-        self.ma5_sell_short_price = ma5 * (1 + (self.burst + threshold))
-        self.ma5_buy_long_stop    = self.ma5_buy_long_price  * (1+(self.burst + 2 * threshold))
-        self.ma5_sell_short_stop  = self.ma5_sell_short_price * (1-(self.burst + 2 * threshold))
+        self.buy_long_price   = ma5 * (1 - (self.burst + 1 * threshold))
+        self.sell_short_price = ma5 * (1 + (self.burst + 1 * threshold))
+        self.buy_long_stop    = self.buy_long_price   * (1+self.gain)
+        self.sell_short_stop  = self.sell_short_price * (1-self.gain)
 
         self.log += self.coin_name + " ma5: " + str(ma5) + " burst: " + str(self.burst) + " thold: " + "{:.5f}".format(threshold*100) + "% newest_10: " + str(newest_10_history_price) + "\n"
 
     def create_order(self, side, posSide, price, tp_px):
         result = tradeAPI.place_order(
-            tdMode="cross", ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
+            tdMode=self.tdMode, ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
             ccy   ="USDT",
             side  =side,   ## 开多：bug long   开空：sell short   平多：sell long   平空：bug short
             posSide=posSide, 
@@ -146,20 +141,20 @@ class Coin():
             self.log += self.coin_name + " order num > 6, not create order\n" 
         return open_order_id
 
-    ma5_buy_long_id  = ""
-    ma5_sell_short_id = ""
+    buy_long_id  = ""
+    sell_short_id = ""
     def run(self):
         self.gen_current_parameter()
-        self.ma5_buy_long_id   = self.order_maintain("buy", "long",   self.ma5_buy_long_price,   self.ma5_buy_long_stop,   self.ma5_buy_long_id )
-        self.ma5_sell_short_id = self.order_maintain("sell", "short", self.ma5_sell_short_price, self.ma5_sell_short_stop, self.ma5_sell_short_id)
+        self.buy_long_id   = self.order_maintain("buy", "long",   self.buy_long_price,   self.buy_long_stop,   self.buy_long_id )
+        self.sell_short_id = self.order_maintain("sell", "short", self.sell_short_price, self.sell_short_stop, self.sell_short_id)
         log_info(self.log)
         self.log = ""
         pass
 
 
     def cancel_open_order(self):
-        self.cancel_order(self.ma5_buy_long_id)
-        self.cancel_order(self.ma5_sell_short_id)
+        self.cancel_order(self.buy_long_id)
+        self.cancel_order(self.sell_short_id)
 
 
 if __name__ == "__main__":
@@ -174,7 +169,7 @@ if __name__ == "__main__":
     time_flag_per_minite(cur_ctime)
 
     while 1:
-        try:
+        # try:
             unfinish_order_list = get_unfinish_order()
             cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
 
@@ -185,10 +180,10 @@ if __name__ == "__main__":
             coin_list = config_dict.keys()
 
             time_flag_per_minite(cur_ctime)
-        except:
-            for coin in coin_obejcts.keys():
-                coin_obejcts[coin].cancel_open_order()
-            log_info(cur_ctime + " some exception\n")
-            break
+        # except:
+        #     for coin in coin_obejcts.keys():
+        #         coin_obejcts[coin].cancel_open_order()
+        #     log_info(cur_ctime + " some exception\n")
+        #     break
     exit(0)
 

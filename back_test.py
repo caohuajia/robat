@@ -59,7 +59,7 @@ class coin_test():
                 benefit_rate = (self.cur_price / float(i["price"]) - 1) * self.lever
                 self.float_money += 0.1 * benefit_rate
                 self.prefer_mode += benefit_rate
-                if self.each_order_mode:
+                if self.tdMode:
                     if benefit_rate < -1:
                         self.log += "[blow] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
                                         "{:.5f}".format(self.cur_price) + self.get_cur_hold() + " order blow up\n"
@@ -69,7 +69,7 @@ class coin_test():
                 benefit_rate = (1- self.cur_price / float(i["price"])) * self.lever
                 self.float_money += 0.1 * benefit_rate
                 self.prefer_mode -= benefit_rate
-                if self.each_order_mode:
+                if self.tdMode:
                     if benefit_rate < -1:
                         self.log += "[blow] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
                                         "{:.5f}".format(self.cur_price) + self.get_cur_hold() + " order blow up\n"
@@ -169,7 +169,7 @@ class coin_test():
             self.gain    = config_dict[self.coin_name]["gain"]
             self.lever   = config_dict[self.coin_name]["lever"]
             self.stable_slope    = 0.001
-            self.each_order_mode = config_dict[self.coin_name]["each_order_mode"]
+            self.tdMode = config_dict[self.coin_name]["tdMode"]
 
     def run(self, current_market):
         ## ["Sun Oct 13 20:26:00 2024", "0.21326", "0.21388", "0.21323", "0.21368", "6935", "69350", "14809.0594", "1"],

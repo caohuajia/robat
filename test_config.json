@@ -4,10 +4,10 @@
                       "gain"   :0.012,
                       "money_u":5,
                       "lever"  :10,
-                      "each_order_mode" : 1
+                      "tdMode" : "isolated"
                      }
     },
     {
-        "comment"   : "comment"
+        "comment"   : "cross/isolated"
     }
-    ]
+]

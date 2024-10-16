@@ -16,11 +16,12 @@ class coin_test():
         self.balance = 1
         self.current_market = []
 
-        self.newest_80_history_price = []
+        self.newest_history_price = []
         for i in range(1500): ## 可能偶尔返回不了100个历史
             begin_price = k_line_100_history[i][1]
-            self.newest_80_history_price.append(float(begin_price)) ##[new ... old]
-        self.newest_80_history_price.reverse() ##[old ... new]
+            self.newest_history_price.append(float(begin_price)) ##[new ... old]
+        self.newest_history_price.reverse() ##[old ... new]
+        self.newest_80_history_price = self.newest_history_price[-80:]
 
 
         with open("test.log", "w") as f:
@@ -76,6 +77,10 @@ class coin_test():
                         self.total_money -= 0.1
 
     def blow_up(self):
+        cur_slope = abs(polyfit(self.newest_80_history_price,1)[0])
+        variance  = get_variance(self.newest_80_history_price)
+        self.log += self.cur_ctime + " slope: " + "{:.7f}".format(cur_slope*100000) + " variance " + "{:.5f}".format(variance) + "\n"
+
         self.get_float_money()
         # self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
         if self.float_money < 0.01:
@@ -131,12 +136,13 @@ class coin_test():
     def gen_current_parameter(self):
         self.get_self_config()
 
-        (self.newest_80_history_price).pop(0)
-        (self.newest_80_history_price).append(self.get_current_price())
+        (self.newest_history_price).pop(0)
+        (self.newest_history_price).append(self.get_current_price())
 
-        newest_5 = self.newest_80_history_price[-5:]
+        self.newest_80_history_price = self.newest_history_price[-80:]
+        newest_5 = self.newest_history_price[-5:]
         ma5 = sum(newest_5)/len(newest_5)
-        newest_10_history_price = self.newest_80_history_price[-8:]
+        newest_10_history_price = self.newest_history_price[-8:]
         threshold = get_variance(newest_10_history_price)
         self.buy_long_price   = ma5 * (1 - (self.burst + 1 * threshold))
         self.sell_short_price = ma5 * (1 + (self.burst + 1 * threshold))
@@ -145,7 +151,7 @@ class coin_test():
 
         # self.log += self.coin_name + " ma5: " + str(ma5) + " burst: " + str(self.burst) + " thold: " + "{:.5f}".format(threshold*100) + "% newest_10: " + str(newest_10_history_price) + "\n"
 
-        # self.one_day_before_average = sum(self.newest_80_history_price[-1499:-1380])/len(self.newest_80_history_price[-1499:-1380])
+        # self.one_day_before_average = sum(self.newest_history_price[-1499:-1380])/len(self.newest_history_price[-1499:-1380])
         # self.buy_long_price   = self.one_day_before_average * (1-self.burst - len(self.hold_list)*0.05)
         # self.sell_short_price = self.one_day_before_average * (1+self.burst - len(self.hold_list)*0.05)
         # self.buy_long_stop    = self.buy_long_price    * (1+self.gain)
@@ -186,7 +192,7 @@ class coin_test():
         self.buy_long()
         self.sell_short()
 
-        # if abs(polyfit(self.newest_80_history_price[-10:],1)[0]) < self.stable_slope:
+        # if abs(polyfit(self.newest_history_price[-10:],1)[0]) < self.stable_slope:
             
         #     if self.prefer_mode > -1.0:
         #         if len(self.hold_list)<=3:

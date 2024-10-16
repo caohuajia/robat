@@ -146,7 +146,7 @@ class coin_test():
 
         # self.log += self.coin_name + " ma5: " + str(ma5) + " burst: " + str(self.burst) + " thold: " + "{:.5f}".format(threshold*100) + "% newest_10: " + str(newest_10_history_price) + "\n"
 
-        # self.one_day_before_average = sum(self.newest_80_history_price[-1499:-1380])/118
+        # self.one_day_before_average = sum(self.newest_80_history_price[-1499:-1380])/len(self.newest_80_history_price[-1499:-1380])
         # self.buy_long_price   = self.one_day_before_average * (1-self.burst - len(self.hold_list)*0.05)
         # self.sell_short_price = self.one_day_before_average * (1+self.burst - len(self.hold_list)*0.05)
         # self.buy_long_stop    = self.buy_long_price    * (1+self.gain)
@@ -186,11 +186,11 @@ class coin_test():
 
         # if abs(polyfit(self.newest_80_history_price[-10:],1)[0]) < self.stable_slope:
             
-        #     if self.prefer_mode > -2.0:
-        #         if len(self.hold_list)<=6:
+        #     if self.prefer_mode > -1.0:
+        #         if len(self.hold_list)<=3:
         #             self.buy_long()
-        #     if self.prefer_mode < 2.0:
-        #         if len(self.hold_list)<=6:
+        #     if self.prefer_mode < 1.0:
+        #         if len(self.hold_list)<=3:
         #             self.sell_short()
 
         self.log_info(self.log, 1)
@@ -207,7 +207,7 @@ if __name__ == "__main__":
     coin_name = "CETUS"
     price_json_file = "price_list.json"
     k_line_history = []
-    total_days = 90
+    total_days = 1 + 10
     if 1: ## save_history_to_file
         k_line_history = get_history_k_line(coin_name, "1m", int(total_days * 24*60/100)) ##[new ... old]  2s/200min  15s/day  1day=1440min
         k_line_history.reverse()

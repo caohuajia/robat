@@ -4,7 +4,6 @@ from main import *
 class coin_test():
     global config_dict
     log = ""
-    coin_name = ""
 
     def __init__(self, coin_name, k_line_100_history):
         self.coin_name = coin_name
@@ -169,7 +168,7 @@ class coin_test():
             self.gain    = config_dict[self.coin_name]["gain"]
             self.lever   = config_dict[self.coin_name]["lever"]
             self.stable_slope    = 0.001
-            self.tdMode = config_dict[self.coin_name]["tdMode"]
+            self.tdMode = 1 if config_dict[self.coin_name]["tdMode"] == "isolated" else 0
 
     def run(self, current_market):
         ## ["Sun Oct 13 20:26:00 2024", "0.21326", "0.21388", "0.21323", "0.21368", "6935", "69350", "14809.0594", "1"],
@@ -207,10 +206,10 @@ class coin_test():
 
 
 if __name__ == "__main__":
-    coin_name = "CETUS"
+    coin_name = "PEPE"
     price_json_file = "price_list.json"
     k_line_history = []
-    total_days = 1 + 10
+    total_days = 1 + 90
     if 0: ## save_history_to_file
         k_line_history = get_history_k_line(coin_name, "1m", int(total_days * 24*60/100)) ##[new ... old]  2s/200min  15s/day  1day=1440min
         k_line_history.reverse()

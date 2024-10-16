@@ -169,7 +169,7 @@ if __name__ == "__main__":
     time_flag_per_minite(cur_ctime)
 
     while 1:
-        # try:
+        try:
             unfinish_order_list = get_unfinish_order()
             cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
 
@@ -180,10 +180,10 @@ if __name__ == "__main__":
             coin_list = config_dict.keys()
 
             time_flag_per_minite(cur_ctime)
-        # except:
-        #     for coin in coin_obejcts.keys():
-        #         coin_obejcts[coin].cancel_open_order()
-        #     log_info(cur_ctime + " some exception\n")
-        #     break
+        except:
+            for coin in coin_obejcts.keys():
+                coin_obejcts[coin].cancel_open_order()
+            log_info(cur_ctime + " some exception\n")
+            break
     exit(0)
 

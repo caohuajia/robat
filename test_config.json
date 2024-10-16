@@ -5,7 +5,13 @@
                       "money_u":5,
                       "lever"  :10,
                       "tdMode" : "isolated"
-                     }
+                     },
+        "PEPE"      :{"burst" :0.01,
+                     "gain"   :0.013,
+                     "money_u":15,
+                     "lever"  :10,
+                     "tdMode" : "isolated"
+                    }
     },
     {
         "comment"   : "cross/isolated"

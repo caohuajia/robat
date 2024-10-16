@@ -162,11 +162,14 @@ class coin_test():
         return 0
 
     def get_self_config(self):
-        self.burst   = 0.018
-        self.gain    = 0.012
-        self.lever   = 10
-        self.stable_slope    = 0.001
-        self.each_order_mode = 1
+        with open("test_config.json", "r") as f:
+            config_dict = json.load(f)[0]
+
+            self.burst   = config_dict[self.coin_name]["burst"]
+            self.gain    = config_dict[self.coin_name]["gain"]
+            self.lever   = config_dict[self.coin_name]["lever"]
+            self.stable_slope    = 0.001
+            self.each_order_mode = config_dict[self.coin_name]["each_order_mode"]
 
     def run(self, current_market):
         ## ["Sun Oct 13 20:26:00 2024", "0.21326", "0.21388", "0.21323", "0.21368", "6935", "69350", "14809.0594", "1"],
@@ -208,7 +211,7 @@ if __name__ == "__main__":
     price_json_file = "price_list.json"
     k_line_history = []
     total_days = 1 + 10
-    if 1: ## save_history_to_file
+    if 0: ## save_history_to_file
         k_line_history = get_history_k_line(coin_name, "1m", int(total_days * 24*60/100)) ##[new ... old]  2s/200min  15s/day  1day=1440min
         k_line_history.reverse()
         print(len(k_line_history))

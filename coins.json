@@ -3,12 +3,14 @@
         "CETUS"     :{"burst"  :0.018,
                       "gain"   :0.012,
                       "money_u":5,
+                      "value"  :10,
                       "lever"  :10,
                       "tdMode" : "isolated"
                      },
         "PEPE"      :{"burst" :0.01,
                      "gain"   :0.013,
                      "money_u":15,
+                     "value"  :10000000,
                      "lever"  :10,
                      "tdMode" : "isolated"
                     }

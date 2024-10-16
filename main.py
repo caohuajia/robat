@@ -29,6 +29,7 @@ class Coin():
         self.burst   = config_dict[self.coin_name]["burst"]
         self.gain    = config_dict[self.coin_name]["gain"]
         self.money_u = config_dict[self.coin_name]["money_u"]
+        self.value   = config_dict[self.coin_name]["value"]
         self.lever   = config_dict[self.coin_name]["lever"]
         self.tdMode  = config_dict[self.coin_name]["tdMode"]
         self.stable_slope    = 0.001
@@ -41,7 +42,7 @@ class Coin():
 
         (self.newest_80_history_price).pop(0)
         (self.newest_80_history_price).append(self.get_current_price())
-        self.open_num = int(self.money_u // self.newest_80_history_price[-1])
+        self.open_num = int(self.money_u * self.lever // (self.newest_80_history_price[-1] * self.value))
 
         newest_5 = self.newest_80_history_price[-5:]
         ma5 = sum(newest_5)/len(newest_5)

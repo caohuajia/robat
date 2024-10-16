@@ -11,6 +11,8 @@ class Coin():
         self.coin_name = coin_name
 
         self.get_self_config()
+        set_leverage(self.coin_name,self.lever)
+
 
         ##  timestap         begin      highest    lowest     end                                      complete
         ##['1728006240000', '0.15846', '0.15859', '0.15785', '0.15785', '4480', '44800', '7090.9912', '0']

@@ -7,11 +7,19 @@
                       "tdMode" : "isolated"
                      },
         "PEPE"      :{"burst" :0.01,
-                     "gain"   :0.013,
-                     "money_u":15,
-                     "lever"  :10,
-                     "tdMode" : "isolated"
+                      "gain"   :0.013,
+                      "money_u":15,
+                      "lever"  :10,
+                      "tdMode" : "isolated"
+                    },
+        "DOGE"      :{"burst"  :0.009,
+                      "gain"   :0.016,
+                      "money_u":15,
+                      "value"  :1000,
+                      "lever"  :10,
+                      "tdMode" : "isolated"
                     }
+
     },
     {
         "comment"   : "cross/isolated"

@@ -206,10 +206,10 @@ class coin_test():
 
 
 if __name__ == "__main__":
-    coin_name = "PEPE"
+    coin_name = "DOGE"
     price_json_file = "price_list.json"
     k_line_history = []
-    total_days = 1 + 90
+    total_days = 1 + 100
     if 0: ## save_history_to_file
         k_line_history = get_history_k_line(coin_name, "1m", int(total_days * 24*60/100)) ##[new ... old]  2s/200min  15s/day  1day=1440min
         k_line_history.reverse()

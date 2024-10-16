@@ -158,5 +158,5 @@ def set_leverage(coin, lever):
     accountAPI.set_leverage(
         instId = coin,
         lever  = str(lever),
-        mgnMode= "cross"
+        mgnMode= "isolated"
     )

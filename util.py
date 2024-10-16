@@ -69,3 +69,8 @@ def get_variance(ls):
         percent = i/newest
         percent_list.append(percent)
     return np.var(percent_list) * 100 / 2
+
+## return [x^n, ... , x^1, x^0]
+def polyfit(ls, n):
+    x = range(len(ls))
+    return np.polyfit(x, ls, n)

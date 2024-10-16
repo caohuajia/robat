@@ -18,6 +18,7 @@ def get_valid_data(result):
         print("交易产品id不存在")
     else:
         print("返回数据无效")
+        print(str(result))
 
 def get_second_from_ms(ts):
     return ts[:-3]

@@ -79,7 +79,7 @@ class coin_test():
     def blow_up(self):
         cur_slope = abs(polyfit(self.newest_80_history_price,1)[0])
         variance  = get_variance(self.newest_80_history_price)
-        self.log += self.cur_ctime + " slope: " + "{:.7f}".format(cur_slope*100000) + " variance " + "{:.5f}".format(variance) + "\n"
+        # self.log += self.cur_ctime + " slope: " + "{:.7f}".format(cur_slope*100000) + " variance " + "{:.5f}".format(variance) + "\n"
 
         self.get_float_money()
         # self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
@@ -111,20 +111,28 @@ class coin_test():
 
 
     def deal(self):
+        self.buy_long_num   = 0
+        self.sell_short_num = 0
         for i in self.hold_list:
             can_deal = 0
             if i["mode"]: ## sell, stop need buy
                 if i["stop_price"] > self.market_lowest:
+                    delivery_benefit = 1-i["stop_price"]/i["price"]
                     can_deal = 1
+                else:
+                    self.sell_short_num += 1
             else: ## buy, stop need sell
                 if i["stop_price"] < self.market_highest:
+                    delivery_benefit = i["stop_price"]/i["price"]-1
                     can_deal = 1
+                else:
+                    self.buy_long_num += 1
 
             if can_deal:
                 self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
                                              " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
-                self.total_money += 0.1 * self.gain * self.lever 
-                self.balance     += 0.1 + 0.1 * self.gain * self.lever 
+                self.total_money += 0.1 * delivery_benefit * self.lever 
+                self.balance     += 0.1 + 0.1 * delivery_benefit * self.lever 
                 self.hold_list.remove(i)
             else:
                 pass
@@ -189,8 +197,10 @@ class coin_test():
         self.blow_up()
         self.deal()
 
-        self.buy_long()
-        self.sell_short()
+        if self.buy_long_num <= 2:
+            self.buy_long()
+        if self.sell_short_num <=2:
+            self.sell_short()
 
         # if abs(polyfit(self.newest_history_price[-10:],1)[0]) < self.stable_slope:
             
@@ -212,10 +222,10 @@ class coin_test():
 
 
 if __name__ == "__main__":
-    coin_name = "DOGE"
+    coin_name = "CETUS"
     price_json_file = "price_list.json"
     k_line_history = []
-    total_days = 1 + 100
+    total_days = 1 + 10
     if 0: ## save_history_to_file
         k_line_history = get_history_k_line(coin_name, "1m", int(total_days * 24*60/100)) ##[new ... old]  2s/200min  15s/day  1day=1440min
         k_line_history.reverse()

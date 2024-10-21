@@ -182,8 +182,10 @@ class coin_test():
         # self.ma60_gap = min(5*abs(self.cur_price/self.ma60-1) , 0.2)
         self.ma60_gap = 0
 
-        global btc_change
-        global eth_change
+        # global btc_change
+        # global eth_change
+        btc_change = 0
+        eth_change = 0
 
         self.buy_long_price   = self.one_day_before_average * (1-(self.burst + self.ma60_gap + self.buy_long_num   * 0.15 + btc_change + eth_change))
         self.sell_short_price = self.one_day_before_average * (1+(self.burst + self.ma60_gap + self.sell_short_num * 0.15 + btc_change + eth_change))
@@ -301,8 +303,11 @@ if __name__ == "__main__":
     btc_change_list = get_change_list("BTC")
     eth_change_list = get_change_list("ETH")
 
+    test_one = 1
+
     for one_coin in all_coins:
-        one_coin = "CETUS"
+        if test_one:
+            one_coin = "CETUS"
         with open("./data/15m/31days/" + one_coin + "_price.json", "r") as f:
             k_line_history = json.load(f)
 
@@ -318,7 +323,8 @@ if __name__ == "__main__":
             all_result += "{:<10}:  total: {:.3f}  balance: {:.3f}  blow num: {}\n".format(one_coin, coin.float_money, coin.balance, coin.blow_up_num)
             # print(total_days,"days " + one_coin + " finish: total: ",coin.float_money, "balance: ", coin.balance)
             total_gain += coin.float_money - 1
-        break
+        if test_one:
+            break
     all_result += "total gain: {}".format(total_gain)
     print("total gain: ",total_gain)
     with open("all_test_log", "w") as f:

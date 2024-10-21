@@ -1,7 +1,7 @@
 [
     {
-        "CETUS"     :{"burst"  :0.1,
-                      "gain"   :0.1,
+        "CETUS"     :{"burst"  :0.01,
+                      "gain"   :0.01,
                       "money_u":5,
                       "lever"  :10,
                       "tdMode" : "isolated"

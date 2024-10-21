@@ -17,11 +17,11 @@ class coin_test():
         self.current_market = []
 
         self.newest_history_price = []
-        for i in range(1500): ## 可能偶尔返回不了100个历史
+        for i in range(len(k_line_100_history)): ## 可能偶尔返回不了100个历史
             begin_price = k_line_100_history[i][1]
             self.newest_history_price.append(float(begin_price)) ##[new ... old]
         self.newest_history_price.reverse() ##[old ... new]
-        self.newest_80_history_price = self.newest_history_price[-80:]
+        # self.newest_80_history_price = self.newest_history_price[-80:]
 
 
         with open("test.log", "w") as f:
@@ -35,6 +35,12 @@ class coin_test():
                 pass
             else:
                 f.write("\n")
+
+    def prob(self):
+        if "Sep 20 22:15" in self.cur_ctime:
+            self.log += "[prob] " + self.cur_ctime + " cur_price: {:.5f}".format(self.cur_price) + " bef_24h: {:.5f}".format(self.one_day_before_average) + \
+                                " rise: {:.0f}%".format(self.cur_price/self.one_day_before_average*100) + " sell short: {:.5f}".format(self.sell_short_price) + \
+                                " need: {:.1f}%".format((self.sell_short_price/self.cur_price-1)*100) + " ma60 {:.5f}".format(self.ma60) + "\n"
 
     def get_cur_hold(self):
         hold_str = " p_m: " + "{:.1f}".format(self.prefer_mode) + " hold:{"
@@ -77,8 +83,8 @@ class coin_test():
                         self.total_money -= 0.1
 
     def blow_up(self):
-        cur_slope = abs(polyfit(self.newest_80_history_price,1)[0])
-        variance  = get_variance(self.newest_80_history_price)
+        # cur_slope = abs(polyfit(self.newest_80_history_price,1)[0])
+        # variance  = get_variance(self.newest_80_history_price)
         # self.log += self.cur_ctime + " slope: " + "{:.7f}".format(cur_slope*100000) + " variance " + "{:.5f}".format(variance) + "\n"
 
         self.get_float_money()
@@ -92,11 +98,7 @@ class coin_test():
             pass
 
     def buy_long(self):
-        if "Oct 13 08:0" in self.cur_ctime and 0:
-            self.log += "[prob] " + self.cur_ctime + " cur_price:" + "{:.5f}".format(self.cur_price) + " bef_24h: {:.5f}".format(self.one_day_before_average) + \
-                                " down: {:.0f}%".format(self.cur_price/self.one_day_before_average*100) + " bug long: " + "{:.5f}".format(self.buy_long_price) + \
-                                " need: {:.1f}%".format((self.cur_price/self.buy_long_price-1)*100) + " ma60 {:.5f}".format(self.ma60) + "\n"
-
+        self.prob()
         if self.balance>0.1:
             if self.buy_long_price > self.market_lowest:
                 trade_info = {"time":self.cur_ctime, "price":self.buy_long_price, "money":0.01, "stop_price":self.buy_long_stop, "mode":0}
@@ -106,13 +108,7 @@ class coin_test():
                                              " bug long: " +  "{:.5f}".format(self.buy_long_price) + "->|" "{:.5f}".format(self.buy_long_stop) + "\n"
 
     def sell_short(self):
-        if "Sep 20 15:2" in self.cur_ctime:
-            self.log += "[prob] " + self.cur_ctime + " cur_price: {:.5f}".format(self.cur_price) + " bef_24h: {:.5f}".format(self.one_day_before_average) + \
-                                " rise: {:.0f}%".format(self.cur_price/self.one_day_before_average*100) + " sell short: {:.5f}".format(self.sell_short_price) + \
-                                " need: {:.1f}%".format((self.sell_short_price/self.cur_price-1)*100) + " ma60 {:.5f}".format(self.ma60) + "\n"
-
-
-
+        self.prob()
         if self.balance>0.1:
             if self.sell_short_price < self.market_highest:
                 trade_info = {"time":self.cur_ctime, "price":self.sell_short_price, "money":0.01, "stop_price":self.sell_short_stop, "mode":1}
@@ -155,26 +151,17 @@ class coin_test():
         (self.newest_history_price).pop(0)
         (self.newest_history_price).append(self.cur_price)
 
-        if 0:
-            self.newest_80_history_price = self.newest_history_price[-80:]
-            newest_5 = self.newest_history_price[-5:]
-            ma5 = sum(newest_5)/len(newest_5)
-            newest_10_history_price = self.newest_history_price[-8:]
-            threshold = get_variance(newest_10_history_price)
-            self.buy_long_price   = ma5 * (1 - (self.burst + 1 * threshold))
-            self.sell_short_price = ma5 * (1 + (self.burst + 1 * threshold))
-            self.buy_long_stop    = self.buy_long_price   * (1+self.gain)
-            self.sell_short_stop  = self.sell_short_price * (1-self.gain)
-        else:
-            # self.log += self.coin_name + " ma5: " + str(ma5) + " burst: " + str(self.burst) + " thold: " + "{:.5f}".format(threshold*100) + "% newest_10: " + str(newest_10_history_price) + "\n"
+        newest_60 =  self.newest_history_price[-60:]
+        self.ma60 = sum(newest_60)/len(newest_60)
+        one_day_before_piece = self.newest_history_price[-4*24-1:-4*24+1]
+        self.one_day_before_average = sum(one_day_before_piece)/len(one_day_before_piece)
 
-            newest_60 =  self.newest_history_price[-60:]
-            self.ma60 = sum(newest_60)/len(newest_60)
-            self.one_day_before_average = sum(self.newest_history_price[-1499:-1380])/len(self.newest_history_price[-1499:-1380])
-            self.buy_long_price   = self.one_day_before_average * (1-(self.burst + 10*(abs(self.ma60/self.cur_price)-1) + self.buy_long_num   * 0.1))
-            self.sell_short_price = self.one_day_before_average * (1+(self.burst + 10*(abs(self.cur_price/self.ma60)-1) + self.sell_short_num * 0.1))
-            self.buy_long_stop    = self.buy_long_price    * (1+self.gain)
-            self.sell_short_stop  = self.sell_short_price  * (1-self.gain)
+        ma60_gap = min(abs(self.cur_price/self.ma60)-1 , 0.2)
+
+        self.buy_long_price   = self.one_day_before_average * (1-(self.burst + ma60_gap + self.buy_long_num   * 0.1))
+        self.sell_short_price = self.one_day_before_average * (1+(self.burst + ma60_gap + self.sell_short_num * 0.1))
+        self.buy_long_stop    = self.buy_long_price    * (1+self.gain)
+        self.sell_short_stop  = self.sell_short_price  * (1-self.gain)
 
     def price_can_trade(self, price):
         highest = float(self.market_piece[2])
@@ -239,7 +226,7 @@ if __name__ == "__main__":
     k_line_history = []
     total_days = 1 + 30
     if 0: ## save_history_to_file
-        k_line_history = get_history_k_line(coin_name, "1m", int(total_days * 24*60/100)) ##[new ... old]  2s/200min  15s/day  1day=1440min
+        k_line_history = get_history_k_line(coin_name, "15m", int(total_days * 24*60/100/15)) ##[new ... old]  2s/200min  15s/day  1day=1440min
         k_line_history.reverse()
         print(len(k_line_history))
         for i in k_line_history:
@@ -253,8 +240,8 @@ if __name__ == "__main__":
             k_line_history = json.load(f)
 
 
-    coin = coin_test(coin_name, k_line_history[0:1500])
-    for market_piece in k_line_history[1501:]:
+    coin = coin_test(coin_name, k_line_history[0:96])
+    for market_piece in k_line_history[96:]:
         coin.run(market_piece)
     coin.finish()
     print(total_days,"days " + coin_name + " finish: total: ",coin.float_money, "balance: ", coin.balance)

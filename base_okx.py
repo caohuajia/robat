@@ -160,3 +160,16 @@ def set_leverage(coin, lever):
         lever  = str(lever),
         mgnMode= "isolated"
     )
+
+def get_basic_info():
+    result = PublicDataAPI.get_instruments(instType="SWAP")
+    data = get_valid_data(result)
+    return data
+
+def get_all_swap_list():
+    swap_list = []
+    for i in get_basic_info():
+        if "-USDT-SWAP" in i["instId"]:
+            coin_name = i["instId"].split("-")[0]
+            swap_list.append(coin_name)
+    return swap_list

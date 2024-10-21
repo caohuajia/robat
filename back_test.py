@@ -154,8 +154,8 @@ class coin_test():
                 if self.price_can_trade(self.ma60):
                     self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
                                                 " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
-                    self.total_money += 0.1 * self.gain * self.lever 
-                    self.balance     += 0.1 + 0.1 * self.gain * self.lever 
+                    self.total_money += 0.1 * delivery_benefit * self.lever 
+                    self.balance     += 0.1 + 0.1 * delivery_benefit * self.lever 
                     self.hold_list.remove(i)
             else:
                 pass

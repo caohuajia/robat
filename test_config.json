@@ -12,9 +12,9 @@
                       "lever"  :10,
                       "tdMode" : "isolated"
                     },
-        "DOGE"      :{"burst"  :0.009,
-                      "gain"   :0.016,
-                      "money_u":15,
+        "DOGE"      :{"burst"  :0.2,
+                      "gain"   :0.1,
+                      "money_u":5,
                       "value"  :1000,
                       "lever"  :10,
                       "tdMode" : "isolated"

@@ -37,7 +37,7 @@ class coin_test():
                 f.write("\n")
 
     def prob(self):
-        if "Sep 20 22:15" in self.cur_ctime:
+        if "Sep 30 05" in self.cur_ctime and 0:
             self.log += "[prob] " + self.cur_ctime + " cur_price: {:.5f}".format(self.cur_price) + " bef_24h: {:.5f}".format(self.one_day_before_average) + \
                                 " rise: {:.0f}%".format(self.cur_price/self.one_day_before_average*100) + " sell short: {:.5f}".format(self.sell_short_price) + \
                                 " need: {:.1f}%".format((self.sell_short_price/self.cur_price-1)*100) + " ma60 {:.5f}".format(self.ma60) + "\n"
@@ -101,21 +101,28 @@ class coin_test():
         self.prob()
         if self.balance>0.1:
             if self.buy_long_price > self.market_lowest:
-                trade_info = {"time":self.cur_ctime, "price":self.buy_long_price, "money":0.01, "stop_price":self.buy_long_stop, "mode":0}
-                self.balance -= 0.1
-                self.hold_list.append(trade_info)
-                self.log += "[buy ] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
-                                             " bug long: " +  "{:.5f}".format(self.buy_long_price) + "->|" "{:.5f}".format(self.buy_long_stop) + "\n"
+                if self.price_can_trade(self.ma60):
+                    trade_info = {"time":self.cur_ctime, "price":self.cur_price, "money":0.01, "stop_price":self.buy_long_stop, "mode":0}
+                    self.balance -= 0.1
+                    self.hold_list.append(trade_info)
+                    self.log += "[buy ] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
+                                                " bug long: " +  "{:.5f}".format(self.buy_long_price) + "->|" "{:.5f}".format(self.buy_long_stop) + "\n"
 
     def sell_short(self):
         self.prob()
         if self.balance>0.1:
             if self.sell_short_price < self.market_highest:
-                trade_info = {"time":self.cur_ctime, "price":self.sell_short_price, "money":0.01, "stop_price":self.sell_short_stop, "mode":1}
-                self.balance -=0.1
-                self.hold_list.append(trade_info)
-                self.log += "[sell] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
-                                             " sell short: " +  "{:.5f}".format(self.sell_short_price) + "->|" "{:.5f}".format(self.sell_short_stop) + "\n"
+                if self.price_can_trade(self.ma60):
+                    trade_info = {"time":self.cur_ctime, "price":self.cur_price, "money":0.01, "stop_price":self.sell_short_stop, "mode":1}
+                    self.balance -=0.1
+                    self.hold_list.append(trade_info)
+                    self.log += "[sell] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
+                                                " sell short: " +  "{:.5f}".format(self.sell_short_price) + "->|" "{:.5f}".format(self.sell_short_stop) + "\n"
+                    # self.log += " one_day before: {:.5f}".format(self.one_day_before_average) + " {:.5f}".format(self.cur_price/self.one_day_before_average) +\
+                    #             " ma60: {:.5f}".format(self.ma60) + " {:.5f}".format(self.ma60/self.cur_price) +\
+                    #             " cur_high: {:.5f}".format(self.market_highest) + " cur_low: {:.5f}".format(self.market_lowest) + \
+                    #             " burst: {:.5f}".format((1+(self.burst + self.ma60_gap + self.sell_short_num * 0.1))) + \
+                    #             "\n"
 
 
     def deal(self):
@@ -124,24 +131,32 @@ class coin_test():
         for i in self.hold_list:
             can_deal = 0
             if i["mode"]: ## sell, stop need buy
-                if i["stop_price"] > self.market_lowest:
-                    delivery_benefit = 1-i["stop_price"]/i["price"]
-                    can_deal = 1
+                if self.price_can_trade(self.ma60):
+                    delivery_benefit = 1-self.market_lowest/i["price"]
+                    if delivery_benefit > self.gain:
+                        can_deal = 1
+                    else:
+                        self.sell_short_num += 1
                 else:
                     self.sell_short_num += 1
+
             else: ## buy, stop need sell
-                if i["stop_price"] < self.market_highest:
-                    delivery_benefit = i["stop_price"]/i["price"]-1
-                    can_deal = 1
+                if self.price_can_trade(self.ma60):
+                    delivery_benefit = self.market_highest/i["price"]-1
+                    if delivery_benefit > self.gain:
+                        can_deal = 1
+                    else:
+                        self.buy_long_num += 1
                 else:
-                    self.buy_long_num += 1
+                    self.sell_short_num += 1
 
             if can_deal:
-                self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
-                                             " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
-                self.total_money += 0.1 * delivery_benefit * self.lever 
-                self.balance     += 0.1 + 0.1 * delivery_benefit * self.lever 
-                self.hold_list.remove(i)
+                if self.price_can_trade(self.ma60):
+                    self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
+                                                " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
+                    self.total_money += 0.1 * self.gain * self.lever 
+                    self.balance     += 0.1 + 0.1 * self.gain * self.lever 
+                    self.hold_list.remove(i)
             else:
                 pass
 
@@ -156,10 +171,11 @@ class coin_test():
         one_day_before_piece = self.newest_history_price[-4*24-1:-4*24+1]
         self.one_day_before_average = sum(one_day_before_piece)/len(one_day_before_piece)
 
-        ma60_gap = min(abs(self.cur_price/self.ma60)-1 , 0.2)
+        # self.ma60_gap = min(5*abs(self.cur_price/self.ma60-1) , 0.2)
+        self.ma60_gap = 0
 
-        self.buy_long_price   = self.one_day_before_average * (1-(self.burst + ma60_gap + self.buy_long_num   * 0.1))
-        self.sell_short_price = self.one_day_before_average * (1+(self.burst + ma60_gap + self.sell_short_num * 0.1))
+        self.buy_long_price   = self.one_day_before_average * (1-(self.burst + self.ma60_gap + self.buy_long_num   * 0.15))
+        self.sell_short_price = self.one_day_before_average * (1+(self.burst + self.ma60_gap + self.sell_short_num * 0.15))
         self.buy_long_stop    = self.buy_long_price    * (1+self.gain)
         self.sell_short_stop  = self.sell_short_price  * (1-self.gain)
 

@@ -105,7 +105,7 @@ class coin_test():
         if self.balance>0.1:
             if self.buy_long_price > self.market_lowest:
                 if self.price_can_trade(self.ma60):
-                    trade_info = {"time":self.cur_ctime, "price":self.cur_price, "money":0.01, "stop_price":self.buy_long_stop, "mode":0}
+                    trade_info = {"time":self.cur_ctime, "price":self.ma60, "money":0.01, "stop_price":self.buy_long_stop, "mode":0}
                     self.balance -= 0.1
                     self.hold_list.append(trade_info)
                     self.log += "[buy ] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
@@ -122,7 +122,7 @@ class coin_test():
         if self.balance>0.1:
             if self.sell_short_price < self.market_highest:
                 if self.price_can_trade(self.ma60):
-                    trade_info = {"time":self.cur_ctime, "price":self.cur_price, "money":0.01, "stop_price":self.sell_short_stop, "mode":1}
+                    trade_info = {"time":self.cur_ctime, "price":self.ma60, "money":0.01, "stop_price":self.sell_short_stop, "mode":1}
                     self.balance -=0.1
                     self.hold_list.append(trade_info)
                     self.log += "[sell] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
@@ -187,8 +187,8 @@ class coin_test():
         btc_change = 0
         eth_change = 0
 
-        self.buy_long_price   = self.one_day_before_average * (1-(self.burst + self.ma60_gap + self.buy_long_num   * 0.15 + btc_change + eth_change))
-        self.sell_short_price = self.one_day_before_average * (1+(self.burst + self.ma60_gap + self.sell_short_num * 0.15 + btc_change + eth_change))
+        self.buy_long_price   = self.one_day_before_average * (1-(self.burst + self.ma60_gap + self.buy_long_num   * 0 + btc_change + eth_change))
+        self.sell_short_price = self.one_day_before_average * (1+(self.burst + self.ma60_gap + self.sell_short_num * 0 + btc_change + eth_change))
         self.buy_long_stop    = self.buy_long_price    * (1+self.gain)
         self.sell_short_stop  = self.sell_short_price  * (1-self.gain)
 
@@ -231,9 +231,9 @@ class coin_test():
 
         self.gen_current_parameter()
 
-        if self.buy_long_num <= 2:
+        if self.buy_long_num <= 20:
             self.buy_long()
-        if self.sell_short_num <=2:
+        if self.sell_short_num <=20:
             self.sell_short()
 
         # if abs(polyfit(self.newest_history_price[-10:],1)[0]) < self.stable_slope:
@@ -307,7 +307,7 @@ if __name__ == "__main__":
 
     for one_coin in all_coins:
         if test_one:
-            one_coin = "CETUS"
+            one_coin = "BTC"
         with open("./data/15m/31days/" + one_coin + "_price.json", "r") as f:
             k_line_history = json.load(f)
 

@@ -60,26 +60,34 @@ class coin_base():
         for i in self.hold_list:
             if i["mode"] == 0: ## buy more
                 benefit_rate = (self.cur_price / float(i["price"]) - 1) * self.lever
-                self.float_money += 0.1 * benefit_rate
                 self.prefer_mode += benefit_rate
-                if self.tdMode:
-                    if benefit_rate < -1:
+                if self.tdMode: ## 1:isolate  0:cross
+                    blow_price   = float(i["price"]) * (1- (1/self.lever))
+                    if self.market_lowest <= blow_price:
                         self.log += "[blow] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
                                         "{:.5f}".format(self.cur_price) + self.get_cur_hold() + " order blow up\n"
                         self.hold_list.remove(i)
                         self.total_money -= 0.1
+                        self.float_money -= 0.1
                         self.blow_up_num += 1
-            else:
+                    else:
+                        self.float_money += 0.1 * benefit_rate
+
+            else:  ## sell short
                 benefit_rate = (1- self.cur_price / float(i["price"])) * self.lever
-                self.float_money += 0.1 * benefit_rate
                 self.prefer_mode -= benefit_rate
-                if self.tdMode:
-                    if benefit_rate < -1:
+                if self.tdMode: ## 1:isolate  0:cross
+                    blow_price   = float(i["price"]) * (1+ (1/self.lever))
+                    if self.market_highest >= blow_price:
                         self.log += "[blow] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
                                         "{:.5f}".format(self.cur_price) + self.get_cur_hold() + " order blow up\n"
                         self.hold_list.remove(i)
                         self.total_money -= 0.1
+                        self.float_money -= 0.1
                         self.blow_up_num += 1
+                    else:
+                        self.float_money += 0.1 * benefit_rate
+
 
     def blow_up(self):
         # cur_slope = abs(polyfit(self.newest_80_history_price,1)[0])

@@ -36,8 +36,8 @@ class coin_base():
     def prob(self):
         if "Sep 30 05" in self.cur_ctime and 0:
             self.log += "[prob] " + self.cur_ctime + " cur_price: {:.5f}".format(self.cur_price) + " bef_24h: {:.5f}".format(self.refer) + \
-                                " rise: {:.0f}%".format(self.cur_price/self.refer*100) + " sell short: {:.5f}".format(self.sell_short_price) + \
-                                " need: {:.1f}%".format((self.sell_short_price/self.cur_price-1)*100) + " m_stable {:.5f}".format(self.m_stable) + "\n"
+                                " rise: {:.0f}%".format(self.cur_price/self.refer*100) + " sell short: {:.5f}".format(self.sell_short_water_line) + \
+                                " need: {:.1f}%".format((self.sell_short_water_line/self.cur_price-1)*100) + " m_stable {:.5f}".format(self.m_stable) + "\n"
 
     def get_cur_hold(self):
         hold_str = " p_m: " + "{:.1f}".format(self.prefer_mode) + " hold:{"
@@ -107,13 +107,13 @@ class coin_base():
     def buy_long(self):
         self.prob()
         if self.balance>0.1:
-            if self.buy_long_price > self.market_lowest:
+            if self.buy_long_water_line > self.market_lowest:
                 if self.price_can_trade(self.m_stable):
-                    trade_info = {"time":self.cur_ctime, "price":self.m_stable, "money":0.01, "stop_price":self.buy_long_stop, "mode":0}
+                    trade_info = {"time":self.cur_ctime, "price":self.m_stable, "money":0.01, "mode":0}
                     self.balance -= 0.1
                     self.hold_list.append(trade_info)
-                    self.log += "[buy ] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
-                                                " bug long: " +  "{:.5f}".format(self.buy_long_price) + "->|" "{:.5f}".format(self.buy_long_stop) + "\n"
+                    self.log += "[buy ] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
+                                "{:.5f}".format(self.m_stable)   + self.get_cur_hold() + " bug long: " +  "{:.5f}".format(self.buy_long_water_line) + "\n"
                     self.log += " refer: {:.5f}".format(self.refer) + " {:.5f}".format(self.cur_price/self.refer) +\
                                 " m_stable: {:.5f}".format(self.m_stable) + " {:.5f}".format(self.m_stable/self.cur_price) +\
                                 " cur_high: {:.5f}".format(self.market_highest) + " cur_low: {:.5f}".format(self.market_lowest) + \
@@ -124,13 +124,13 @@ class coin_base():
     def sell_short(self):
         self.prob()
         if self.balance>0.1:
-            if self.sell_short_price < self.market_highest:
+            if self.sell_short_water_line < self.market_highest:
                 if self.price_can_trade(self.m_stable):
-                    trade_info = {"time":self.cur_ctime, "price":self.m_stable, "money":0.01, "stop_price":self.sell_short_stop, "mode":1}
+                    trade_info = {"time":self.cur_ctime, "price":self.m_stable, "money":0.01, "mode":1}
                     self.balance -=0.1
                     self.hold_list.append(trade_info)
-                    self.log += "[sell] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() +\
-                                                " sell short: " +  "{:.5f}".format(self.sell_short_price) + "->|" "{:.5f}".format(self.sell_short_stop) + "\n"
+                    self.log += "[sell] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
+                                "{:.5f}".format(self.m_stable) + self.get_cur_hold() + " sell short: " +  "{:.5f}".format(self.m_stable) + "\n"
                     self.log += " refer: {:.5f}".format(self.refer) + " {:.5f}".format(self.cur_price/self.refer) +\
                                 " m_stable: {:.5f}".format(self.m_stable) + " {:.5f}".format(self.m_stable/self.cur_price) +\
                                 " cur_high: {:.5f}".format(self.market_highest) + " cur_low: {:.5f}".format(self.market_lowest) + \
@@ -167,7 +167,7 @@ class coin_base():
             if can_deal:
                 if self.price_can_trade(self.m_stable):
                     self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
-                                                " deal: " + "{:.5f}".format(i["stop_price"]) + "\n"
+                                                " deal: " + "{:.5f}".format(i["price"]) + "|-> " + "{:.5f}".format(self.m_stable) + "\n"
                     self.total_money += 0.1 * delivery_benefit * self.lever 
                     self.balance     += 0.1 + 0.1 * delivery_benefit * self.lever 
                     self.hold_list.remove(i)
@@ -198,10 +198,10 @@ class coin_base():
         self.btc_change = 0
         self.eth_change = 0
 
-        self.buy_long_price   = self.refer * (1-(self.burst + self.m_stable_gap + self.buy_long_num   * 0 + self.btc_change + self.eth_change))
-        self.sell_short_price = self.refer * (1+(self.burst + self.m_stable_gap + self.sell_short_num * 0 + self.btc_change + self.eth_change))
-        self.buy_long_stop    = self.buy_long_price    * (1+self.gain)
-        self.sell_short_stop  = self.sell_short_price  * (1-self.gain)
+        self.buy_long_water_line   = self.refer * (1-(self.burst + self.m_stable_gap + self.buy_long_num   * 0 + self.btc_change + self.eth_change))
+        self.sell_short_water_line = self.refer * (1+(self.burst + self.m_stable_gap + self.sell_short_num * 0 + self.btc_change + self.eth_change))
+        # self.buy_long_stop    = self.buy_long_water_line    * (1+self.gain)
+        # self.sell_short_stop  = self.sell_short_water_line  * (1-self.gain)
 
     def price_can_trade(self, price):
         highest = float(self.market_piece[2])
@@ -242,9 +242,9 @@ class coin_base():
 
         self.gen_current_parameter()
 
-        if self.buy_long_num <= 2:
+        if self.buy_long_num < 1:
             self.buy_long()
-        if self.sell_short_num <=2:
+        if self.sell_short_num < 1:
             self.sell_short()
 
         # if abs(polyfit(self.newest_history_price[-10:],1)[0]) < self.stable_slope:

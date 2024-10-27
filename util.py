@@ -2,7 +2,7 @@ import json
 import time
 import numpy as np
 
-log_file = "run.log"
+log_file = "./log/run.log"
 def log_info(log, keep_cur_line=0):
     with open(log_file, "a+") as f:
         f.write(log)

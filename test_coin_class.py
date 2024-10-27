@@ -269,7 +269,7 @@ class coin_1m(coin_base):
         newest_n =  self.newest_history_price[n:]
         self.m_stable = sum(newest_n)/len(newest_n)
 
-        refer_before = self.newest_history_price[-60*1-1:-60*1+1] ## 1h before
+        refer_before = self.newest_history_price[-60*24*1-20:-60*24*1+20] ## 24h before
         self.refer = sum(refer_before)/len(refer_before)
 
 

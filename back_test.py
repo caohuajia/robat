@@ -27,7 +27,7 @@ def get_change_list(coin):
 if __name__ == "__main__":
 
     total_days = 1 + 30
-    interval = "15m"
+    interval = "1m"
     test_one = 1
     test_coin = "CETUS"
     download_data = 0
@@ -66,16 +66,23 @@ if __name__ == "__main__":
         with open("./data/"+interval+"/"+str(total_days)+"days/" + one_coin + "_price.json", "r") as f:
             k_line_history = json.load(f)
             if interval == "15m":
-                coin = coin_15m(one_coin, k_line_history[0:96])
+                offset = 96 ## 96 * 15 = 24h
+                coin = coin_15m(one_coin, k_line_history[0:offset])
+                remain_k_line_history_piece = k_line_history[offset:]
+                remain_num = len(remain_k_line_history_piece)
+                for i in range(remain_num):
+                    btc_change = btc_change_list[i]
+                    eth_change = btc_change_list[i]
+                    coin.run(remain_k_line_history_piece[i])
             else:
-                coin = coin_1m(one_coin, k_line_history[0:96])
-            remain_k_line_history_piece = k_line_history[96:]
-            remain_num = len(remain_k_line_history_piece)
-            offset = 96
-            for i in range(remain_num):
-                btc_change = btc_change_list[i]
-                eth_change = btc_change_list[i]
-                coin.run(remain_k_line_history_piece[i])
+                offset = 1440  ## 1440min = 24h
+                coin = coin_1m(one_coin, k_line_history[0:offset])
+                remain_k_line_history_piece = k_line_history[offset:]
+                remain_num = len(remain_k_line_history_piece)
+                for i in range(remain_num):
+                    btc_change = btc_change_list[i]
+                    eth_change = btc_change_list[i]
+                    coin.run(remain_k_line_history_piece[i])
             coin.finish()
             all_result += "{:<10}:  total: {:.3f}  balance: {:.3f}  blow num: {}\n".format(one_coin, coin.float_money, coin.balance, coin.blow_up_num)
             # print(total_days,"days " + one_coin + " finish: total: ",coin.float_money, "balance: ", coin.balance)

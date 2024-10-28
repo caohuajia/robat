@@ -16,16 +16,29 @@ class Coin():
 
         ##  timestap         begin      highest    lowest     end                                      complete
         ##['1728006240000', '0.15846', '0.15859', '0.15785', '0.15785', '4480', '44800', '7090.9912', '0']
-        k_line_100_history = get_k_line(self.coin_name, "1m") ##[new ... old]
+        history_1m_k_line_100 = get_k_line(self.coin_name, "1m") ##[new ... old]
 
-        self.newest_80_history_price = []
-        for i in range(80): ## 可能偶尔返回不了100个历史
-            if 0: ##k_line_100_history[i][-1] == "0":
+        self.newest_1m_100_history_price = []
+        for i in range(98): ## 可能偶尔返回不了100个历史
+            if 0: ##history_1m_k_line_100[i][-1] == "0":
                 continue ## newest does not finish
             else:
-                end_price = k_line_100_history[i][4]
-                self.newest_80_history_price.append(float(end_price)) ##[new ... old]
-        self.newest_80_history_price.reverse() ##[old ... new]
+                end_price_1m  = float(history_1m_k_line_100[i][4])
+                self.newest_1m_100_history_price.append(end_price_1m) ##[new ... old]
+        self.newest_1m_100_history_price.reverse() ##[old ... new]
+
+    def update_newest_15m_100_history(self):
+
+        ## ['1729861200000', '0.14621', '0.14662', '0.14578', '0.14656', '33498', '334980', '48981.5551', '1']
+        history_15m_k_line_100 = get_k_line(self.coin_name, "15m") ##[new ... old]
+        self.newest_15m_100_history_price = []
+        for i in range(98): ## 可能偶尔返回不了100个历史
+            if i==0: ##history_1m_k_line_100[i][-1] == "0":
+                continue ## newest does not finish
+            else:
+                end_price_15m = float(history_15m_k_line_100[i][4])
+                self.newest_15m_100_history_price.append(end_price_15m) ##[new ... old]
+        self.newest_15m_100_history_price.reverse() ##[old ... new]
 
     def get_self_config(self):
         self.burst   = config_dict[self.coin_name]["burst"]
@@ -33,71 +46,72 @@ class Coin():
         self.money_u = config_dict[self.coin_name]["money_u"]
         self.value   = config_dict[self.coin_name]["value"]
         self.lever   = config_dict[self.coin_name]["lever"]
+        self.max_num = config_dict[self.coin_name]["max_num"]
         self.tdMode  = config_dict[self.coin_name]["tdMode"]
-        self.stable_slope    = 0.001
 
     def get_current_price(self):
         return float(get_current_swap_price(self.coin_name))
 
+    def get_15m_ma60(self):
+        self.update_newest_15m_100_history()
+
+        n = -60
+        newest_n =  self.newest_15m_100_history_price[n:]
+        self.m_stable = sum(newest_n)/len(newest_n)
+
+        refer_before = self.newest_15m_100_history_price[-4*24-1:-4*24+1]
+        self.refer = sum(refer_before)/len(refer_before)
+
     def gen_current_parameter(self):
         self.get_self_config()
 
-        (self.newest_80_history_price).pop(0)
-        (self.newest_80_history_price).append(self.get_current_price())
-        self.open_num = int(self.money_u * self.lever // (self.newest_80_history_price[-1] * self.value))
+        # if self.flag_15m:
+        self.get_15m_ma60()
 
-        newest_5 = self.newest_80_history_price[-5:]
-        ma5 = sum(newest_5)/len(newest_5)
-        newest_10_history_price = self.newest_80_history_price[-8:]
-        threshold = get_variance(newest_10_history_price)
-        self.buy_long_price   = ma5 * (1 - (self.burst + 1 * threshold))
-        self.sell_short_price = ma5 * (1 + (self.burst + 1 * threshold))
-        self.buy_long_stop    = self.buy_long_price   * (1+self.gain)
-        self.sell_short_stop  = self.sell_short_price * (1-self.gain)
+        self.buy_long_water_line   = self.refer * (1-(self.burst))
+        self.sell_short_water_line = self.refer * (1+(self.burst))
 
-        self.log += self.coin_name + " ma5: " + str(ma5) + " burst: " + str(self.burst) + " thold: " + "{:.5f}".format(threshold*100) + "% newest_10: " + str(newest_10_history_price) + "\n"
+        self.log += "[{}] ".format(cur_ctime) + self.coin_name + " ma60: {:.5f}".format(self.m_stable) + " refer: {:.5f}".format(self.refer) + " burst: " + str(self.burst) + \
+                    " buy long water line: {:.5f}".format(self.buy_long_water_line) + \
+                    " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
+                    " newest_10: " + str(self.newest_15m_100_history_price[-10:]) + "\n"
 
-    def create_order(self, side, posSide, price, tp_px):
-        result = tradeAPI.place_order(
+    def create_order(self, side, posSide, price):
+        result = tradeAPI.place_algo_order(
             tdMode=self.tdMode, ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
             ccy   ="USDT",
             side  =side,   ## 开多：bug long   开空：sell short   平多：sell long   平空：bug short
             posSide=posSide, 
             ordType="limit", ## 限价：limit 市价：market
             sz     =str(self.open_num), ## 委托数量
-            px     =price,   ## 委托价格 
-            # attachAlgoOrds=1,
-            tpTriggerPx=tp_px, ## 止盈价格
-            tpOrdPx    =tp_px,
-            # tpOrdKind  ="limit",
-            clOrdId="",  ## 自定义订单id
+
+            triggerPx = price, ## 触发价格 
+            orderPx   = price, ## 委托价格 
             instId =self.coin_name+"-USDT-SWAP"
         )
+
         if result["code"] == "0":
             data = result["data"][0]
-            order_id = data["ordId"]
+            order_id = data["algoId"]
             self.log += "["+cur_ctime + "] " + self.coin_name + " id:" + order_id + " " + side + " " + posSide + " create_success: " + \
-                "price : " + str(price) + " ->| " + str(tp_px) + "\n"
+                "price : " + str(price) + "\n"
             return order_id
         else:
             self.log += "["+cur_ctime + "] " + "create_order_fail: " + str(result) + " open_price: " + str(price) + " num: " + str(self.open_num) + "\n"
             return ""
 
-    def modify_order(self, order_id, price, tp_px):
-        result = tradeAPI.amend_order(
-            newPx  =price,   ## 委托价格 
-            ordId  =order_id,  
-            # attachAlgoOrds=1,
-            newTpTriggerPx=tp_px,
-            newTpOrdPx    =tp_px,
-            # newTpOrdOx    ="limit",
-            instId =self.coin_name+"-USDT-SWAP"
+    def modify_order(self, order_id, price):
+        result = tradeAPI.amend_algo_order(
+            newTriggerPx =price,   ## 触发价格 
+            newOrdPx     =price,   ## 委托价格 
+            algoId       =order_id,  
+            instId       =self.coin_name+"-USDT-SWAP"
         )
         if result["code"] == "0":
             data = result["data"][0]
-            order_id = data["ordId"]
+            order_id = data["algoId"]
             self.log += "["+cur_ctime + "] " + self.coin_name + " id:" + order_id + " " + " modify_success: " + \
-                "price : " + price + " ->| " + tp_px + "\n"
+                "price : " + price + "\n"
             return order_id
         else: ## modify fail, cancel order
             self.cancel_order(order_id)
@@ -106,50 +120,54 @@ class Coin():
             return ""
 
     def cancel_order(self, order_id):
-        result = tradeAPI.cancel_order(
+        result = tradeAPI.cancel_algo_order(
             ordId  =order_id,  
             instId =self.coin_name+"-USDT-SWAP"
         )
         if result["code"] == "0":
-            data = result["data"][0]
-            cl_ord_id = data["clOrdId"]
+            # data = result["data"][0]
+            # cl_ord_id = data["clOrdId"]
             self.log += cur_ctime + " " +  self.coin_name + " cancel order : " + "orderid: " + order_id + "\n"
         else:
             self.log += cur_ctime + " " +  self.coin_name + " cancel fail: " + "orderid: " + str(result) + "\n"
 
-    unfinish_order_num = 0
-    def order_maintain(self, side, posSide, open_price, tp_px, old_order_id):
+    def order_maintain(self, side, posSide, open_price, old_order_id):
         global unfinish_order_list
         unfinish_id = []
         for i in unfinish_order_list:
             if (coin+"-USDT-SWAP") == i["instId"]:
                 unfinish_id.append(i["ordId"])
 
-
+        self.unfinish_order_num = len(unfinish_id)
+        
         open_price = "{:.9f}".format(open_price)
-        tp_px      = "{:.9f}".format(tp_px)
 
         ## modify
         if old_order_id != "":
             if old_order_id in unfinish_id:  ## modify
-                modify_order_id = self.modify_order(old_order_id, open_price, tp_px)
+                modify_order_id = self.modify_order(old_order_id, open_price)
                 return modify_order_id
             else:  ## unknown, modify fail, means deal. So does not return, buy a new one
                 self.log +=  "["+cur_ctime + "] id:" + old_order_id + " modify fail, unfinish: " + str(unfinish_id) + "\n"
 
         ## buy
-        if self.unfinish_order_num <= 6:
-            open_order_id = self.create_order(side, posSide, open_price, tp_px)
+        if self.unfinish_order_num < self.max_num:
+            open_order_id = self.create_order(side, posSide, open_price)
         else:
             self.log += self.coin_name + " order num > 6, not create order\n" 
         return open_order_id
 
     buy_long_id  = ""
     sell_short_id = ""
-    def run(self):
+    def run(self, flag_15m = 0): ## 0:1m  1:15m
+        self.flag_15m = flag_15m
         self.gen_current_parameter()
-        self.buy_long_id   = self.order_maintain("buy", "long",   self.buy_long_price,   self.buy_long_stop,   self.buy_long_id )
-        self.sell_short_id = self.order_maintain("sell", "short", self.sell_short_price, self.sell_short_stop, self.sell_short_id)
+        if self.m_stable <= self.buy_long_water_line:
+            self.buy_long_id   = self.order_maintain("buy", "long",   self.m_stable, self.buy_long_id )
+
+        if self.m_stable >= self.sell_short_water_line:
+            self.sell_short_id = self.order_maintain("sell", "short", self.m_stable, self.sell_short_id)
+
         log_info(self.log)
         self.log = ""
         pass
@@ -169,20 +187,18 @@ if __name__ == "__main__":
     for coin_name in coin_list: ## TODO add/rm coin
         coin_obejcts[coin_name] = Coin(coin_name)
 
-    time_flag_per_minite(cur_ctime)
-
     while 1:
         try:
+            config_dict = get_config()
+
             unfinish_order_list = get_unfinish_order()
             cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
 
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].run()
 
-            config_dict = get_config()
-            coin_list = config_dict.keys()
-
             time_flag_per_minite(cur_ctime)
+
         except:
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].cancel_open_order()

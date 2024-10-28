@@ -47,15 +47,21 @@ def price_can_trade(price, k_history_piece):
 
 
 def get_config():
-    with open("coins.json", "r") as f:
+    with open("./config/coins.json", "r") as f:
         config = json.load(f)[0]
     return config
 
-def time_flag_per_minite(cur_ctime):
+def time_flag_per_minite(cur_ctime, flag_15m = 1):
     cur_clock_str = cur_ctime.split(" ")[-2]
     cur_sec = cur_clock_str[-2:]
     cur_min = cur_clock_str[-5:-3]
     cur_sec_int = int(cur_sec)
+    cur_min_int = int(cur_min)
+
+    if flag_15m:
+        wait_min = 15 - cur_min_int%15 -1
+        time.sleep(wait_min * 60)
+
     time.sleep(60 - cur_sec_int)
 
     if cur_min == "14" or cur_min == "29" or cur_min == "44" or cur_min == "59":

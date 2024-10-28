@@ -1,15 +1,17 @@
 [
     {
-        "CETUS"     :{"burst"  :0.01,
-                      "gain"   :0.01,
+        "CETUS"     :{"burst"  :0.02,
+                      "gain"   :0.02,
                       "money_u":5,
                       "lever"  :10,
+                      "max_num":8,
                       "tdMode" : "isolated"
                      },
         "PEPE"      :{"burst" :0.01,
                       "gain"   :0.013,
                       "money_u":15,
                       "lever"  :10,
+                      "max_num":2,
                       "tdMode" : "isolated"
                     },
         "DOGE"      :{"burst"  :0.2,
@@ -17,6 +19,7 @@
                       "money_u":5,
                       "value"  :1000,
                       "lever"  :10,
+                      "max_num":2,
                       "tdMode" : "isolated"
                     }
 

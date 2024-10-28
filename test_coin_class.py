@@ -34,18 +34,20 @@ class coin_base():
                 f.write("\n")
 
     def prob(self):
-        if "Sep 30 05" in self.cur_ctime and 0:
-            self.log += "[prob] " + self.cur_ctime + " cur_price: {:.5f}".format(self.cur_price) + " bef_24h: {:.5f}".format(self.refer) + \
-                                " rise: {:.0f}%".format(self.cur_price/self.refer*100) + " sell short: {:.5f}".format(self.sell_short_water_line) + \
-                                " need: {:.1f}%".format((self.sell_short_water_line/self.cur_price-1)*100) + " m_stable {:.5f}".format(self.m_stable) + "\n"
+        if ("Sep 30 19:" in self.cur_ctime  or\
+            "Sep 30 20:" in self.cur_ctime ) and 0:
+            self.log += "[prob] " + self.cur_ctime + " cur_price: {:.5f}".format(self.market_lowest) + "-{:.5f}".format(self.market_highest) + " bef_24h: {:.5f}".format(self.refer) + \
+                                " rise: {:.0f}%".format(self.cur_price/self.refer*100) + " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
+                                " need: {:.1f}%".format((self.sell_short_water_line/self.cur_price-1)*100) + " m_stable {:.5f}".format(self.m_stable) + \
+                                " hold:" + self.get_cur_hold() + "\n"
 
     def get_cur_hold(self):
         hold_str = " p_m: " + "{:.1f}".format(self.prefer_mode) + " hold:{"
         for i in self.hold_list:
             if i["mode"] == 0: ## buy more
-                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}".format((self.cur_price/i["price"]-1)*100*self.lever) + "% "
+                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}%".format((self.cur_price/i["price"]-1)*100*self.lever) + " {:.3f}%; ".format((i["gain"]*100))
             else:
-                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}".format((1-self.cur_price/i["price"])*100*self.lever) + "% "
+                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}%".format((1-self.cur_price/i["price"])*100*self.lever) + " {:.3f}%; ".format((i["gain"]*100))
         hold_str += "}"
         return hold_str
 
@@ -109,11 +111,13 @@ class coin_base():
         if self.balance>0.1:
             if self.buy_long_water_line > self.market_lowest:
                 if self.price_can_trade(self.m_stable):
-                    trade_info = {"time":self.cur_ctime, "price":self.m_stable, "money":0.01, "mode":0}
+                    trade_info = {"time":self.cur_ctime, "price":self.m_stable, "money":0.01, "gain":1-(self.refer/self.m_stable), "mode":0}
                     self.balance -= 0.1
                     self.hold_list.append(trade_info)
                     self.log += "[buy ] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
-                                "{:.5f}".format(self.m_stable)   + self.get_cur_hold() + " bug long: " +  "{:.5f}".format(self.buy_long_water_line) + "\n"
+                                "{:.5f}".format(self.m_stable)   + self.get_cur_hold() + \
+                                " bug long: " +  "{:.5f}".format(self.m_stable) + " |-X " + "{:.5f}".format(self.m_stable*(1-(1/self.lever))) + \
+                                " gain: " + "{:.3f}".format((self.m_stable/self.refer-1)*100) + "%\n"
                     self.log += " refer: {:.5f}".format(self.refer) + " {:.5f}".format(self.cur_price/self.refer) +\
                                 " m_stable: {:.5f}".format(self.m_stable) + " {:.5f}".format(self.m_stable/self.cur_price) +\
                                 " cur_high: {:.5f}".format(self.market_highest) + " cur_low: {:.5f}".format(self.market_lowest) + \
@@ -126,11 +130,13 @@ class coin_base():
         if self.balance>0.1:
             if self.sell_short_water_line < self.market_highest:
                 if self.price_can_trade(self.m_stable):
-                    trade_info = {"time":self.cur_ctime, "price":self.m_stable, "money":0.01, "mode":1}
+                    trade_info = {"time":self.cur_ctime, "price":self.m_stable, "money":0.01, "gain":(self.m_stable/self.refer)-1, "mode":1}
                     self.balance -=0.1
                     self.hold_list.append(trade_info)
                     self.log += "[sell] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
-                                "{:.5f}".format(self.m_stable) + self.get_cur_hold() + " sell short: " +  "{:.5f}".format(self.m_stable) + "\n"
+                                "{:.5f}".format(self.m_stable) + self.get_cur_hold() + \
+                                " sell short: " +  "{:.5f}".format(self.m_stable) + " |-X " + "{:.5f}".format(self.m_stable*(1+(1/self.lever))) + \
+                                " gain: " + "{:.3f}".format((self.m_stable/self.refer-1)*100) + "%\n"
                     self.log += " refer: {:.5f}".format(self.refer) + " {:.5f}".format(self.cur_price/self.refer) +\
                                 " m_stable: {:.5f}".format(self.m_stable) + " {:.5f}".format(self.m_stable/self.cur_price) +\
                                 " cur_high: {:.5f}".format(self.market_highest) + " cur_low: {:.5f}".format(self.market_lowest) + \
@@ -148,6 +154,7 @@ class coin_base():
                 if self.price_can_trade(self.m_stable):
                     delivery_benefit = 1-self.market_lowest/i["price"]
                     if delivery_benefit > self.gain:
+                    # if delivery_benefit > max(i["gain"]/1, self.gain):
                         can_deal = 1
                     else:
                         self.sell_short_num += 1
@@ -158,16 +165,17 @@ class coin_base():
                 if self.price_can_trade(self.m_stable):
                     delivery_benefit = self.market_highest/i["price"]-1
                     if delivery_benefit > self.gain:
+                    # if delivery_benefit > max(i["gain"]/1, self.gain): ##self.gain:
                         can_deal = 1
                     else:
                         self.buy_long_num += 1
                 else:
-                    self.sell_short_num += 1
+                    self.buy_long_num += 1
 
             if can_deal:
                 if self.price_can_trade(self.m_stable):
                     self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
-                                                " deal: " + "{:.5f}".format(i["price"]) + "|-> " + "{:.5f}".format(self.m_stable) + "\n"
+                                                " deal: " + "{:.5f}".format(i["price"]) + "|-> " + "{:.5f}".format(self.m_stable) + " {:.3f}".format(delivery_benefit*self.lever*100) +"%\n"
                     self.total_money += 0.1 * delivery_benefit * self.lever 
                     self.balance     += 0.1 + 0.1 * delivery_benefit * self.lever 
                     self.hold_list.remove(i)
@@ -225,6 +233,7 @@ class coin_base():
             self.burst   = config_dict["CETUS"]["burst"]
             self.gain    = config_dict["CETUS"]["gain"]
             self.lever   = config_dict["CETUS"]["lever"]
+            self.max_num = config_dict["CETUS"]["max_num"]
             self.stable_slope    = 0.001
             self.tdMode = 1 if config_dict["CETUS"]["tdMode"] == "isolated" else 0
 
@@ -242,9 +251,9 @@ class coin_base():
 
         self.gen_current_parameter()
 
-        if self.buy_long_num < 1:
+        if self.buy_long_num < self.max_num:
             self.buy_long()
-        if self.sell_short_num < 1:
+        if self.sell_short_num < self.max_num:
             self.sell_short()
 
         # if abs(polyfit(self.newest_history_price[-10:],1)[0]) < self.stable_slope:

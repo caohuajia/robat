@@ -27,7 +27,7 @@ def get_change_list(coin):
 if __name__ == "__main__":
 
     total_days = 1 + 30
-    interval = "1m"
+    interval = "15m"
     test_one = 1
     test_coin = "CETUS"
     download_data = 0
@@ -49,7 +49,7 @@ if __name__ == "__main__":
             with open(file_name, "w") as f:
                 dumps = json.dumps(k_line_history)
                 f.write(dumps)
-            print("finish {}/{}".format(c, coin_num))
+            print("finish {}/{}".format(c+1, coin_num))
             time.sleep(2)
         exit(0)
 
@@ -71,8 +71,10 @@ if __name__ == "__main__":
                 remain_k_line_history_piece = k_line_history[offset:]
                 remain_num = len(remain_k_line_history_piece)
                 for i in range(remain_num):
-                    btc_change = btc_change_list[i]
-                    eth_change = btc_change_list[i]
+                    # btc_change = btc_change_list[i]
+                    # eth_change = btc_change_list[i]                    
+                    btc_change = 0
+                    eth_change = 0
                     coin.run(remain_k_line_history_piece[i])
             else:
                 offset = 1440  ## 1440min = 24h

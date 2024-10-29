@@ -68,10 +68,12 @@ class Coin():
         # if self.flag_15m:
         self.get_15m_ma60()
 
+        self.open_num = int(self.money_u * self.lever // (self.m_stable * self.value))
         self.buy_long_water_line   = self.refer * (1-(self.burst))
         self.sell_short_water_line = self.refer * (1+(self.burst))
 
         self.log += "[{}] ".format(cur_ctime) + self.coin_name + " ma60: {:.5f}".format(self.m_stable) + " refer: {:.5f}".format(self.refer) + " burst: " + str(self.burst) + \
+                    " open_num: {:.5f}".format(self.open_num) + \
                     " buy long water line: {:.5f}".format(self.buy_long_water_line) + \
                     " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
                     " newest_10: " + str(self.newest_15m_100_history_price[-10:]) + "\n"
@@ -82,7 +84,7 @@ class Coin():
             ccy   ="USDT",
             side  =side,   ## 开多：bug long   开空：sell short   平多：sell long   平空：bug short
             posSide=posSide, 
-            ordType="limit", ## 限价：limit 市价：market
+            ordType="trigger", ## 限价：limit 市价：market
             sz     =str(self.open_num), ## 委托数量
 
             triggerPx = price, ## 触发价格 
@@ -101,35 +103,40 @@ class Coin():
             return ""
 
     def modify_order(self, order_id, price):
-        result = tradeAPI.amend_algo_order(
-            newTriggerPx =price,   ## 触发价格 
-            newOrdPx     =price,   ## 委托价格 
-            algoId       =order_id,  
-            instId       =self.coin_name+"-USDT-SWAP"
-        )
-        if result["code"] == "0":
-            data = result["data"][0]
-            order_id = data["algoId"]
-            self.log += "["+cur_ctime + "] " + self.coin_name + " id:" + order_id + " " + " modify_success: " + \
-                "price : " + price + "\n"
-            return order_id
-        else: ## modify fail, cancel order
-            self.cancel_order(order_id)
-            self.log += cur_ctime + " " + "modify_order_fail: " + str(result) + "\n"
-            print(result)
-            return ""
+        # result = tradeAPI.amend_algo_order(
+        #     newTriggerPx =price,   ## 触发价格 
+        #     newOrdPx     =price,   ## 委托价格 
+        #     algoId       =order_id,  
+        #     instId       =self.coin_name+"-USDT-SWAP"
+        # )
+        # if result["code"] == "0":
+        #     data = result["data"][0]
+        #     order_id = data["algoId"]
+        #     self.log += "["+cur_ctime + "] " + self.coin_name + " id:" + order_id + " " + " modify_success: " + \
+        #         "price : " + price + "\n"
+        #     return order_id
+        # else: ## modify fail, cancel order
+        #     self.cancel_order(order_id)
+        #     self.log += cur_ctime + " " + "modify_order_fail: " + str(result) + "\n"
+        #     print(result)
+        #     return ""
+
+        self.cancel_order(order_id)
+        return ""
+
 
     def cancel_order(self, order_id):
         result = tradeAPI.cancel_algo_order(
-            ordId  =order_id,  
-            instId =self.coin_name+"-USDT-SWAP"
+            params= [{ "algoId":order_id, "instId" : self.coin_name+"-USDT-SWAP"}]
         )
         if result["code"] == "0":
             # data = result["data"][0]
             # cl_ord_id = data["clOrdId"]
             self.log += cur_ctime + " " +  self.coin_name + " cancel order : " + "orderid: " + order_id + "\n"
+            return 1
         else:
             self.log += cur_ctime + " " +  self.coin_name + " cancel fail: " + "orderid: " + str(result) + "\n"
+            return 0
 
     def order_maintain(self, side, posSide, open_price, old_order_id):
         global unfinish_order_list
@@ -144,11 +151,14 @@ class Coin():
 
         ## modify
         if old_order_id != "":
-            if old_order_id in unfinish_id:  ## modify
-                modify_order_id = self.modify_order(old_order_id, open_price)
+            # if old_order_id in unfinish_id:  ## modify  why use this list, i forget
+            modify_order_id = self.modify_order(old_order_id, open_price)
+            if modify_order_id == "": ## modify fail
+                pass
+            else:
                 return modify_order_id
-            else:  ## unknown, modify fail, means deal. So does not return, buy a new one
-                self.log +=  "["+cur_ctime + "] id:" + old_order_id + " modify fail, unfinish: " + str(unfinish_id) + "\n"
+            # else:  ## unknown, modify fail, means deal. So does not return, buy a new one
+            #     self.log +=  "["+cur_ctime + "] id:" + old_order_id + " modify fail, unfinish: " + str(unfinish_id) + "\n"
 
         ## buy
         if self.unfinish_order_num < self.max_num:
@@ -164,9 +174,14 @@ class Coin():
         self.gen_current_parameter()
         if self.m_stable <= self.buy_long_water_line:
             self.buy_long_id   = self.order_maintain("buy", "long",   self.m_stable, self.buy_long_id )
+        else:
+            self.log += " ma60 does not catch buy long water line   {:3f}%\n".format((self.m_stable / self.buy_long_water_line -1)*100)
 
-        if self.m_stable >= self.sell_short_water_line:
+        if self.m_stable >= self.sell_short_water_line or 1:
             self.sell_short_id = self.order_maintain("sell", "short", self.m_stable, self.sell_short_id)
+        else:
+            self.log += " ma60 does not catch sell short water line {:3f}%\n".format((self.sell_short_water_line / self.m_stable -1)*100)
+
 
         log_info(self.log)
         self.log = ""
@@ -197,9 +212,11 @@ if __name__ == "__main__":
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].run()
 
+            print("sleep")
             time_flag_per_minite(cur_ctime)
 
         except:
+            print("kill and cancel order")
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].cancel_open_order()
             log_info(cur_ctime + " some exception\n")

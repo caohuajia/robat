@@ -7,8 +7,15 @@
                       "lever"  :10,
                       "max_num":8,
                       "tdMode" : "isolated"
-                    }
-
+                    },
+        "DOGE"      :{"burst"  :0.06,
+                      "gain"   :0.06,
+                      "money_u":17,
+                      "value"  :1000,
+                      "lever"  :10,
+                      "max_num":8,
+                      "tdMode" : "isolated"
+                  }
     },
     {
         "comment"   : "cross/isolated",
@@ -19,13 +26,14 @@
                       "lever"  :10,
                       "tdMode" : "isolated"
                     },
-        "DOGE"     :{"burst"  :0.009,
-                    "gain"   :0.016,
-                    "money_u":15,
+        "DOGE"      :{"burst"  :0.06,
+                    "gain"   :0.06,
+                    "money_u":1,
                     "value"  :1000,
                     "lever"  :10,
+                    "max_num":8,
                     "tdMode" : "isolated"
-                    }
+                  }
     }
     
 ]

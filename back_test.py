@@ -29,7 +29,7 @@ if __name__ == "__main__":
     total_days = 1 + 30
     interval = "15m"
     test_one = 1
-    test_coin = "CETUS"
+    test_coin = "DOGE"
     download_data = 0
 
 

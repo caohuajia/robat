@@ -33,7 +33,7 @@ class Coin():
         history_15m_k_line_100 = get_k_line(self.coin_name, "15m") ##[new ... old]
         self.newest_15m_100_history_price = []
         for i in range(98): ## 可能偶尔返回不了100个历史
-            if i==0: ##history_1m_k_line_100[i][-1] == "0":
+            if history_15m_k_line_100[i][-1]=="0": ##history_1m_k_line_100[i][-1] == "0":
                 continue ## newest does not finish
             else:
                 end_price_15m = float(history_15m_k_line_100[i][4])

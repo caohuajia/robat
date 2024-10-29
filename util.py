@@ -64,6 +64,8 @@ def time_flag_per_minite(cur_ctime, flag_15m = 1):
 
     time.sleep(60 - cur_sec_int)
 
+    time.sleep(1) ## wait 1s to get newest complete data
+
     if cur_min == "14" or cur_min == "29" or cur_min == "44" or cur_min == "59":
         return 2
     else:

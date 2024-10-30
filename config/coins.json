@@ -1,39 +1,60 @@
 [
-    {
-        "CETUS"     :{"burst"  :0.02,
-                      "gain"   :0.02,
-                      "money_u":1,
-                      "value"  :10,
-                      "lever"  :10,
-                      "max_num":5,
-                      "tdMode" : "isolated"
-                    },
-        "DOGE"      :{"burst"  :0.06,
-                      "gain"   :0.06,
-                      "money_u":20,
-                      "value"  :1000,
-                      "lever"  :10,
-                      "max_num":2,
-                      "tdMode" : "isolated"
-                  }
+  {
+    "CETUS":{
+      "burst"  :0.02,
+      "gain"   :0.02,
+      "money_u":1,
+      "value"  :10,
+      "lever"  :10,
+      "max_num":5,
+      "tdMode" : "isolated"
     },
-    {
-        "comment"   : "cross/isolated",
-        "PEPE"      :{"burst" :0.01,
-                      "gain"   :0.013,
-                      "money_u":15,
-                      "value"  :10000000,
-                      "lever"  :10,
-                      "tdMode" : "isolated"
-                    },
-        "DOGE"      :{"burst"  :0.06,
-                    "gain"   :0.06,
-                    "money_u":1,
-                    "value"  :1000,
-                    "lever"  :10,
-                    "max_num":8,
-                    "tdMode" : "isolated"
-                  }
+    "APE":{
+      "burst"  :0.01,
+      "gain"   :0.01,
+      "money_u":2,
+      "value"  :0.1,
+      "lever"  :10,
+      "max_num":5,
+      "tdMode" : "isolated"
+    },
+    "BIGTIME":{
+      "burst"  :0.02,
+      "gain"   :0.02,
+      "money_u":5,
+      "value"  :10,
+      "lever"  :10,
+      "max_num":5,
+      "tdMode" : "isolated"
+    },
+    "DOGE":{
+      "burst"  :0.06,
+      "gain"   :0.06,
+      "money_u":20,
+      "value"  :1000,
+      "lever"  :10,
+      "max_num":2,
+      "tdMode" : "isolated"
     }
-    
+  },
+  {
+    "comment"   : "cross/isolated",
+    "PEPE":{
+      "burst" :0.01,
+      "gain"   :0.013,
+      "money_u":15,
+      "value"  :10000000,
+      "lever"  :10,
+      "tdMode" : "isolated"
+    },
+    "DOGE":{
+      "burst"  :0.06,
+      "gain"   :0.06,
+      "money_u":1,
+      "value"  :1000,
+      "lever"  :10,
+      "max_num":8,
+      "tdMode" : "isolated"
+    }
+  } 
 ]

@@ -2,9 +2,9 @@ import json
 import time
 import numpy as np
 
-log_file = "./log/run.log"
-def log_info(log, keep_cur_line=0):
-    with open(log_file, "a+") as f:
+
+def log_info(log, file_path, keep_cur_line=0):
+    with open(file_path, "a+") as f:
         f.write(log)
         if keep_cur_line:
             pass

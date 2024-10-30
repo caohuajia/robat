@@ -47,16 +47,11 @@ def get_trade_data():
     result = tradeAPI.get_fills()
     return result
 
-def get_current_swap_price(coin):
+def get_all_swap_current_price():
     market_result = get_swap_market_data()
     # print(market_result)
     data_list = get_valid_data(market_result)
-    for i in data_list:
-        ## i is inst dict
-        if (coin+"-USDT-SWAP") == i["instId"]:
-            ## i is the inst dict
-            # print(i)
-            return i["last"]
+    return data_list
 
 def get_k_line_piece(coin, end_time, interval, data_num = 300): ## data_num max is 300
     offset = 0

@@ -51,7 +51,13 @@ class Coin():
         self.tdMode  = config_dict[self.coin_name]["tdMode"]
 
     def get_current_price(self):
-        return float(get_current_swap_price(self.coin_name))
+        global all_cur_price
+        for i in all_cur_price:
+            ## i is inst dict
+            if (self.coin_name+"-USDT-SWAP") == i["instId"]:
+                ## i is the inst dict
+                # print(i)
+                return float(i["last"])
 
     def get_15m_ma60(self):
         self.update_newest_15m_100_history()
@@ -65,7 +71,7 @@ class Coin():
 
     def gen_current_parameter(self):
         self.get_self_config()
-
+        self.cur_price = self.get_current_price()
         # if self.flag_15m:
         self.get_15m_ma60()
 
@@ -224,16 +230,18 @@ class Coin():
 
 
         if self.m_stable <= self.buy_long_water_line:
-            self.buy_long_id   = self.order_maintain("buy", "long",   self.m_stable, self.buy_long_id, self.open_num, self.long_position_value)
+            if self.cur_price <= self.m_stable:
+                self.buy_long_id   = self.order_maintain("buy", "long",   self.m_stable, self.buy_long_id, self.open_num, self.long_position_value)
         else:
             self.log += " ma60 does not catch buy long water line   {:3f}%\n".format((self.m_stable / self.buy_long_water_line -1)*100)
 
-        if self.m_stable >= self.sell_short_water_line or 1:
-            self.sell_short_id = self.order_maintain("sell", "short", self.m_stable, self.sell_short_id, self.open_num, self.short_position_value)
+        if self.m_stable >= self.sell_short_water_line:
+            if self.cur_price >= self.m_stable:
+                self.sell_short_id = self.order_maintain("sell", "short", self.m_stable, self.sell_short_id, self.open_num, self.short_position_value)
         else:
             self.log += " ma60 does not catch sell short water line {:3f}%\n".format((self.sell_short_water_line / self.m_stable -1)*100)
 
-        log_info(self.log)
+        log_info(self.log, "./log/run_log/{}.log".format(self.coin_name))
         self.log = ""
         pass
 
@@ -259,6 +267,8 @@ if __name__ == "__main__":
             # unfinish_order_list = get_unfinish_order()
             fill_order_list = get_fills()
             position_list   = get_current_positions()
+            all_cur_price   = get_all_swap_current_price()
+
             cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
 
             for coin in coin_obejcts.keys():

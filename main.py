@@ -203,8 +203,8 @@ class Coin():
             for i in buy_long_position:
                 price = i["price"]
                 num   = i["number"]
-                if self.m_stable/price >= (1+float(self.gain)):
-                    self.log += "try sell long {} {} \n".format(price, number)
+                if (self.m_stable/price >= (1+float(self.gain))):
+                    self.log += "try sell long {} {} \n".format(price, num)
                     self.sell_long_id = self.order_maintain("sell", "long", self.m_stable, self.sell_long_id, num, 0)
                 else:
                     self.log += "fail sell long {} {}, target {:5f} \n".format(price, num, price*(1+float(self.gain)))
@@ -213,9 +213,9 @@ class Coin():
             for i in sell_short_position:
                 price = i["price"]
                 num   = i["number"]
-                if self.m_stable/price <= (1-float(self.gain)):
+                if (self.m_stable/price <= (1-float(self.gain))):
                     # print("try buy short {} {}".format(price, number))
-                    self.log += "try buy short {} {} \n".format(price, number)
+                    self.log += "try buy short {} {} \n".format(price, num)
                     self.buy_short_id = self.order_maintain("buy", "short", self.m_stable, self.buy_short_id, num, 0)
                 else:
                     self.log += "fail buy short {} {}, target {:5f} \n".format(price, num, price*(1-float(self.gain)))

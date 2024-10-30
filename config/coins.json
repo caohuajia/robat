@@ -5,7 +5,7 @@
                       "money_u":1,
                       "value"  :10,
                       "lever"  :10,
-                      "max_num":2,
+                      "max_num":5,
                       "tdMode" : "isolated"
                     },
         "DOGE"      :{"burst"  :0.06,

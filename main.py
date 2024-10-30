@@ -9,6 +9,7 @@ class Coin():
 
     def __init__(self, coin_name):
         self.coin_name = coin_name
+        self.unfinish_order_num = 0
 
         self.get_self_config()
         set_leverage(self.coin_name,self.lever)
@@ -78,14 +79,14 @@ class Coin():
                     " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
                     " newest_10: " + str(self.newest_15m_100_history_price[-10:]) + "\n"
 
-    def create_order(self, side, posSide, price):
+    def create_order(self, side, posSide, price, num):
         result = tradeAPI.place_algo_order(
             tdMode=self.tdMode, ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
             ccy   ="USDT",
             side  =side,   ## 开多：bug long   开空：sell short   平多：sell long   平空：bug short
             posSide=posSide, 
             ordType="trigger", ## 限价：limit 市价：market
-            sz     =str(self.open_num), ## 委托数量
+            sz     = str(num), ## 委托数量
 
             triggerPx = price, ## 触发价格 
             orderPx   = price, ## 委托价格 
@@ -99,7 +100,7 @@ class Coin():
                 "price : " + str(price) + "\n"
             return order_id
         else:
-            self.log += "["+cur_ctime + "] " + "create_order_fail: " + str(result) + " open_price: " + str(price) + " num: " + str(self.open_num) + "\n"
+            self.log += "["+cur_ctime + "] " + "create_order_fail: " + str(result) + " open_price: " + str(price) + " num: " + str(num) + "\n"
             return ""
 
     def modify_order(self, order_id, price):
@@ -121,7 +122,10 @@ class Coin():
         #     print(result)
         #     return ""
 
-        self.cancel_order(order_id)
+        if self.cancel_order(order_id):
+            pass
+        else: ## cancel fail, maybe buy it
+            self.unfinish_order_num += 1
         return ""
 
 
@@ -138,49 +142,86 @@ class Coin():
             self.log += cur_ctime + " " +  self.coin_name + " cancel fail: " + "orderid: " + str(result) + "\n"
             return 0
 
-    def order_maintain(self, side, posSide, open_price, old_order_id):
-        global unfinish_order_list
-        unfinish_id = []
-        for i in unfinish_order_list:
+    def order_maintain(self, side, posSide, open_price, old_order_id, num):
+        # global unfinish_order_list
+        global fill_order_list
+        fill_id = []
+        for i in fill_order_list:
             if (coin+"-USDT-SWAP") == i["instId"]:
-                unfinish_id.append(i["ordId"])
+                fill_id.append(i["ordId"])
 
-        self.unfinish_order_num = len(unfinish_id)
+        # self.unfinish_order_num = len(unfinish_id)
         
         open_price = "{:.9f}".format(open_price)
 
         ## modify
         if old_order_id != "":
-            # if old_order_id in unfinish_id:  ## modify  why use this list, i forget
-            modify_order_id = self.modify_order(old_order_id, open_price)
-            if modify_order_id == "": ## modify fail
+            if old_order_id in fill_id:  ## fill, should not modify
                 pass
             else:
-                return modify_order_id
-            # else:  ## unknown, modify fail, means deal. So does not return, buy a new one
-            #     self.log +=  "["+cur_ctime + "] id:" + old_order_id + " modify fail, unfinish: " + str(unfinish_id) + "\n"
+                modify_order_id = self.modify_order(old_order_id, open_price)
+                if modify_order_id == "": ## modify fail
+                    pass
+                else:
+                    return modify_order_id
+                # else:  ## unknown, modify fail, means deal. So does not return, buy a new one
+                #     self.log +=  "["+cur_ctime + "] id:" + old_order_id + " modify fail, unfinish: " + str(unfinish_id) + "\n"
 
         ## buy
         if self.unfinish_order_num < self.max_num:
-            open_order_id = self.create_order(side, posSide, open_price)
+            open_order_id = self.create_order(side, posSide, open_price, num)
         else:
             self.log += self.coin_name + " order num > 6, not create order\n" 
         return open_order_id
 
     buy_long_id  = ""
     sell_short_id = ""
+    sell_long_id  = ""
+    buy_short_id = ""
     def run(self, flag_15m = 0): ## 0:1m  1:15m
         self.flag_15m = flag_15m
         self.gen_current_parameter()
         if self.m_stable <= self.buy_long_water_line:
-            self.buy_long_id   = self.order_maintain("buy", "long",   self.m_stable, self.buy_long_id )
+            self.buy_long_id   = self.order_maintain("buy", "long",   self.m_stable, self.buy_long_id, self.open_num)
         else:
             self.log += " ma60 does not catch buy long water line   {:3f}%\n".format((self.m_stable / self.buy_long_water_line -1)*100)
 
         if self.m_stable >= self.sell_short_water_line or 1:
-            self.sell_short_id = self.order_maintain("sell", "short", self.m_stable, self.sell_short_id)
+            self.sell_short_id = self.order_maintain("sell", "short", self.m_stable, self.sell_short_id, self.open_num)
         else:
             self.log += " ma60 does not catch sell short water line {:3f}%\n".format((self.sell_short_water_line / self.m_stable -1)*100)
+
+        global position_list
+        buy_long_position = []
+        sell_short_position = []
+        for i in position_list:
+            if (coin+"-USDT-SWAP") == i["instId"]:
+                if i["posSide"] == "short":
+                    sell_short_position.append({"price":float(i["avgPx"]), "number":i["pos"]})
+                if i["posSide"] == "long":
+                    buy_long_position.append({"price":float(i["avgPx"]), "number":i["pos"]})
+
+        if len(buy_long_position):
+            for i in buy_long_position:
+                price = i["price"]
+                num   = i["number"]
+                if self.m_stable/price >= (1+float(self.gain)):
+                    self.log += "try sell long {} {} \n".format(price, number)
+                    self.sell_long_id = self.order_maintain("sell", "long", self.m_stable, self.sell_long_id, num)
+                else:
+                    self.log += "fail sell long {} {}, target {:5f} \n".format(price, num, price*(1+float(self.gain)))
+        
+        if len(sell_short_position):
+            for i in sell_short_position:
+                price = i["price"]
+                num   = i["number"]
+                if self.m_stable/price <= (1-float(self.gain)):
+                    # print("try buy short {} {}".format(price, number))
+                    self.log += "try buy short {} {} \n".format(price, number)
+                    self.buy_short_id = self.order_maintain("buy", "short", self.m_stable, self.buy_short_id, num)
+                else:
+                    self.log += "fail buy short {} {}, target {:5f} \n".format(price, num, price*(1-float(self.gain)))
+                    # print("fail buy short {} {}, target {}".format(price, num, price*(1-float(self.gain))))
 
 
         log_info(self.log)
@@ -203,10 +244,12 @@ if __name__ == "__main__":
         coin_obejcts[coin_name] = Coin(coin_name)
 
     while 1:
-        try:
+        # try:
             config_dict = get_config()
 
-            unfinish_order_list = get_unfinish_order()
+            # unfinish_order_list = get_unfinish_order()
+            fill_order_list = get_fills()
+            position_list   = get_current_positions()
             cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
 
             for coin in coin_obejcts.keys():
@@ -215,11 +258,12 @@ if __name__ == "__main__":
             print("sleep")
             time_flag_per_minite(cur_ctime)
 
-        except:
-            print("kill and cancel order")
-            for coin in coin_obejcts.keys():
-                coin_obejcts[coin].cancel_open_order()
-            log_info(cur_ctime + " some exception\n")
-            break
+        # except:
+        #     print("kill and cancel order")
+        #     for coin in coin_obejcts.keys():
+        #         log_info(coin_obejcts[coin].log)
+        #         coin_obejcts[coin].cancel_open_order()
+        #     log_info(cur_ctime + " some exception\n")
+        #     break
     exit(0)
 

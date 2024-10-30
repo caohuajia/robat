@@ -154,6 +154,12 @@ def get_current_positions():
     data = get_valid_data(result)
     return data
 
+def get_fills():
+    result = tradeAPI.get_fills()
+    data = get_valid_data(result)
+    return data
+
+
 def set_leverage(coin, lever):
     accountAPI.set_leverage(
         instId = coin,

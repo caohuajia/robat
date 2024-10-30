@@ -5,15 +5,15 @@
                       "money_u":1,
                       "value"  :10,
                       "lever"  :10,
-                      "max_num":8,
+                      "max_num":2,
                       "tdMode" : "isolated"
                     },
         "DOGE"      :{"burst"  :0.06,
                       "gain"   :0.06,
-                      "money_u":17,
+                      "money_u":20,
                       "value"  :1000,
                       "lever"  :10,
-                      "max_num":8,
+                      "max_num":2,
                       "tdMode" : "isolated"
                   }
     },

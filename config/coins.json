@@ -27,6 +27,24 @@
       "max_num":5,
       "tdMode" : "isolated"
     },
+    "API3":{
+      "burst"  :0.01,
+      "gain"   :0.01,
+      "money_u":5,
+      "value"  :1,
+      "lever"  :10,
+      "max_num":5,
+      "tdMode" : "isolated"
+    },
+    "YGG":{
+      "burst"  :0.01,
+      "gain"   :0.01,
+      "money_u":5,
+      "value"  :1,
+      "lever"  :10,
+      "max_num":5,
+      "tdMode" : "isolated"
+    },
     "DOGE":{
       "burst"  :0.06,
       "gain"   :0.06,

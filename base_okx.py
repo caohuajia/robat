@@ -70,9 +70,8 @@ def get_k_line_piece(coin, end_time, interval, data_num = 300): ## data_num max 
     )
     return result
 
-def get_k_line(coin, interval, num=1): ## 1m 3m 5m 15m 30m 1H 2H 4H
+def get_k_line(coin, end_time, interval, num=1): ## 1m 3m 5m 15m 30m 1H 2H 4H
     full_k_line = []
-    cur_time = get_current_system_time(ms=1, int_value=1)
     offset   = 0
     min_1m_300_data = 60 * 1000  * 300
     if interval == "1m":
@@ -81,7 +80,7 @@ def get_k_line(coin, interval, num=1): ## 1m 3m 5m 15m 30m 1H 2H 4H
         offset = 15 * min_1m_300_data
 
     for i in range(num): # once: num * coin_type_num
-        k_line_piece = get_k_line_piece(coin, cur_time - i * offset, interval)
+        k_line_piece = get_k_line_piece(coin, int(end_time) - i * offset, interval)
         data = get_valid_data(k_line_piece)
         # print(i, data)
         full_k_line += data

@@ -16,6 +16,8 @@ def get_valid_data(result):
         return result['data']
     elif result["code"] == '51001':
         print("交易产品id不存在")
+    elif result["code"] == '50011':
+        print("请求频率过快")
     else:
         print("返回数据无效")
         print(str(result))

@@ -12,26 +12,25 @@ class Coin():
         self.unfinish_order_num = 0
 
         self.get_self_config()
-        set_leverage(self.coin_name,self.lever)
+        set_leverage(self.coin_name+"-USDT-SWAP",self.lever)
 
 
         ##  timestap         begin      highest    lowest     end                                      complete
         ##['1728006240000', '0.15846', '0.15859', '0.15785', '0.15785', '4480', '44800', '7090.9912', '0']
-        history_1m_k_line_100 = get_k_line(self.coin_name, "1m") ##[new ... old]
-
-        self.newest_1m_100_history_price = []
-        for i in range(98): ## 可能偶尔返回不了100个历史
-            if 0: ##history_1m_k_line_100[i][-1] == "0":
-                continue ## newest does not finish
-            else:
-                end_price_1m  = float(history_1m_k_line_100[i][4])
-                self.newest_1m_100_history_price.append(end_price_1m) ##[new ... old]
-        self.newest_1m_100_history_price.reverse() ##[old ... new]
+        # history_1m_k_line_100 = get_k_line(self.coin_name, "1m") ##[new ... old]
+        # self.newest_1m_100_history_price = []
+        # for i in range(98): ## 可能偶尔返回不了100个历史
+        #     if 0: ##history_1m_k_line_100[i][-1] == "0":
+        #         continue ## newest does not finish
+        #     else:
+        #         end_price_1m  = float(history_1m_k_line_100[i][4])
+        #         self.newest_1m_100_history_price.append(end_price_1m) ##[new ... old]
+        # self.newest_1m_100_history_price.reverse() ##[old ... new]
 
     def update_newest_15m_100_history(self):
 
         ## ['1729861200000', '0.14621', '0.14662', '0.14578', '0.14656', '33498', '334980', '48981.5551', '1']
-        history_15m_k_line_100 = get_k_line(self.coin_name, "15m") ##[new ... old]
+        history_15m_k_line_100 = get_k_line(self.coin_name, cur_int_time_ms, "15m") ##[new ... old]
         self.newest_15m_100_history_price = []
         for i in range(98): ## 可能偶尔返回不了100个历史
             if history_15m_k_line_100[i][-1]=="0": ##history_1m_k_line_100[i][-1] == "0":
@@ -252,7 +251,9 @@ class Coin():
 
 
 if __name__ == "__main__":
-    cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
+    cur_int_time_s = get_current_system_time(ms=0, int_value=1)
+    cur_int_time_ms = str(cur_int_time_s)+"000"
+    cur_ctime = time.ctime(cur_int_time_s)
     config_dict = get_config()
     coin_list = config_dict.keys()
 
@@ -280,9 +281,9 @@ if __name__ == "__main__":
         # except:
         #     print("kill and cancel order")
         #     for coin in coin_obejcts.keys():
-        #         log_info(coin_obejcts[coin].log)
+        #         log_info(coin_obejcts[coin].log, "./log/run_log/{}.log".format(coin))
         #         coin_obejcts[coin].cancel_open_order()
-        #     log_info(cur_ctime + " some exception\n")
+        #     log_info(cur_ctime + " some exception\n", "./log/run_log/{}.log".format(coin))
         #     break
     exit(0)
 

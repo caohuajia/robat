@@ -53,7 +53,7 @@ def get_current_swap_price(coin):
     data_list = get_valid_data(market_result)
     for i in data_list:
         ## i is inst dict
-        if coin in i["instId"]:
+        if (coin+"-USDT-SWAP") == i["instId"]:
             ## i is the inst dict
             # print(i)
             return i["last"]

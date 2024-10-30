@@ -170,9 +170,10 @@ class Coin():
         ## buy
         if position_value < float(self.money_u):
             open_order_id = self.create_order(side, posSide, open_price, num)
+            return open_order_id
         else:
             self.log += self.coin_name + " too more order, not create order\n" 
-        return old_order_id
+            return old_order_id
 
     buy_long_id  = ""
     sell_short_id = ""

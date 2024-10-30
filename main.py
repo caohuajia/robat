@@ -168,7 +168,7 @@ class Coin():
                 #     self.log +=  "["+cur_ctime + "] id:" + old_order_id + " modify fail, unfinish: " + str(unfinish_id) + "\n"
 
         ## buy
-        if position_value < float(self.money_u):
+        if position_value < float(self.money_u * self.max_num):
             open_order_id = self.create_order(side, posSide, open_price, num)
             return open_order_id
         else:

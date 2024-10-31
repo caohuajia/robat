@@ -1,66 +1,45 @@
 [
   {
     "CETUS":{
-      "burst"  :0.02,
-      "gain"   :0.02,
-      "money_u":1,
+      "burst"  :0.02,   "gain" :0.02,   "money_u":1,   "max_num":5,
       "value"  :10,
       "lever"  :10,
-      "max_num":5,
       "tdMode" : "isolated"
     },
     "APE":{
-      "burst"  :0.01,
-      "gain"   :0.01,
-      "money_u":2,
+      "burst"  :0.01,   "gain" :0.01,   "money_u":2,   "max_num":5,
       "value"  :0.1,
       "lever"  :10,
-      "max_num":5,
       "tdMode" : "isolated"
     },
     "BIGTIME":{
-      "burst"  :0.02,
-      "gain"   :0.02,
-      "money_u":5,
+      "burst"  :0.02,   "gain" :0.02,   "money_u":5,   "max_num":5,
       "value"  :10,
       "lever"  :10,
-      "max_num":5,
       "tdMode" : "isolated"
     },
     "API3":{
-      "burst"  :0.01,
-      "gain"   :0.01,
-      "money_u":5,
+      "burst"  :0.01,   "gain" :0.01,   "money_u":5,   "max_num":5,
       "value"  :1,
       "lever"  :10,
-      "max_num":5,
       "tdMode" : "isolated"
     },
     "YGG":{
-      "burst"  :0.01,
-      "gain"   :0.01,
-      "money_u":5,
+      "burst"  :0.01,   "gain" :0.01,   "money_u":5,   "max_num":5,
       "value"  :1,
       "lever"  :10,
-      "max_num":5,
       "tdMode" : "isolated"
     },
     "MEW":{
-      "burst"  :0.01,
-      "gain"   :0.01,
-      "money_u":5,
+      "burst"  :0.01,   "gain" :0.01,   "money_u":5,   "max_num":5,
       "value"  :1000,
       "lever"  :10,
-      "max_num":5,
       "tdMode" : "isolated"
     },
     "DOGE":{
-      "burst"  :0.06,
-      "gain"   :0.06,
-      "money_u":20,
+      "burst"  :0.06,   "gain" :0.06,   "money_u":20,"max_num":2,
       "value"  :1000,
       "lever"  :10,
-      "max_num":2,
       "tdMode" : "isolated"
     }
   },

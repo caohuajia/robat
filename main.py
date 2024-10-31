@@ -172,13 +172,29 @@ class Coin():
                 # else:  ## unknown, modify fail, means deal. So does not return, buy a new one
                 #     self.log +=  "["+cur_ctime + "] id:" + old_order_id + " modify fail, unfinish: " + str(unfinish_id) + "\n"
 
-        ## buy
-        if position_value < float(self.money_u * self.max_num):
+        ## create
+        if ((side=="buy") and (posSide=="long")):
+            if position_value < float(self.money_u * self.max_num):
+                if (self.m_stable <= self.sell_short_water_line):
+                    open_order_id = self.create_order(side, posSide, open_price, num)
+                else:
+                    self.log += " ma60 does not catch buy long water line   {:3f}%\n".format((self.m_stable / self.buy_long_water_line -1)*100)
+            else:
+                self.log += self.coin_name + " too more order, not create order\n" 
+                return old_order_id
+        elif ((side=="sell") and (posSide=="short")):
+            if position_value < float(self.money_u * self.max_num):
+                if (self.m_stable >= self.sell_short_water_line):
+                    open_order_id = self.create_order(side, posSide, open_price, num)
+                else:
+                    self.log += " ma60 does not catch sell short water line {:3f}%\n".format((self.sell_short_water_line / self.m_stable -1)*100)
+            else:
+                self.log += self.coin_name + " too more order, not create order\n" 
+                return old_order_id
+        else:
             open_order_id = self.create_order(side, posSide, open_price, num)
             return open_order_id
-        else:
-            self.log += self.coin_name + " too more order, not create order\n" 
-            return old_order_id
+
 
     buy_long_id  = ""
     sell_short_id = ""
@@ -228,17 +244,11 @@ class Coin():
 
 
 
-        if self.m_stable <= self.buy_long_water_line:
-            if self.cur_price <= self.m_stable:
-                self.buy_long_id   = self.order_maintain("buy", "long",   self.m_stable, self.buy_long_id, self.open_num, self.long_position_value)
-        else:
-            self.log += " ma60 does not catch buy long water line   {:3f}%\n".format((self.m_stable / self.buy_long_water_line -1)*100)
+        if self.cur_price <= self.m_stable:
+            self.buy_long_id   = self.order_maintain("buy", "long",   self.m_stable, self.buy_long_id, self.open_num, self.long_position_value)
 
-        if self.m_stable >= self.sell_short_water_line:
-            if self.cur_price >= self.m_stable:
-                self.sell_short_id = self.order_maintain("sell", "short", self.m_stable, self.sell_short_id, self.open_num, self.short_position_value)
-        else:
-            self.log += " ma60 does not catch sell short water line {:3f}%\n".format((self.sell_short_water_line / self.m_stable -1)*100)
+        if self.cur_price >= self.m_stable:
+            self.sell_short_id = self.order_maintain("sell", "short", self.m_stable, self.sell_short_id, self.open_num, self.short_position_value)
 
         log_info(self.log, "./log/run_log/{}.log".format(self.coin_name))
         self.log = ""

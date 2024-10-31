@@ -82,7 +82,7 @@ class Coin():
                     " open_num: {:.5f}".format(self.open_num) + \
                     " buy long water line: {:.5f}".format(self.buy_long_water_line) + \
                     " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
-                    " newest_10:{} cur_ms:{} \n".format(str(self.newest_15m_100_history_price[-10:]), cur_int_time_ms)
+                    " newest_10:{} \n".format(str(self.newest_15m_100_history_price[-10:]))
 
     def create_order(self, side, posSide, price, num):
         result = tradeAPI.place_algo_order(
@@ -141,10 +141,10 @@ class Coin():
         if result["code"] == "0":
             # data = result["data"][0]
             # cl_ord_id = data["clOrdId"]
-            self.log += " cancel order : " + "orderid: " + order_id + " "
+            self.log += "cancel order : " + "orderid: " + order_id + " "
             return 1
         else:
-            self.log += " cancel fail: orderid: {} info: {}\n".format(order_id, str(result))
+            self.log += "cancel fail: orderid: {} info: {} ".format(order_id, str(result))
             return 0
 
     def order_maintain(self, side, posSide, open_price, old_order_id, num, position_value):
@@ -244,7 +244,7 @@ class Coin():
                 num   = i["number"]
                 if (self.m_stable/price <= (1-float(self.gain))):
                     # print("try buy short {} {}".format(price, number))
-                    self.log += "try buy short {} {} \n".format(price, num)
+                    self.log += "try buy short hold_price:{:5f} num:{} ".format(price, num)
                     self.buy_short_id = self.order_maintain("buy", "short", self.m_stable, self.buy_short_id, num, 0)
                 else:
                     self.log += "fail buy short hold:{:5f} num:{}, ma60 target {:5f} \n".format(price, num, price*(1-float(self.gain)))

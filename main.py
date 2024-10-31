@@ -77,7 +77,7 @@ class Coin():
         self.buy_long_water_line   = self.refer * (1-(self.burst))
         self.sell_short_water_line = self.refer * (1+(self.burst))
 
-        self.log += "[{}] ".format(cur_ctime) + self.coin_name + " ma60: {:.5f}".format(self.m_stable) + " refer: {:.5f}".format(self.refer) + " burst: " + str(self.burst) + \
+        self.log += "[{}] ".format(cur_ctime) + self.coin_name + " ma60: {:.5f}".format(self.m_stable) + " refer: {:.5f}".format(self.refer) + \
                     " open_num: {:.5f}".format(self.open_num) + \
                     " buy long water line: {:.5f}".format(self.buy_long_water_line) + \
                     " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
@@ -141,7 +141,7 @@ class Coin():
         if result["code"] == "0":
             data = result["data"][0]
             order_id = data["algoId"]
-            self.log += "id:{} modify_success, new price {:5f}\n".format(order_id, price)
+            self.log += "id:{} modify_success, new price {:5f}\n".format(order_id, float(price))
             return order_id
         else: ## modify fail, cancel order
             # self.cancel_order(order_id)
@@ -207,9 +207,16 @@ class Coin():
 
         else: ## not meet cond, cancel it
             if water_line_ok == 0:
-                self.log += "ma60 does not catch buy long water line   {:3f}% ".format((self.m_stable / self.buy_long_water_line -1)*100)
+                if side == "buy":
+                    self.log += "ma60 does not catch buy long water line   {:3f}% ".format((self.m_stable / self.buy_long_water_line -1)*100)
+                else:
+                    self.log += "ma60 does not catch sell short water line   {:3f}% ".format((self.sell_short_water_line / self.m_stable -1)*100)
             else:
-                self.log += "cur_price cross m_stable, should not create/modify \n"
+                if side == "buy":
+                    self.log += "cur_price > m_stable , should not create/modify \n"
+                else:
+                    self.log += "cur_price < m_stable, should not create/modify \n"
+
             if old_order_id != "":
                 self.cancel_order(old_order_id)
             self.log += "\n"

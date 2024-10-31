@@ -101,11 +101,11 @@ class Coin():
         if result["code"] == "0":
             data = result["data"][0]
             order_id = data["algoId"]
-            self.log += "["+cur_ctime + "] " + self.coin_name + " id:" + order_id + " " + side + " " + posSide + " create_success: " + \
+            self.log += "id:" + order_id + " " + side + " " + posSide + " create_success: " + \
                 "price : " + str(price) + "\n"
             return order_id
         else:
-            self.log += "["+cur_ctime + "] " + "create_order_fail: " + str(result) + " open_price: " + str(price) + " num: " + str(num) + "\n"
+            self.log += "create_order_fail: " + str(result) + " open_price: " + str(price) + " num: " + str(num) + "\n"
             return ""
 
     def modify_order(self, order_id, price):
@@ -141,10 +141,10 @@ class Coin():
         if result["code"] == "0":
             # data = result["data"][0]
             # cl_ord_id = data["clOrdId"]
-            self.log += cur_ctime + " " +  self.coin_name + " cancel order : " + "orderid: " + order_id + "\n"
+            self.log += " cancel order : " + "orderid: " + order_id + " "
             return 1
         else:
-            self.log += cur_ctime + " " +  self.coin_name + " cancel fail: " + "orderid: " + str(result) + "\n"
+            self.log += " cancel fail: orderid: {} info: {}\n".format(order_id, str(result))
             return 0
 
     def order_maintain(self, side, posSide, open_price, old_order_id, num, position_value):
@@ -162,6 +162,7 @@ class Coin():
         ## modify
         if old_order_id != "":
             if old_order_id in fill_id:  ## fill, should not modify
+                self.log += "fill, need create new one. "
                 pass
             else:
                 modify_order_id = self.modify_order(old_order_id, open_price)
@@ -178,22 +179,25 @@ class Coin():
                 if (self.m_stable <= self.sell_short_water_line):
                     open_order_id = self.create_order(side, posSide, open_price, num)
                 else:
-                    self.log += " ma60 does not catch buy long water line   {:3f}%\n".format((self.m_stable / self.buy_long_water_line -1)*100)
+                    self.log += "ma60 does not catch buy long water line   {:3f}%\n".format((self.m_stable / self.buy_long_water_line -1)*100)
+                    return ""
             else:
-                self.log += self.coin_name + " too more order, not create order\n" 
-                return old_order_id
+                self.log += self.coin_name + "too more order, not create order\n" 
+                return ""
         elif ((side=="sell") and (posSide=="short")):
             if position_value < float(self.money_u * self.max_num):
                 if (self.m_stable >= self.sell_short_water_line):
                     open_order_id = self.create_order(side, posSide, open_price, num)
                 else:
-                    self.log += " ma60 does not catch sell short water line {:3f}%\n".format((self.sell_short_water_line / self.m_stable -1)*100)
+                    self.log += "ma60 does not catch sell short water line {:3f}%\n".format((self.sell_short_water_line / self.m_stable -1)*100)
+                    return ""
             else:
-                self.log += self.coin_name + " too more order, not create order\n" 
-                return old_order_id
+                self.log += self.coin_name + "too more order, not create order\n" 
+                return ""
         else:
             open_order_id = self.create_order(side, posSide, open_price, num)
-            return open_order_id
+            
+        return open_order_id
 
 
     buy_long_id  = ""
@@ -218,8 +222,9 @@ class Coin():
                 if i["posSide"] == "long":
                     buy_long_position.append({"price":float(i["avgPx"]), "number":i["pos"]})
                     self.long_position_value += (float(i["avgPx"]) * float(i["pos"]) * self.value / self.lever)
-        self.log += " long pos value:{} short pos value:{}\n".format(self.long_position_value, self.short_position_value)
+        self.log += " [pos] long pos value:{:5f} short pos value:{:5f}\n".format(self.long_position_value, self.short_position_value)
 
+        self.log += " [sell long ] "
         if len(buy_long_position):
             for i in buy_long_position:
                 price = i["price"]
@@ -228,8 +233,11 @@ class Coin():
                     self.log += "try sell long {} {} \n".format(price, num)
                     self.sell_long_id = self.order_maintain("sell", "long", self.m_stable, self.sell_long_id, num, 0)
                 else:
-                    self.log += "fail sell long {} {}, target {:5f} \n".format(price, num, price*(1+float(self.gain)))
-        
+                    self.log += "fail sell long hold:{} num:{}, ma60 target {:5f} \n".format(price, num, price*(1+float(self.gain)))
+        else:
+            self.log += "does not hold\n"
+
+        self.log += " [buy short ] "
         if len(sell_short_position):
             for i in sell_short_position:
                 price = i["price"]
@@ -239,16 +247,23 @@ class Coin():
                     self.log += "try buy short {} {} \n".format(price, num)
                     self.buy_short_id = self.order_maintain("buy", "short", self.m_stable, self.buy_short_id, num, 0)
                 else:
-                    self.log += "fail buy short {} {}, target {:5f} \n".format(price, num, price*(1-float(self.gain)))
+                    self.log += "fail buy short hold:{:5f} num:{}, ma60 target {:5f} \n".format(price, num, price*(1-float(self.gain)))
                     # print("fail buy short {} {}, target {}".format(price, num, price*(1-float(self.gain))))
+        else:
+            self.log += "does not hold\n"
 
 
-
+        self.log += " [buy long  ] "
         if self.cur_price <= self.m_stable:
             self.buy_long_id   = self.order_maintain("buy", "long",   self.m_stable, self.buy_long_id, self.open_num, self.long_position_value)
+        else:
+            self.log += "cur_price > m_stable, should not buy long\n"
 
+        self.log += " [sell short] "
         if self.cur_price >= self.m_stable:
             self.sell_short_id = self.order_maintain("sell", "short", self.m_stable, self.sell_short_id, self.open_num, self.short_position_value)
+        else:
+            self.log += "cur_price < m_stable, should not sell short\n"
 
         log_info(self.log, "./log/run_log/{}.log".format(self.coin_name))
         self.log = ""

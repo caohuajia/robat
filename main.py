@@ -280,7 +280,7 @@ if __name__ == "__main__":
     coin_list = config_dict.keys()
 
     coin_obejcts = {}
-    for coin_name in coin_list: ## TODO add/rm coin
+    for coin_name in coin_list:
         coin_obejcts[coin_name] = Coin(coin_name)
 
     while 1:
@@ -290,6 +290,12 @@ if __name__ == "__main__":
             cur_ctime = time.ctime(cur_int_time_s)
 
             config_dict = get_config()
+            coin_list = config_dict.keys()
+            for coin_name in coin_list:
+                if coin_name in coin_obejcts.keys():
+                    pass
+                else:
+                    coin_obejcts[coin_name] = Coin(coin_name)
 
             # unfinish_order_list = get_unfinish_order()
             fill_order_list = get_fills()

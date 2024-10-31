@@ -45,6 +45,15 @@
       "max_num":5,
       "tdMode" : "isolated"
     },
+    "MEW":{
+      "burst"  :0.01,
+      "gain"   :0.01,
+      "money_u":5,
+      "value"  :1000,
+      "lever"  :10,
+      "max_num":5,
+      "tdMode" : "isolated"
+    },
     "DOGE":{
       "burst"  :0.06,
       "gain"   :0.06,

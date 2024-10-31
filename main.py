@@ -82,7 +82,7 @@ class Coin():
                     " open_num: {:.5f}".format(self.open_num) + \
                     " buy long water line: {:.5f}".format(self.buy_long_water_line) + \
                     " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
-                    " newest_10: " + str(self.newest_15m_100_history_price[-10:]) + "\n"
+                    " newest_10:{} cur_ms:{} \n".format(str(self.newest_15m_100_history_price[-10:]), cur_int_time_ms)
 
     def create_order(self, side, posSide, price, num):
         result = tradeAPI.place_algo_order(
@@ -251,9 +251,6 @@ class Coin():
 
 
 if __name__ == "__main__":
-    cur_int_time_s = get_current_system_time(ms=0, int_value=1)
-    cur_int_time_ms = str(cur_int_time_s)+"000"
-    cur_ctime = time.ctime(cur_int_time_s)
     config_dict = get_config()
     coin_list = config_dict.keys()
 
@@ -263,14 +260,16 @@ if __name__ == "__main__":
 
     while 1:
         # try:
+            cur_int_time_s = get_current_system_time(ms=0, int_value=1)
+            cur_int_time_ms = str(cur_int_time_s)+"000"
+            cur_ctime = time.ctime(cur_int_time_s)
+
             config_dict = get_config()
 
             # unfinish_order_list = get_unfinish_order()
             fill_order_list = get_fills()
             position_list   = get_current_positions()
             all_cur_price   = get_all_swap_current_price()
-
-            cur_ctime = time.ctime(get_current_system_time(ms=0, int_value=1))
 
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].run()

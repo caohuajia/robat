@@ -191,7 +191,7 @@ class Coin():
                     open_order_id = self.create_order(side, posSide, open_price, num)
                     return open_order_id
                 else:
-                    self.log += self.coin_name + "too more order, not create order\n" 
+                    self.log += "too more order, not create order\n" 
                     return ""
             if old_order_id in self.fill_id:  ## fill, should create
                 if position_value_ok:
@@ -199,7 +199,7 @@ class Coin():
                     open_order_id = self.create_order(side, posSide, open_price, num)
                     return open_order_id
                 else:
-                    self.log += self.coin_name + "too more order, not create order\n" 
+                    self.log += "too more order, not create order\n" 
                     return ""
                 
             modify_order_id = self.modify_order(old_order_id, open_price)
@@ -213,9 +213,9 @@ class Coin():
                     self.log += "ma60 does not catch sell short water line   {:3f}% ".format((self.sell_short_water_line / self.m_stable -1)*100)
             else:
                 if side == "buy":
-                    self.log += "cur_price > m_stable , should not create/modify \n"
+                    self.log += "cur_price > m_stable , should not create/modify "
                 else:
-                    self.log += "cur_price < m_stable, should not create/modify \n"
+                    self.log += "cur_price < m_stable, should not create/modify "
 
             if old_order_id != "":
                 self.cancel_order(old_order_id)

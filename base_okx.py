@@ -39,9 +39,10 @@ def get_swap_market_data():
 
 def get_public_data():
     result = PublicDataAPI.get_instruments(
-        instType="SPOT"
+        instType="SWAP"
         )
-    print(result)
+    data_list = get_valid_data(result)
+    return data_list
 
 def get_trade_data():
     result = tradeAPI.get_fills()

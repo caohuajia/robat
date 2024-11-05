@@ -13,7 +13,11 @@ class Coin():
         self.get_self_config()
         set_leverage(self.coin_name+"-USDT-SWAP",self.lever)
 
-
+        global public_data
+        for i in public_data:
+            if (self.coin_name+"-USDT-SWAP") == i["instId"]:
+                self.value = float(i["ctVal"])
+        
         ##  timestap         begin      highest    lowest     end                                      complete
         ##['1728006240000', '0.15846', '0.15859', '0.15785', '0.15785', '4480', '44800', '7090.9912', '0']
         # history_1m_k_line_100 = get_k_line(self.coin_name, "1m") ##[new ... old]
@@ -43,7 +47,6 @@ class Coin():
         self.burst   = config_dict[self.coin_name]["burst"]
         self.gain    = config_dict[self.coin_name]["gain"]
         self.money_u = config_dict[self.coin_name]["money_u"]
-        self.value   = config_dict[self.coin_name]["value"]
         self.lever   = config_dict[self.coin_name]["lever"]
         self.max_num = config_dict[self.coin_name]["max_num"]
         self.tdMode  = config_dict[self.coin_name]["tdMode"]
@@ -280,6 +283,8 @@ if __name__ == "__main__":
     config_dict = get_config()
     coin_list = config_dict.keys()
 
+    public_data = get_public_data()
+
     coin_obejcts = {}
     for coin_name in coin_list:
         coin_obejcts[coin_name] = Coin(coin_name)
@@ -296,6 +301,7 @@ if __name__ == "__main__":
                 if coin_name in coin_obejcts.keys():
                     pass
                 else:
+                    public_data = get_public_data()
                     coin_obejcts[coin_name] = Coin(coin_name)
 
             # unfinish_order_list = get_unfinish_order()

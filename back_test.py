@@ -28,8 +28,9 @@ if __name__ == "__main__":
 
     total_days = 1 + 30
     interval = "15m"
-    test_one = 1
-    test_coin = "DOGE"
+    test_one = 0
+    # test_coin = "11test"
+    test_coin = "ULTI"
     download_data = 0
 
 
@@ -75,7 +76,8 @@ if __name__ == "__main__":
                     # eth_change = btc_change_list[i]                    
                     btc_change = 0
                     eth_change = 0
-                    coin.run(remain_k_line_history_piece[i])
+                    if coin.run(remain_k_line_history_piece[i]):
+                        break
             else:
                 offset = 1440  ## 1440min = 24h
                 coin = coin_1m(one_coin, k_line_history[0:offset])
@@ -84,7 +86,8 @@ if __name__ == "__main__":
                 for i in range(remain_num):
                     btc_change = btc_change_list[i]
                     eth_change = btc_change_list[i]
-                    coin.run(remain_k_line_history_piece[i])
+                    if coin.run(remain_k_line_history_piece[i]):
+                        break
             coin.finish()
             all_result += "{:<10}:  total: {:.3f}  balance: {:.3f}  blow num: {}\n".format(one_coin, coin.float_money, coin.balance, coin.blow_up_num)
             # print(total_days,"days " + one_coin + " finish: total: ",coin.float_money, "balance: ", coin.balance)
@@ -93,6 +96,9 @@ if __name__ == "__main__":
             break
     all_result += "total gain: {}".format(total_gain)
     print("total gain: ",total_gain)
-    with open("./log/all_test_log", "w") as f:
-        f.write(all_result)
+    if test_one:
+        pass
+    else:
+        with open("./log/all_test_log", "w") as f:
+            f.write(all_result)
 

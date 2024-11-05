@@ -100,11 +100,12 @@ class coin_base():
         # self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
         if self.float_money < 0.01:
             self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
-            print(self.cur_ctime,"blow_up float_u:",self.float_money, "cur_price",self.cur_price)
+            print(self.coin_name,self.cur_ctime,"blow_up float_u:",self.float_money, "cur_price",self.cur_price)
             self.log_info(self.log, 1)
-            exit(0) ##TODO
+            return 1            
         else:
-            pass
+            return 0
+
 
     def buy_long(self):
         self.prob()
@@ -246,7 +247,8 @@ class coin_base():
         self.cur_ctime = current_market[0]
         self.cur_price = float(current_market[1])
 
-        self.blow_up()
+        if self.blow_up():
+            return 1
         self.deal()
 
         self.gen_current_parameter()
@@ -268,7 +270,7 @@ class coin_base():
         self.log_info(self.log, 1)
         self.log = ""
         self.prefer_mode = 0
-        pass
+        return 0
 
 
 class coin_1m(coin_base):

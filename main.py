@@ -168,27 +168,27 @@ class Coin():
     def order_maintain(self, side, posSide, open_price, old_order_id, num):
         open_price = "{:.9f}".format(open_price)
 
-        meed_create_modify_cond = 0
+        need_create_modify_cond = 0
         water_line_ok = 0
         position_value_ok = 0
         if ((side=="buy") and (posSide=="long")):
             water_line_ok = (self.m_stable <= self.buy_long_water_line)
-            meed_create_modify_cond = water_line_ok and (self.cur_price <= self.m_stable)
+            need_create_modify_cond = water_line_ok and (self.cur_price <= self.m_stable) and (num > 0)
             position_value_ok = self.long_position_value < float(self.money_u * self.max_num)
         elif ((side=="sell") and (posSide=="short")):
             water_line_ok = (self.m_stable <= self.sell_short_water_line)
-            meed_create_modify_cond = water_line_ok and (self.cur_price >= self.m_stable)
+            need_create_modify_cond = water_line_ok and (self.cur_price >= self.m_stable) and (num > 0)
             position_value_ok = self.short_position_value < float(self.money_u * self.max_num)
         elif ((side=="sell") and (posSide=="long")):
-            meed_create_modify_cond = 1
+            need_create_modify_cond = 1
             position_value_ok = 1
         elif ((side=="buy") and (posSide=="short")):
-            meed_create_modify_cond = 1
+            need_create_modify_cond = 1
             position_value_ok = 1
         else:
             pass
 
-        if meed_create_modify_cond:
+        if need_create_modify_cond:
             if old_order_id == "": ## no order, create new
                 if position_value_ok:
                     open_order_id = self.create_order(side, posSide, open_price, num)
@@ -209,16 +209,19 @@ class Coin():
             return modify_order_id
 
         else: ## not meet cond, cancel it
-            if water_line_ok == 0:
-                if side == "buy":
-                    self.log += "ma60 does not catch buy long water line   {:3f}% ".format((self.m_stable / self.buy_long_water_line -1)*100)
-                else:
-                    self.log += "ma60 does not catch sell short water line   {:3f}% ".format((self.sell_short_water_line / self.m_stable -1)*100)
+            if num <= 0:
+                self.log += "money_u does not enough for a swap "
             else:
-                if side == "buy":
-                    self.log += "cur_price > m_stable , should not create/modify "
+                if water_line_ok == 0:
+                    if side == "buy":
+                        self.log += "ma60 does not catch buy long water line   {:3f}% ".format((self.m_stable / self.buy_long_water_line -1)*100)
+                    else:
+                        self.log += "ma60 does not catch sell short water line   {:3f}% ".format((self.sell_short_water_line / self.m_stable -1)*100)
                 else:
-                    self.log += "cur_price < m_stable, should not create/modify "
+                    if side == "buy":
+                        self.log += "cur_price > m_stable , should not create/modify "
+                    else:
+                        self.log += "cur_price < m_stable, should not create/modify "
 
             if old_order_id != "":
                 self.cancel_order(old_order_id)

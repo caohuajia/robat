@@ -176,7 +176,7 @@ class Coin():
             need_create_modify_cond = water_line_ok and (self.cur_price <= self.m_stable) and (num > 0)
             position_value_ok = self.long_position_value < float(self.money_u * self.max_num)
         elif ((side=="sell") and (posSide=="short")):
-            water_line_ok = (self.m_stable <= self.sell_short_water_line)
+            water_line_ok = (self.m_stable >= self.sell_short_water_line)
             need_create_modify_cond = water_line_ok and (self.cur_price >= self.m_stable) and (num > 0)
             position_value_ok = self.short_position_value < float(self.money_u * self.max_num)
         elif ((side=="sell") and (posSide=="long")):

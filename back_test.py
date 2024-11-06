@@ -27,8 +27,9 @@ def get_change_list(coin):
 if __name__ == "__main__":
 
     total_days = 1 + 30
+    global_money = [10]
     interval = "15m"
-    test_one = 1
+    test_one = 0
     # test_coin = "11test"
     test_coin = "GRASS"
     download_data = 0
@@ -88,7 +89,7 @@ if __name__ == "__main__":
     while 1:
         for one_coin in list(all_coin_struct.keys()):
             coin = all_coin_struct[one_coin]
-            if coin.run():
+            if coin.run(global_money):
                 coin.finish()
                 all_result += "{:<10}:  total: {:.3f}  balance: {:.3f}  blow num: {}\n".format(one_coin, coin.float_money, coin.balance, coin.blow_up_num)
                 # print(total_days,"days " + one_coin + " finish: total: ",coin.float_money, "balance: ", coin.balance)

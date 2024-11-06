@@ -67,7 +67,7 @@ class Coin():
         newest_n =  self.newest_15m_100_history_price[n:]
         self.m_stable = sum(newest_n)/len(newest_n)
 
-        refer_before = self.newest_15m_100_history_price[-4*24-1:-4*24+1]
+        refer_before = self.newest_15m_100_history_price[-4*24-1:-4*24+3]
         self.refer = sum(refer_before)/len(refer_before)
 
     def gen_current_parameter(self):

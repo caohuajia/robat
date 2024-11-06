@@ -16,10 +16,10 @@ class coin_base():
         self.current_market = []
 
         self.newest_history_price = []
-        for i in range(len(k_line_100_history)):
+        for i in range(len(k_line_100_history)):##[old ... new]
             begin_price = k_line_100_history[i][1]
-            self.newest_history_price.append(float(begin_price)) ##[new ... old]
-        self.newest_history_price.reverse() ##[old ... new]
+            self.newest_history_price.append(float(begin_price)) ##[old ... new]
+        # self.newest_history_price.reverse()
 
         with open("./log/test.log", "w") as f:
             f.write("")
@@ -110,7 +110,8 @@ class coin_base():
     def buy_long(self):
         self.prob()
         if self.balance>0.1:
-            if self.buy_long_water_line > self.market_lowest:
+            if (self.m_stable <= self.buy_long_water_line) and (self.cur_price < self.m_stable) and (self.cur_price < self.market_end):
+            # if (self.buy_long_water_line > self.market_lowest) and (self.market_piece[1] < self.market_piece[4]):
                 if self.price_can_trade(self.m_stable):
                     trade_info = {"time":self.cur_ctime, "price":self.m_stable, "money":0.01, "gain":1-(self.refer/self.m_stable), "mode":0}
                     self.balance -= 0.1
@@ -121,7 +122,8 @@ class coin_base():
                                 " gain: " + "{:.3f}".format((self.m_stable/self.refer-1)*100) + "%\n"
                     self.log += " refer: {:.5f}".format(self.refer) + " {:.5f}".format(self.cur_price/self.refer) +\
                                 " m_stable: {:.5f}".format(self.m_stable) + " {:.5f}".format(self.m_stable/self.cur_price) +\
-                                " cur_high: {:.5f}".format(self.market_highest) + " cur_low: {:.5f}".format(self.market_lowest) + \
+                                " cur_high: {}".format(self.market_highest) + " cur_low: {}".format(self.market_lowest) + \
+                                " newest_10: {}".format(str(self.newest_history_price[-10:])) +\
                                 " burst: {:.5f}".format((1+(self.burst + self.m_stable_gap + self.sell_short_num * 0.15))) + \
                                 " btc/eth: {:.5f}".format( self.btc_change + self.eth_change) + \
                                 "\n"
@@ -129,7 +131,8 @@ class coin_base():
     def sell_short(self):
         self.prob()
         if self.balance>0.1:
-            if self.sell_short_water_line < self.market_highest:
+            if (self.m_stable >= self.sell_short_water_line) and (self.cur_price > self.m_stable) and (self.cur_price > self.market_end):
+            # if (self.sell_short_water_line < self.market_highest) and (self.market_piece[1] > self.market_piece[4]):
                 if self.price_can_trade(self.m_stable):
                     trade_info = {"time":self.cur_ctime, "price":self.m_stable, "money":0.01, "gain":(self.m_stable/self.refer)-1, "mode":1}
                     self.balance -=0.1
@@ -140,9 +143,11 @@ class coin_base():
                                 " gain: " + "{:.3f}".format((self.m_stable/self.refer-1)*100) + "%\n"
                     self.log += " refer: {:.5f}".format(self.refer) + " {:.5f}".format(self.cur_price/self.refer) +\
                                 " m_stable: {:.5f}".format(self.m_stable) + " {:.5f}".format(self.m_stable/self.cur_price) +\
-                                " cur_high: {:.5f}".format(self.market_highest) + " cur_low: {:.5f}".format(self.market_lowest) + \
+                                " cur_high: {}".format(self.market_highest) + " cur_low: {}".format(self.market_lowest) + \
+                                " newest_10: {}".format(str(self.newest_history_price[-10:])) +\
                                 " burst: {:.5f}".format((1+(self.burst + self.m_stable_gap + self.sell_short_num * 0.15))) + \
                                 " btc/eth: {:.5f}".format( self.btc_change + self.eth_change) + \
+                                " test{}".format(str(self.newest_history_price[-4*24-1:-4*24+1])) +\
                                 "\n"
 
 
@@ -194,8 +199,8 @@ class coin_base():
 
 
     def gen_current_parameter(self):
-        (self.newest_history_price).pop(0)
-        (self.newest_history_price).append(self.cur_price)
+        self.newest_history_price.pop(0)
+        self.newest_history_price.append(self.cur_price)
 
         self.get_stable()
 
@@ -241,11 +246,13 @@ class coin_base():
     def run(self, current_market):
         ## ["Sun Oct 13 20:26:00 2024", "0.21326", "0.21388", "0.21323", "0.21368", "6935", "69350", "14809.0594", "1"],
         self.market_piece = current_market
+        self.cur_price      = float(current_market[1])
         self.market_highest = float(self.market_piece[2])
         self.market_lowest  = float(self.market_piece[3])
+        self.market_end     = float(self.market_piece[4])
 
         self.cur_ctime = current_market[0]
-        self.cur_price = float(current_market[1])
+
 
         if self.blow_up():
             return 1
@@ -290,6 +297,9 @@ class coin_15m(coin_base):
         n = -60
         newest_n =  self.newest_history_price[n:]
         self.m_stable = sum(newest_n)/len(newest_n)
+
+        # self.log += "{} test{} \n".format(self.cur_ctime, str(self.newest_history_price[-96-1:-96+2]))
+
 
         refer_before = self.newest_history_price[-4*24-1:-4*24+1] ## 24h before
         self.refer = sum(refer_before)/len(refer_before)

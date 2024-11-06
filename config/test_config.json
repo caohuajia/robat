@@ -1,10 +1,10 @@
 [
     {
-        "CETUS"     :{"burst"  :0.06,
-                      "gain"   :0.06,
+        "CETUS"     :{"burst"  :0.01,
+                      "gain"   :0.01,
                       "money_u":1,
                       "lever"  :10,
-                      "max_num":8,
+                      "max_num":1,
                       "tdMode" : "isolated"
                      },
         "PEPE"      :{"burst" :0.01,

@@ -4,7 +4,7 @@ from test_coin_class import *
 
 def get_change_list(coin):
     change_list = []
-    with open("./data/15m/31days/"+coin+"_price.json", "r") as f:
+    with open("./data/15m/31days/{}_price.json".format(coin), "r") as f:
         k_line_history = json.load(f)
         k_line_history.reverse() ##[old ... new]
         price_history = []
@@ -28,10 +28,10 @@ if __name__ == "__main__":
 
     total_days = 1 + 30
     interval = "15m"
-    test_one = 0
+    test_one = 1
     # test_coin = "11test"
-    test_coin = "ULTI"
-    download_data = 0
+    test_coin = "MEME"
+    download_data = 1
 
 
     price_json_file = "_price_list.json"
@@ -45,7 +45,7 @@ if __name__ == "__main__":
             # print(len(k_line_history))
             for i in k_line_history:
                 i[0] = time.ctime(change_time_type(i[0], ms=0, int_value=1))
-            file_name = "./data/"+interval+"/"+str(total_days)+"days/"+all_coins[c] + "_price.json"
+            file_name = "./data/{}/{}days/{}_price.json".format(interval, str(total_days), all_coins[c])
             # print(file_name)
             with open(file_name, "w") as f:
                 dumps = json.dumps(k_line_history)
@@ -64,7 +64,7 @@ if __name__ == "__main__":
     for one_coin in all_coins:
         if test_one:
             one_coin = test_coin
-        with open("./data/"+interval+"/"+str(total_days)+"days/" + one_coin + "_price.json", "r") as f:
+        with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), one_coin), "r") as f:
             k_line_history = json.load(f)
             if interval == "15m":
                 offset = 96 ## 96 * 15 = 24h

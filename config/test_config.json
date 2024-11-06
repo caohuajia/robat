@@ -4,7 +4,7 @@
                       "gain"   :0.01,
                       "money_u":1,
                       "lever"  :10,
-                      "max_num":1,
+                      "max_num":2,
                       "tdMode" : "isolated"
                      },
         "PEPE"      :{"burst" :0.01,

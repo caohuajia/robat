@@ -15,12 +15,6 @@ class coin_base():
         self.balance = 1
         self.current_market = []
 
-        self.newest_history_price = []
-        for i in range(len(k_line_100_history)):##[old ... new]
-            begin_price = k_line_100_history[i][1]
-            self.newest_history_price.append(float(begin_price)) ##[old ... new]
-        # self.newest_history_price.reverse()
-
         with open("./log/test.log", "w") as f:
             f.write("")
         pass
@@ -243,8 +237,15 @@ class coin_base():
             self.stable_slope    = 0.001
             self.tdMode = 1 if config_dict["CETUS"]["tdMode"] == "isolated" else 0
 
-    def run(self, current_market):
+    def get_current_market(self):
+        pass
+
+    def run(self):
         ## ["Sun Oct 13 20:26:00 2024", "0.21326", "0.21388", "0.21323", "0.21368", "6935", "69350", "14809.0594", "1"],
+        try:
+            current_market = self.get_current_market()
+        except:
+            return 1
         self.market_piece = current_market
         self.cur_price      = float(current_market[1])
         self.market_highest = float(self.market_piece[2])
@@ -274,7 +275,7 @@ class coin_base():
         #         if len(self.hold_list)<=3:
         #             self.sell_short()
 
-        self.log_info(self.log, 1)
+        # self.log_info(self.log, 1)
         self.log = ""
         self.prefer_mode = 0
         return 0
@@ -293,6 +294,21 @@ class coin_1m(coin_base):
 
 class coin_15m(coin_base):
 
+    def __init__(self, coin_name, k_line_100_history):
+        super().__init__(coin_name, k_line_100_history)
+
+        offset = 96 ## 96 * 15 = 24h
+        self.newest_history_price = []
+        for i in range(offset):##[old ... new]
+            begin_price = k_line_100_history[i][1]
+            self.newest_history_price.append(float(begin_price)) ##[old ... new]
+
+        self.future_market = iter(k_line_100_history[offset:])
+
+    def get_current_market(self):
+        current_market = next(self.future_market)
+        return current_market
+
     def get_stable(self):
         n = -60
         newest_n =  self.newest_history_price[n:]
@@ -301,5 +317,5 @@ class coin_15m(coin_base):
         # self.log += "{} test{} \n".format(self.cur_ctime, str(self.newest_history_price[-96-1:-96+2]))
 
 
-        refer_before = self.newest_history_price[-4*24-1:-4*24+1] ## 24h before
+        refer_before = self.newest_history_price[-4*24-1:-4*24+3] ## 24h before
         self.refer = sum(refer_before)/len(refer_before)

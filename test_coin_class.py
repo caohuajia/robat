@@ -141,7 +141,7 @@ class coin_base():
                                 " newest_10: {}".format(str(self.newest_history_price[-10:])) +\
                                 " burst: {:.5f}".format((1+(self.burst + self.m_stable_gap + self.sell_short_num * 0.15))) + \
                                 " btc/eth: {:.5f}".format( self.btc_change + self.eth_change) + \
-                                " test{}".format(str(self.newest_history_price[-4*24-1:-4*24+1])) +\
+                                " test{}".format(str(self.newest_history_price[-4*24-1:-4*24+3])) +\
                                 "\n"
 
 
@@ -275,7 +275,7 @@ class coin_base():
         #         if len(self.hold_list)<=3:
         #             self.sell_short()
 
-        # self.log_info(self.log, 1)
+        self.log_info(self.log, 1)
         self.log = ""
         self.prefer_mode = 0
         return 0

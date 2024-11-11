@@ -24,40 +24,36 @@ def get_change_list(coin):
             change_list.append(change)
     return change_list
 
+def download(all_coins, interval, total_days):
+    coin_num = len(all_coins)
+    for c in range(coin_num):
+        k_line_history = get_history_k_line(all_coins[c], interval, int(total_days * 24*60/100/15)) ##[new ... old]  2s/200min  15s/day  1day=1440min
+        k_line_history.reverse()
+        # print(len(k_line_history))
+        for i in k_line_history:
+            i[0] = time.ctime(change_time_type(i[0], ms=0, int_value=1))
+        file_name = "./data/{}/{}days/{}_price.json".format(interval, str(total_days), all_coins[c])
+        # print(file_name)
+        with open(file_name, "w") as f:
+            dumps = json.dumps(k_line_history)
+            f.write(dumps)
+        print("finish {}/{}  {}".format(c+1, coin_num, all_coins[c]))
+        time.sleep(2)
+
 if __name__ == "__main__":
 
     total_days = 1 + 30
     global_money = [10]
     interval = "15m"
-    test_one = 0
+    test_one = 1
     # test_coin = "11test"
-    test_coin = "GRASS"
+    test_coin = "APE"
     download_data = 0
 
-
-    price_json_file = "_price_list.json"
-    k_line_history = []
     all_coins = get_all_swap_list()
     if download_data: ## save_history_to_file
-        coin_num = len(all_coins)
-        for c in range(coin_num):
-            k_line_history = get_history_k_line(all_coins[c], interval, int(total_days * 24*60/100/15)) ##[new ... old]  2s/200min  15s/day  1day=1440min
-            k_line_history.reverse()
-            # print(len(k_line_history))
-            for i in k_line_history:
-                i[0] = time.ctime(change_time_type(i[0], ms=0, int_value=1))
-            file_name = "./data/{}/{}days/{}_price.json".format(interval, str(total_days), all_coins[c])
-            # print(file_name)
-            with open(file_name, "w") as f:
-                dumps = json.dumps(k_line_history)
-                f.write(dumps)
-            print("finish {}/{}  {}".format(c+1, coin_num, all_coins[c]))
-            time.sleep(2)
+        download(all_coins, interval, total_days)
         exit(0)
-
-    all_result = ""
-    total_gain = 0
-
 
     btc_change_list = get_change_list("BTC")
     eth_change_list = get_change_list("ETH")
@@ -84,7 +80,10 @@ if __name__ == "__main__":
                         break
         if test_one:
             break
-        
+
+    all_result = ""
+    total_gain = 0
+
     round = 0
     while 1:
         for one_coin in list(all_coin_struct.keys()):

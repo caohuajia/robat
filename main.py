@@ -44,12 +44,21 @@ class Coin():
         self.newest_15m_100_history_price.reverse() ##[old ... new]
 
     def get_self_config(self):
-        self.burst   = config_dict[self.coin_name]["burst"]
-        self.gain    = config_dict[self.coin_name]["gain"]
-        self.money_u = config_dict[self.coin_name]["money_u"]
-        self.lever   = config_dict[self.coin_name]["lever"]
-        self.max_num = config_dict[self.coin_name]["max_num"]
-        self.tdMode  = config_dict[self.coin_name]["tdMode"]
+        try:
+            self.burst   = config_dict[self.coin_name]["burst"]
+            self.gain    = config_dict[self.coin_name]["gain"]
+            self.money_u = config_dict[self.coin_name]["money_u"]
+            self.lever   = config_dict[self.coin_name]["lever"]
+            self.max_num = config_dict[self.coin_name]["max_num"]
+            self.tdMode  = config_dict[self.coin_name]["tdMode"]
+        except:
+            self.burst   = config_dict["DEFAULT"]["burst"]
+            self.gain    = config_dict["DEFAULT"]["gain"]
+            self.money_u = config_dict["DEFAULT"]["money_u"]
+            self.lever   = config_dict["DEFAULT"]["lever"]
+            self.max_num = config_dict["DEFAULT"]["max_num"]
+            self.tdMode  = config_dict["DEFAULT"]["tdMode"]
+
 
     def get_current_price(self):
         global all_cur_price
@@ -165,7 +174,7 @@ class Coin():
             self.log += "cancel fail: orderid: {} info: {} ".format(order_id, str(result))
             return 0
 
-    def order_maintain(self, side, posSide, open_price, old_order_id, num):
+    def order_maintain(self, side, posSide, open_price, old_order_id, num): ## 20/2s
         open_price = "{:.9f}".format(open_price)
 
         need_create_modify_cond = 0
@@ -285,12 +294,19 @@ class Coin():
 if __name__ == "__main__":
     config_dict = get_config()
     coin_list = config_dict.keys()
+    all_coins = get_all_swap_list()
+
 
     public_data = get_public_data()
 
     coin_obejcts = {}
-    for coin_name in coin_list:
+    sleep_counter = 0
+    for coin_name in all_coins:
         coin_obejcts[coin_name] = Coin(coin_name)
+        sleep_counter += 1
+        if sleep_counter >= 10:
+            time.sleep(1)
+            sleep_counter = 0
 
     while 1:
         # try:
@@ -298,14 +314,14 @@ if __name__ == "__main__":
             cur_int_time_ms = str(cur_int_time_s)+"000"
             cur_ctime = time.ctime(cur_int_time_s)
 
-            config_dict = get_config()
-            coin_list = config_dict.keys()
-            for coin_name in coin_list:
-                if coin_name in coin_obejcts.keys():
-                    pass
-                else:
-                    public_data = get_public_data()
-                    coin_obejcts[coin_name] = Coin(coin_name)
+            # config_dict = get_config()
+            # coin_list = config_dict.keys()
+            # for coin_name in all_coins:
+            #     if coin_name in coin_obejcts.keys():
+            #         pass
+            #     else:
+            #         public_data = get_public_data()
+            #         coin_obejcts[coin_name] = Coin(coin_name)
 
             # unfinish_order_list = get_unfinish_order()
             fill_order_list = get_fills()
@@ -314,6 +330,10 @@ if __name__ == "__main__":
 
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].run()
+                sleep_counter += 1
+                if sleep_counter >= 10:
+                    time.sleep(1)
+                    sleep_counter = 0
 
             print("sleep")
             time_flag_per_minite(cur_ctime)

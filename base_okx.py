@@ -155,7 +155,7 @@ def get_fills():
     return data
 
 
-def set_leverage(coin, lever):
+def set_leverage(coin, lever):  ## 20/2s
     accountAPI.set_leverage(
         instId = coin,
         lever  = str(lever),

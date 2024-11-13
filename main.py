@@ -242,7 +242,7 @@ class Coin():
             price = self.buy_long_position[0]["price"]
             num   = self.buy_long_position[0]["number"]
             if (self.m_stable/price >= (1+float(self.gain))):
-                self.log += "try sell long {} {} \n".format(price, num)
+                self.log += "try sell long hold_price:{} num:{} ".format(price, num)
                 self.sell_long_id = self.order_maintain("sell", "long", self.m_stable, self.sell_long_id, num)
             else:
                 self.log += "fail sell long hold:{} num:{}, ma60 target {:5f} \n".format(price, num, price*(1+float(self.gain)))

@@ -155,12 +155,23 @@ def get_fills():
     return data
 
 
-def set_leverage(coin, lever):  ## 20/2s
-    accountAPI.set_leverage(
+def set_leverage(coin, lever):  
+    log = ""
+    result = accountAPI.set_leverage(  ## 20/2s
         instId = coin,
         lever  = str(lever),
-        mgnMode= "isolated"
+        mgnMode= "isolated",
+        posSide= "long"
     )
+    log += str(result)
+    result = accountAPI.set_leverage(
+        instId = coin,
+        lever  = str(lever),
+        mgnMode= "isolated",
+        posSide= "short"
+    )
+    log += str(result)
+    return log
 
 def get_basic_info():
     result = PublicDataAPI.get_instruments(instType="SWAP")

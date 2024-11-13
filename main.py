@@ -11,7 +11,8 @@ class Coin():
         self.coin_name = coin_name
 
         self.get_self_config()
-        set_leverage(self.coin_name+"-USDT-SWAP",self.lever)
+        result = set_leverage(self.coin_name+"-USDT-SWAP",self.lever)
+        self.log += "set leverage: " + result + "\n"
 
         global public_data
         for i in public_data:
@@ -291,6 +292,13 @@ class Coin():
         self.cancel_order(self.sell_short_id)
 
 
+def interval_sleep(max_operate = 10):  ## max_operate means operate per second
+    global sleep_counter
+    sleep_counter += 1
+    if sleep_counter >= max_operate:
+        time.sleep(1)
+        sleep_counter = 0
+
 if __name__ == "__main__":
     config_dict = get_config()
     coin_list = config_dict.keys()
@@ -303,10 +311,7 @@ if __name__ == "__main__":
     sleep_counter = 0
     for coin_name in all_coins:
         coin_obejcts[coin_name] = Coin(coin_name)
-        sleep_counter += 1
-        if sleep_counter >= 10:
-            time.sleep(1)
-            sleep_counter = 0
+        interval_sleep(5)
 
     while 1:
         # try:
@@ -330,10 +335,7 @@ if __name__ == "__main__":
 
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].run()
-                sleep_counter += 1
-                if sleep_counter >= 10:
-                    time.sleep(1)
-                    sleep_counter = 0
+                interval_sleep(10)
 
             print("sleep")
             time_flag_per_minite(cur_ctime)
@@ -343,6 +345,7 @@ if __name__ == "__main__":
         #     for coin in coin_obejcts.keys():
         #         log_info(coin_obejcts[coin].log, "./log/run_log/{}.log".format(coin))
         #         coin_obejcts[coin].cancel_open_order()
+        #         interval_sleep(10)
         #     log_info(cur_ctime + " some exception\n", "./log/run_log/{}.log".format(coin))
         #     break
     exit(0)

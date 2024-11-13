@@ -314,7 +314,7 @@ if __name__ == "__main__":
         interval_sleep(5)
 
     while 1:
-        # try:
+        try:
             cur_int_time_s = get_current_system_time(ms=0, int_value=1)
             cur_int_time_ms = str(cur_int_time_s)+"000"
             cur_ctime = time.ctime(cur_int_time_s)
@@ -340,13 +340,16 @@ if __name__ == "__main__":
             print("sleep")
             time_flag_per_minite(cur_ctime)
 
-        # except:
-        #     print("kill and cancel order")
-        #     for coin in coin_obejcts.keys():
-        #         log_info(coin_obejcts[coin].log, "./log/run_log/{}.log".format(coin))
-        #         coin_obejcts[coin].cancel_open_order()
-        #         interval_sleep(10)
-        #     log_info(cur_ctime + " some exception\n", "./log/run_log/{}.log".format(coin))
-        #     break
+        except KeyboardInterrupt:
+            print("kill and cancel order")
+            for coin in coin_obejcts.keys():
+                log_info(coin_obejcts[coin].log, "./log/run_log/{}.log".format(coin))
+                coin_obejcts[coin].cancel_open_order()
+                interval_sleep(10)
+            log_info(cur_ctime + " some exception\n", "./log/run_log/{}.log".format(coin))
+            break
+        except Exception as e:
+            print(e)
+            break
     exit(0)
 

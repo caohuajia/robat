@@ -9,12 +9,13 @@ from util import *
 
 
 flag = "0"  # live trading: 0, demo trading: 1
+debug = False
 
-PublicDataAPI = PublicData.PublicAPI(flag=flag)
-accountAPI    = Account.AccountAPI(api_key, secret_key, passphrase, False, flag)
-fundingAPI    = Funding.FundingAPI(api_key, secret_key, passphrase, False, flag)
-marketDataAPI = MarketData.MarketAPI(flag = flag)
-tradeAPI      = Trade.TradeAPI(api_key, secret_key, passphrase, False, flag)
+PublicDataAPI = PublicData.PublicAPI(flag=flag, debug=debug)
+accountAPI    = Account.AccountAPI(api_key, secret_key, passphrase, False, flag, debug=debug)
+fundingAPI    = Funding.FundingAPI(api_key, secret_key, passphrase, False, flag, debug=debug)
+marketDataAPI = MarketData.MarketAPI(flag = flag, debug=debug)
+tradeAPI      = Trade.TradeAPI(api_key, secret_key, passphrase, False, flag, debug=debug)
 
 
 def get_current_system_time(ms = 0, int_value = 0):

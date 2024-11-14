@@ -303,8 +303,6 @@ if __name__ == "__main__":
     config_dict = get_config()
     coin_list = config_dict.keys()
     all_coins = get_all_swap_list()
-
-
     public_data = get_public_data()
 
     coin_obejcts = {}
@@ -312,7 +310,6 @@ if __name__ == "__main__":
     for coin_name in all_coins:
         coin_obejcts[coin_name] = Coin(coin_name)
         interval_sleep(5)
-
     while 1:
         try:
             cur_int_time_s = get_current_system_time(ms=0, int_value=1)

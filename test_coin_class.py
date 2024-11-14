@@ -28,8 +28,8 @@ class coin_base():
                 f.write("\n")
 
     def prob(self):
-        if ("Sep 30 19:" in self.cur_ctime  or\
-            "Sep 30 20:" in self.cur_ctime ) and 0:
+        if ("Nov  9 22" in self.cur_ctime  or\
+            "Nov  9 22" in self.cur_ctime ) and 0:
             self.log += "[prob] " + self.cur_ctime + " cur_price: {:.5f}".format(self.market_lowest) + "-{:.5f}".format(self.market_highest) + " bef_24h: {:.5f}".format(self.refer) + \
                                 " rise: {:.0f}%".format(self.cur_price/self.refer*100) + " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
                                 " need: {:.1f}%".format((self.sell_short_water_line/self.cur_price-1)*100) + " m_stable {:.5f}".format(self.m_stable) + \
@@ -39,9 +39,9 @@ class coin_base():
         hold_str = " p_m: " + "{:.1f}".format(self.prefer_mode) + " hold:{"
         for i in self.hold_list:
             if i["mode"] == 0: ## buy more
-                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}%".format((self.cur_price/i["price"]-1)*100*self.lever) + " {:.3f}%; ".format((i["gain"]*100))
+                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}%".format((self.cur_price/i["price"]-1)*100*self.lever) + " {:.3f}% ⬆; ".format((i["gain"]*100))
             else:
-                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}%".format((1-self.cur_price/i["price"])*100*self.lever) + " {:.3f}%; ".format((i["gain"]*100))
+                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}%".format((1-self.cur_price/i["price"])*100*self.lever) + " {:.3f}% ⬇; ".format((i["gain"]*100))
         hold_str += "}"
         return hold_str
 
@@ -190,15 +190,15 @@ class coin_base():
         newest_n =  self.newest_history_price[n:]
         self.m_stable = sum(newest_n)/len(newest_n)
 
-        refer_before = self.newest_history_price[-4*24-1:-4*24+1]
+        refer_before = self.newest_history_price[-4*24-1:-4*24+3]
         self.refer = sum(refer_before)/len(refer_before)
         pass
 
+    def get_newest_history(self):
+        self.newest_history_price.pop(0)
+        self.newest_history_price.append(self.market_end)
 
     def gen_current_parameter(self):
-        self.newest_history_price.pop(0)
-        self.newest_history_price.append(self.cur_price)
-
         self.get_stable()
 
         # self.m_stable_gap = min(5*abs(self.cur_price/self.m_stable-1) , 0.2)
@@ -244,6 +244,8 @@ class coin_base():
         pass
 
     def run(self, global_money):
+        self.get_newest_history()
+
         self.global_money = global_money[0]
         ## ["Sun Oct 13 20:26:00 2024", "0.21326", "0.21388", "0.21323", "0.21368", "6935", "69350", "14809.0594", "1"],
         try:
@@ -308,6 +310,7 @@ class coin_15m(coin_base):
             begin_price = k_line_100_history[i][1]
             self.newest_history_price.append(float(begin_price)) ##[old ... new]
 
+        self.market_end = float(k_line_100_history[offset-1][4])
         self.future_market = iter(k_line_100_history[offset:])
 
     def get_current_market(self):

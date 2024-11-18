@@ -14,10 +14,8 @@ class Coin():
         result = set_leverage(self.coin_name+"-USDT-SWAP",self.lever)
         self.log += "set leverage: " + result + "\n"
 
-        global public_data
-        for i in public_data:
-            if (self.coin_name+"-USDT-SWAP") == i["instId"]:
-                self.value = float(i["ctVal"])
+        self.get_swap_value()
+        self.update_newest_15m_100_history()
         
         ##  timestap         begin      highest    lowest     end                                      complete
         ##['1728006240000', '0.15846', '0.15859', '0.15785', '0.15785', '4480', '44800', '7090.9912', '0']
@@ -30,6 +28,13 @@ class Coin():
         #         end_price_1m  = float(history_1m_k_line_100[i][4])
         #         self.newest_1m_100_history_price.append(end_price_1m) ##[new ... old]
         # self.newest_1m_100_history_price.reverse() ##[old ... new]
+
+    def get_swap_value(self):
+        global public_data
+        for i in public_data:
+            if (self.coin_name+"-USDT-SWAP") == i["instId"]:
+                self.value = float(i["ctVal"])
+          
 
     def update_newest_15m_100_history(self):
 
@@ -71,11 +76,13 @@ class Coin():
                 return float(i["last"])
 
     def get_15m_ma60(self):
-        self.update_newest_15m_100_history()
+        # self.update_newest_15m_100_history()
 
-        n = -60
+        n = -59
         newest_n =  self.newest_15m_100_history_price[n:]
-        self.m_stable = sum(newest_n)/len(newest_n)
+        newest_sum = sum(newest_n) + self.cur_price
+        newest_num = len(newest_n) + 1
+        self.m_stable = newest_sum/newest_num
 
         refer_before = self.newest_15m_100_history_price[-4*24-1:-4*24+3]
         self.refer = sum(refer_before)/len(refer_before)
@@ -305,11 +312,15 @@ if __name__ == "__main__":
     all_coins = get_all_swap_list()
     public_data = get_public_data()
 
+    cur_int_time_s = get_current_system_time(ms=0, int_value=1)
+    cur_int_time_ms = str(cur_int_time_s)+"000"
+    cur_ctime = time.ctime(cur_int_time_s)
+
     coin_obejcts = {}
     sleep_counter = 0
     for coin_name in all_coins:
         coin_obejcts[coin_name] = Coin(coin_name)
-        interval_sleep(5)
+        interval_sleep(20)
     while 1:
         try:
             cur_int_time_s = get_current_system_time(ms=0, int_value=1)
@@ -332,9 +343,14 @@ if __name__ == "__main__":
 
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].run()
-                interval_sleep(10)
+                interval_sleep(20)
+            print("finish order")
 
+            for coin in coin_obejcts.keys():
+                coin_obejcts[coin].update_newest_15m_100_history()
+                interval_sleep(10)
             print("sleep")
+
             time_flag_per_minite(cur_ctime)
 
         except KeyboardInterrupt:

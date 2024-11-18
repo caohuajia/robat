@@ -45,7 +45,7 @@ if __name__ == "__main__":
     total_days = 1 + 30
     global_money = [10]
     interval = "15m"
-    test_one = 1
+    test_one = 0
     # test_coin = "11test"
     test_coin = "APE"
     download_data = 0

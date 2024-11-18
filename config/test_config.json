@@ -5,7 +5,8 @@
                       "money_u":1,
                       "lever"  :5,
                       "max_num":10,
-                      "tdMode" : "isolated"
+                      "tdMode" : "isolated",
+                      "type"   : 2
                      },
         "PEPE"      :{"burst" :0.01,
                       "gain"   :0.013,

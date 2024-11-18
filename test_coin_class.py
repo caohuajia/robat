@@ -239,6 +239,7 @@ class coin_base():
             self.max_num = config_dict["CETUS"]["max_num"]
             self.stable_slope    = 0.001
             self.tdMode = 1 if config_dict["CETUS"]["tdMode"] == "isolated" else 0
+            self.type    = config_dict["CETUS"]["type"]
 
     def get_current_market(self):
         pass
@@ -267,9 +268,9 @@ class coin_base():
 
         self.gen_current_parameter()
 
-        if self.buy_long_num < self.max_num:
+        if (self.buy_long_num < self.max_num) and (self.type >= 1):
             self.buy_long()
-        if self.sell_short_num < self.max_num:
+        if (self.sell_short_num < self.max_num) and (self.type <= 1):
             self.sell_short()
 
         global_money[0] = self.global_money

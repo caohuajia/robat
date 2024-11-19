@@ -43,7 +43,7 @@ def download(all_coins, interval, total_days):
 if __name__ == "__main__":
 
     total_days = 1 + 30
-    global_money = [10]
+    initial_money = 25
     interval = "15m"
     test_one = 0
     # test_coin = "11test"
@@ -62,22 +62,25 @@ if __name__ == "__main__":
     for one_coin in all_coins:
         if test_one:
             one_coin = test_coin
-        with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), one_coin), "r") as f:
-            k_line_history = json.load(f)
-            if interval == "15m":
-                coin = coin_15m(one_coin, k_line_history)
-                all_coin_struct[one_coin] = coin
+        try:
+            with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), one_coin), "r") as f:
+                k_line_history = json.load(f)
+                if interval == "15m":
+                    coin = coin_15m(one_coin, k_line_history)
+                    all_coin_struct[one_coin] = coin
 
-            else:
-                offset = 1440  ## 1440min = 24h
-                coin = coin_1m(one_coin, k_line_history[0:offset])
-                remain_k_line_history_piece = k_line_history[offset:]
-                remain_num = len(remain_k_line_history_piece)
-                for i in range(remain_num):
-                    btc_change = btc_change_list[i]
-                    eth_change = btc_change_list[i]
-                    if coin.run(remain_k_line_history_piece[i]):
-                        break
+                else:
+                    offset = 1440  ## 1440min = 24h
+                    coin = coin_1m(one_coin, k_line_history[0:offset])
+                    remain_k_line_history_piece = k_line_history[offset:]
+                    remain_num = len(remain_k_line_history_piece)
+                    for i in range(remain_num):
+                        btc_change = btc_change_list[i]
+                        eth_change = btc_change_list[i]
+                        if coin.run(remain_k_line_history_piece[i]):
+                            break
+        except:
+            print("{} is not downloaded".format(one_coin))
         if test_one:
             break
 
@@ -85,6 +88,7 @@ if __name__ == "__main__":
     total_gain = 0
 
     round = 0
+    global_money = [initial_money]
     while 1:
         for one_coin in list(all_coin_struct.keys()):
             coin = all_coin_struct[one_coin]
@@ -100,8 +104,8 @@ if __name__ == "__main__":
             round += 1
             # print("round {}/{}".format(round,1))
 
-    all_result += "total gain: {}".format(total_gain)
-    print("total gain: ",total_gain)
+    all_result += "total gain: {}%".format(total_gain/initial_money*100)
+    print("total gain: {}%".format(total_gain/initial_money*100))
     if test_one:
         pass
     else:

@@ -57,6 +57,7 @@ class Coin():
             self.lever   = config_dict[self.coin_name]["lever"]
             self.max_num = config_dict[self.coin_name]["max_num"]
             self.tdMode  = config_dict[self.coin_name]["tdMode"]
+            self.type    = config_dict[self.coin_name]["type"]
         except:
             self.burst   = config_dict["DEFAULT"]["burst"]
             self.gain    = config_dict["DEFAULT"]["gain"]
@@ -64,6 +65,7 @@ class Coin():
             self.lever   = config_dict["DEFAULT"]["lever"]
             self.max_num = config_dict["DEFAULT"]["max_num"]
             self.tdMode  = config_dict["DEFAULT"]["tdMode"]
+            self.type    = config_dict["DEFAULT"]["type"]
 
 
     def get_current_price(self):
@@ -188,11 +190,11 @@ class Coin():
         need_create_modify_cond = 0
         water_line_ok = 0
         position_value_ok = 0
-        if ((side=="buy") and (posSide=="long")):
+        if ((side=="buy") and (posSide=="long")) and (self.type >= 1):
             water_line_ok = (self.m_stable <= self.buy_long_water_line)
             need_create_modify_cond = water_line_ok and (self.cur_price <= self.m_stable) and (num > 0)
             position_value_ok = self.long_position_value < float(self.money_u * self.max_num)
-        elif ((side=="sell") and (posSide=="short")):
+        elif ((side=="sell") and (posSide=="short")) and (self.type <= 1):
             water_line_ok = (self.m_stable >= self.sell_short_water_line)
             need_create_modify_cond = water_line_ok and (self.cur_price >= self.m_stable) and (num > 0)
             position_value_ok = self.short_position_value < float(self.money_u * self.max_num)
@@ -320,7 +322,8 @@ if __name__ == "__main__":
     sleep_counter = 0
     for coin_name in all_coins:
         coin_obejcts[coin_name] = Coin(coin_name)
-        interval_sleep(20)
+        interval_sleep(5)
+    print("initial done")
     while 1:
         try:
             cur_int_time_s = get_current_system_time(ms=0, int_value=1)
@@ -343,7 +346,7 @@ if __name__ == "__main__":
 
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].run()
-                interval_sleep(20)
+                interval_sleep(40)
             print("finish order")
 
             for coin in coin_obejcts.keys():
@@ -351,6 +354,8 @@ if __name__ == "__main__":
                 interval_sleep(10)
             print("sleep")
 
+            cur_int_time_s = get_current_system_time(ms=0, int_value=1)
+            cur_ctime = time.ctime(cur_int_time_s)
             time_flag_per_minite(cur_ctime)
 
         except KeyboardInterrupt:
@@ -358,7 +363,7 @@ if __name__ == "__main__":
             for coin in coin_obejcts.keys():
                 log_info(coin_obejcts[coin].log, "./log/run_log/{}.log".format(coin))
                 coin_obejcts[coin].cancel_open_order()
-                interval_sleep(10)
+                interval_sleep(20)
             log_info(cur_ctime + " some exception\n", "./log/run_log/{}.log".format(coin))
             break
         except Exception as e:

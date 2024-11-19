@@ -105,7 +105,7 @@ class coin_base():
         self.prob()
         if (self.balance>0.1) and (self.global_money>0.1):
             if (self.m_stable <= self.buy_long_water_line) and (self.cur_price < self.m_stable) and (self.cur_price < self.market_end) and \
-            ((self.m_stable < (self.last_hit_m_stable * self.hit_m_dn)) ):
+            ((self.m_stable <= (self.last_hit_m_stable * self.hit_m_dn)) ):
             # if (self.buy_long_water_line > self.market_lowest) and (self.market_piece[1] < self.market_piece[4]):
                 if self.price_can_trade(self.m_stable):
                     trade_info = {"time":self.cur_ctime, "price":self.m_stable, "money":0.01, "gain":1-(self.refer/self.m_stable), "mode":0}
@@ -128,7 +128,7 @@ class coin_base():
         self.prob()
         if (self.balance>0.1) and (self.global_money>0.1):
             if (self.m_stable >= self.sell_short_water_line) and (self.cur_price > self.m_stable) and (self.cur_price > self.market_end) and \
-            ((self.m_stable > (self.last_hit_m_stable * self.hit_m_up)) ):
+            ((self.m_stable >= (self.last_hit_m_stable * self.hit_m_up)) ):
             # if (self.sell_short_water_line < self.market_highest) and (self.market_piece[1] > self.market_piece[4]):
                 if self.price_can_trade(self.m_stable):
                     trade_info = {"time":self.cur_ctime, "price":self.m_stable, "money":0.01, "gain":(self.m_stable/self.refer)-1, "mode":1}

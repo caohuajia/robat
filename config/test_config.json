@@ -6,7 +6,9 @@
                       "lever"  :5,
                       "max_num":10,
                       "tdMode" : "isolated",
-                      "type"   : 2
+                      "type"   : 2,
+                      "hit_m_up" : 1.005,
+                      "hit_m_dn" : 0.995
                      },
         "PEPE"      :{"burst" :0.01,
                       "gain"   :0.013,

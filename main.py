@@ -9,6 +9,7 @@ class Coin():
 
     def __init__(self, coin_name):
         self.coin_name = coin_name
+        self.init = 0
 
         self.get_self_config()
         result = set_leverage(self.coin_name+"-USDT-SWAP",self.lever)
@@ -34,20 +35,51 @@ class Coin():
         for i in public_data:
             if (self.coin_name+"-USDT-SWAP") == i["instId"]:
                 self.value = float(i["ctVal"])
-          
+
+    def price_hit(self, price_piece, price):
+        highest = float(price_piece[2])
+        lowest  = float(price_piece[3])
+        if price > lowest:
+            if price < highest:
+                return 1
+        return 0
+
 
     def update_newest_15m_100_history(self):
 
         ## ['1729861200000', '0.14621', '0.14662', '0.14578', '0.14656', '33498', '334980', '48981.5551', '1']
         history_15m_k_line_100 = get_k_line(self.coin_name, cur_int_time_ms, "15m") ##[new ... old]
         self.newest_15m_100_history_price = []
-        for i in range(98): ## 可能偶尔返回不了100个历史
-            if history_15m_k_line_100[i][-1]=="0": ##history_1m_k_line_100[i][-1] == "0":
-                continue ## newest does not finish
-            else:
-                end_price_15m = float(history_15m_k_line_100[i][4])
-                self.newest_15m_100_history_price.append(end_price_15m) ##[new ... old]
-        self.newest_15m_100_history_price.reverse() ##[old ... new]
+        try:
+            for i in range(98): ## 可能偶尔返回不了100个历史
+                if history_15m_k_line_100[i][-1]=="0": ##history_1m_k_line_100[i][-1] == "0":
+                    continue ## newest does not finish
+                else:
+                    end_price_15m = float(history_15m_k_line_100[i][4])
+                    self.newest_15m_100_history_price.append(end_price_15m) ##[new ... old]
+            self.newest_15m_100_history_price.reverse() ##[old ... new]
+        except:
+            print("{} can not get 100 history".format(self.coin_name))
+            return
+
+        n = -60
+        newest_n =  self.newest_15m_100_history_price[n:]
+        newest_sum = sum(newest_n)
+        newest_num = len(newest_n)
+        self.m_stable = newest_sum/newest_num
+
+        refer_before = self.newest_15m_100_history_price[-4*24-1:-4*24+3]
+        self.refer = sum(refer_before)/len(refer_before)
+
+        if self.init == 0:
+            self.last_hit_m_stable = self.m_stable
+            self.init = 1
+
+        if self.price_hit(history_15m_k_line_100[0], self.m_stable):
+            self.log += "ma60 hit {:8f} {}-{}\n".format(self.m_stable, history_15m_k_line_100[0][3], history_15m_k_line_100[0][2])
+            self.last_hit_m_stable = self.m_stable
+
+
 
     def get_self_config(self):
         try:
@@ -58,6 +90,8 @@ class Coin():
             self.max_num = config_dict[self.coin_name]["max_num"]
             self.tdMode  = config_dict[self.coin_name]["tdMode"]
             self.type    = config_dict[self.coin_name]["type"]
+            self.hit_m_up= config_dict[self.coin_name]["hit_m_up"]
+            self.hit_m_dn= config_dict[self.coin_name]["hit_m_dn"]
         except:
             self.burst   = config_dict["DEFAULT"]["burst"]
             self.gain    = config_dict["DEFAULT"]["gain"]
@@ -66,6 +100,8 @@ class Coin():
             self.max_num = config_dict["DEFAULT"]["max_num"]
             self.tdMode  = config_dict["DEFAULT"]["tdMode"]
             self.type    = config_dict["DEFAULT"]["type"]
+            self.hit_m_up= config_dict["DEFAULT"]["hit_m_up"]
+            self.hit_m_dn= config_dict["DEFAULT"]["hit_m_dn"]
 
 
     def get_current_price(self):
@@ -93,13 +129,16 @@ class Coin():
         self.get_self_config()
         self.cur_price = self.get_current_price()
         # if self.flag_15m:
-        self.get_15m_ma60()
+        # self.get_15m_ma60()
 
         self.open_num = int(self.money_u * self.lever // (self.m_stable * self.value))
         self.buy_long_water_line   = self.refer * (1-(self.burst))
         self.sell_short_water_line = self.refer * (1+(self.burst))
 
-        self.log += "[{}] ".format(cur_ctime) + self.coin_name + " ma60: {:.5f}".format(self.m_stable) + " refer: {:.5f}".format(self.refer) + \
+        self.log += "[{}] ".format(cur_ctime) + self.coin_name + \
+                    " ma60: {:.8f}".format(self.m_stable) + \
+                    " last_hit_m60: {:8f}".format(self.last_hit_m_stable) + \
+                    " refer: {:.5f}".format(self.refer) + \
                     " open_num: {:.5f}".format(self.open_num) + \
                     " buy long water line: {:.5f}".format(self.buy_long_water_line) + \
                     " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
@@ -189,14 +228,17 @@ class Coin():
 
         need_create_modify_cond = 0
         water_line_ok = 0
+        m_stable_ok = 0
         position_value_ok = 0
         if ((side=="buy") and (posSide=="long")) and (self.type >= 1):
             water_line_ok = (self.m_stable <= self.buy_long_water_line)
-            need_create_modify_cond = water_line_ok and (self.cur_price <= self.m_stable) and (num > 0)
+            m_stable_ok   = self.m_stable <= (self.last_hit_m_stable * self.hit_m_dn)
+            need_create_modify_cond = water_line_ok and (self.cur_price <= self.m_stable) and (num > 0) and m_stable_ok
             position_value_ok = self.long_position_value < float(self.money_u * self.max_num)
         elif ((side=="sell") and (posSide=="short")) and (self.type <= 1):
             water_line_ok = (self.m_stable >= self.sell_short_water_line)
-            need_create_modify_cond = water_line_ok and (self.cur_price >= self.m_stable) and (num > 0)
+            m_stable_ok   = self.m_stable >= (self.last_hit_m_stable * self.hit_m_up)
+            need_create_modify_cond = water_line_ok and (self.cur_price >= self.m_stable) and (num > 0) and m_stable_ok
             position_value_ok = self.short_position_value < float(self.money_u * self.max_num)
         elif ((side=="sell") and (posSide=="long")):
             need_create_modify_cond = 1
@@ -229,13 +271,20 @@ class Coin():
 
         else: ## not meet cond, cancel it
             if num <= 0:
-                self.log += "money_u does not enough for a swap "
+                self.log += "money_u does not enough for a swap "                
             else:
                 if water_line_ok == 0:
-                    if side == "buy":
-                        self.log += "ma60 does not catch buy long water line   {:3f}% ".format((self.m_stable / self.buy_long_water_line -1)*100)
+                    if m_stable_ok == 1:
+                        if side == "buy":
+                            self.log += "ma60 does not catch buy long water line   {:3f}% ".format((self.m_stable / self.buy_long_water_line -1)*100)
+                        else:
+                            self.log += "ma60 does not catch sell short water line   {:3f}% ".format((self.sell_short_water_line / self.m_stable -1)*100)
                     else:
-                        self.log += "ma60 does not catch sell short water line   {:3f}% ".format((self.sell_short_water_line / self.m_stable -1)*100)
+                        if side == "buy":
+                            self.log += "hit ma60 does not up enough   {:3f}% ".format((self.last_hit_m_stable / self.m_stable -1)*100)
+                        else:
+                            self.log += "hit ma60 does not down enough   {:3f}% ".format((self.m_stable / self.last_hit_m_stable -1)*100)
+
                 else:
                     if side == "buy":
                         self.log += "cur_price > m_stable , should not create/modify "
@@ -291,9 +340,9 @@ class Coin():
         self.sell_short_id = self.order_maintain("sell", "short", self.m_stable, self.sell_short_id, self.open_num)
 
 
+    def write_log(self):
         log_info(self.log, "./log/run_log/{}.log".format(self.coin_name))
         self.log = ""
-        pass
 
 
     def cancel_open_order(self):
@@ -321,8 +370,10 @@ if __name__ == "__main__":
     coin_obejcts = {}
     sleep_counter = 0
     for coin_name in all_coins:
-        coin_obejcts[coin_name] = Coin(coin_name)
-        interval_sleep(5)
+        coin_obj = Coin(coin_name)
+        if len(coin_obj.newest_15m_100_history_price) > 95:
+            coin_obejcts[coin_name] = Coin(coin_name)
+        interval_sleep(4 )
     print("initial done")
     while 1:
         try:
@@ -351,6 +402,7 @@ if __name__ == "__main__":
 
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].update_newest_15m_100_history()
+                coin_obejcts[coin].write_log()
                 interval_sleep(10)
             print("sleep")
 

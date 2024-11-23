@@ -1,37 +1,7 @@
 [
   {
-    "CETUS":{
-      "burst"  :0.02,   "gain" :0.02,   "money_u":5,   "max_num":2, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.005, "hit_m_dn":0.995, "type" : 1
-    },
-    "APE":{
-      "burst"  :0.01,   "gain" :0.01,   "money_u":5,   "max_num":2, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.005, "hit_m_dn":0.995, "type" : 1
-    },
-    "SLP":{
-      "burst"  :0.01,   "gain" :0.01,   "money_u":5,   "max_num":2, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.005, "hit_m_dn":0.995, "type" : 1
-    },
-    "BIGTIME":{
-      "burst"  :0.02,   "gain" :0.02,   "money_u":5,   "max_num":2, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.005, "hit_m_dn":0.995, "type" : 1
-    },
-    "API3":{
-      "burst"  :0.01,   "gain" :0.01,   "money_u":5,   "max_num":2, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.005, "hit_m_dn":0.995, "type" : 1
-    },
-    "YGG":{
-      "burst"  :0.01,   "gain" :0.01,   "money_u":5,   "max_num":2, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.005, "hit_m_dn":0.995, "type" : 1
-    },
-    "MEW":{
-      "burst"  :0.01,   "gain" :0.01,   "money_u":5,   "max_num":2, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.005, "hit_m_dn":0.995, "type" : 1
-    },
-    "MASK":{
-      "burst"  :0.05,   "gain" :0.05,   "money_u":5,   "max_num":2, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.005, "hit_m_dn":0.995, "type" : 1
-    },
-    "ULTI":{
-      "burst"  :0.03,   "gain" :0.03,   "money_u":5,   "max_num":2, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.005, "hit_m_dn":0.995, "type" : 1
-    },
-    "DOGE":{
-      "burst"  :0.06,   "gain" :0.06,   "money_u":20,  "max_num":1, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.005, "hit_m_dn":0.995, "type" : 1
-    },
     "DEFAULT":{
-      "burst"  :0.02,   "gain" :0.02,   "money_u":5,   "max_num":1, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.005, "hit_m_dn":0.995, "type" : 1
+      "burst"  :0.02,   "gain" :0.02,   "money_u":2,   "max_num":1, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.005, "hit_m_dn":0.995, "type" : 1
     }
   },
   {

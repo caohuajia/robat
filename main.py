@@ -230,16 +230,22 @@ class Coin():
         water_line_ok = 0
         m_stable_ok = 0
         position_value_ok = 0
-        if ((side=="buy") and (posSide=="long")) and (self.type >= 1):
-            water_line_ok = (self.m_stable <= self.buy_long_water_line)
-            m_stable_ok   = self.m_stable <= (self.last_hit_m_stable * self.hit_m_dn)
-            need_create_modify_cond = water_line_ok and (self.cur_price <= self.m_stable) and (num > 0) and m_stable_ok
-            position_value_ok = self.long_position_value < float(self.money_u * self.max_num)
-        elif ((side=="sell") and (posSide=="short")) and (self.type <= 1):
-            water_line_ok = (self.m_stable >= self.sell_short_water_line)
-            m_stable_ok   = self.m_stable >= (self.last_hit_m_stable * self.hit_m_up)
-            need_create_modify_cond = water_line_ok and (self.cur_price >= self.m_stable) and (num > 0) and m_stable_ok
-            position_value_ok = self.short_position_value < float(self.money_u * self.max_num)
+        if ((side=="buy") and (posSide=="long")):
+            if (self.type >= 1):
+                water_line_ok = (self.m_stable <= self.buy_long_water_line)
+                m_stable_ok   = self.m_stable <= (self.last_hit_m_stable * self.hit_m_dn)
+                need_create_modify_cond = water_line_ok and (self.cur_price <= self.m_stable) and (num > 0) and m_stable_ok
+                position_value_ok = self.long_position_value < float(self.money_u * self.max_num)
+            else:
+                self.log += "type not allow. "
+        elif ((side=="sell") and (posSide=="short")):
+            if(self.type <= 1):
+                water_line_ok = (self.m_stable >= self.sell_short_water_line)
+                m_stable_ok   = self.m_stable >= (self.last_hit_m_stable * self.hit_m_up)
+                need_create_modify_cond = water_line_ok and (self.cur_price >= self.m_stable) and (num > 0) and m_stable_ok
+                position_value_ok = self.short_position_value < float(self.money_u * self.max_num)
+            else:
+                self.log += "type not allow. "
         elif ((side=="sell") and (posSide=="long")):
             need_create_modify_cond = 1
             position_value_ok = 1
@@ -373,7 +379,7 @@ if __name__ == "__main__":
         coin_obj = Coin(coin_name)
         if len(coin_obj.newest_15m_100_history_price) > 95:
             coin_obejcts[coin_name] = Coin(coin_name)
-        interval_sleep(4 )
+        interval_sleep(8)
     print("initial done")
     while 1:
         try:

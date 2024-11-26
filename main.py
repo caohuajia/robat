@@ -75,12 +75,12 @@ class Coin():
             self.last_hit_m_stable = self.m_stable
             self.init = 1
 
-        self.log += "hit detect: {:8f} {}-{} ".format(self.m_stable, history_15m_k_line_100[0][3], history_15m_k_line_100[0][2])
-        if self.price_hit(history_15m_k_line_100[0], self.m_stable):
-            self.log += "ma60 hit {:8f} {}-{}\n".format(self.m_stable, history_15m_k_line_100[0][3], history_15m_k_line_100[0][2])
+        
+        if self.price_hit(history_15m_k_line_100[1], self.m_stable):
+            self.log += "hit ma60  {}-{} {:8f}\n".format(history_15m_k_line_100[1][3], history_15m_k_line_100[1][2], self.m_stable)
             self.last_hit_m_stable = self.m_stable
         else:
-            self.log += "\n"
+            self.log += "not : {} {}-{} {:8f}\n".format(time.ctime(int(history_15m_k_line_100[1][0][:-3])), history_15m_k_line_100[1][3], history_15m_k_line_100[1][2], self.m_stable)
 
 
 
@@ -358,6 +358,9 @@ class Coin():
         self.cancel_order(self.buy_long_id)
         self.cancel_order(self.sell_short_id)
 
+    def back_call(self):
+        self.update_newest_15m_100_history()
+        self.write_log()
 
 def interval_sleep(max_operate = 10):  ## max_operate means operate per second
     global sleep_counter
@@ -409,8 +412,7 @@ if __name__ == "__main__":
             print("finish order")
 
             for coin in coin_obejcts.keys():
-                coin_obejcts[coin].update_newest_15m_100_history()
-                coin_obejcts[coin].write_log()
+                coin_obejcts[coin].back_call()
                 interval_sleep(10)
 
             config_dict = get_config()

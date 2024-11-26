@@ -75,9 +75,12 @@ class Coin():
             self.last_hit_m_stable = self.m_stable
             self.init = 1
 
+        self.log += "hit detect: {:8f} {}-{} ".format(self.m_stable, history_15m_k_line_100[0][3], history_15m_k_line_100[0][2])
         if self.price_hit(history_15m_k_line_100[0], self.m_stable):
             self.log += "ma60 hit {:8f} {}-{}\n".format(self.m_stable, history_15m_k_line_100[0][3], history_15m_k_line_100[0][2])
             self.last_hit_m_stable = self.m_stable
+        else:
+            self.log += "\n"
 
 
 
@@ -235,7 +238,7 @@ class Coin():
                 water_line_ok = (self.m_stable <= self.buy_long_water_line)
                 m_stable_ok   = self.m_stable <= (self.last_hit_m_stable * self.hit_m_dn)
                 need_create_modify_cond = water_line_ok and (self.cur_price <= self.m_stable) and (num > 0) and m_stable_ok
-                position_value_ok = self.long_position_value < float(self.money_u * self.max_num)
+                position_value_ok = (2*self.long_position_value) < float(self.money_u * self.max_num)
             else:
                 self.log += "type not allow. "
         elif ((side=="sell") and (posSide=="short")):
@@ -243,7 +246,7 @@ class Coin():
                 water_line_ok = (self.m_stable >= self.sell_short_water_line)
                 m_stable_ok   = self.m_stable >= (self.last_hit_m_stable * self.hit_m_up)
                 need_create_modify_cond = water_line_ok and (self.cur_price >= self.m_stable) and (num > 0) and m_stable_ok
-                position_value_ok = self.short_position_value < float(self.money_u * self.max_num)
+                position_value_ok = (2*self.short_position_value) < float(self.money_u * self.max_num)
             else:
                 self.log += "type not allow. "
         elif ((side=="sell") and (posSide=="long")):
@@ -387,7 +390,6 @@ if __name__ == "__main__":
             cur_int_time_ms = str(cur_int_time_s)+"000"
             cur_ctime = time.ctime(cur_int_time_s)
 
-            # config_dict = get_config()
             # coin_list = config_dict.keys()
             # for coin_name in all_coins:
             #     if coin_name in coin_obejcts.keys():
@@ -410,8 +412,10 @@ if __name__ == "__main__":
                 coin_obejcts[coin].update_newest_15m_100_history()
                 coin_obejcts[coin].write_log()
                 interval_sleep(10)
-            print("sleep")
 
+            config_dict = get_config()
+
+            print("sleep")
             cur_int_time_s = get_current_system_time(ms=0, int_value=1)
             cur_ctime = time.ctime(cur_int_time_s)
             time_flag_per_minite(cur_ctime)

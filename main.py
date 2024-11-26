@@ -174,11 +174,11 @@ class Coin():
             ccy   ="USDT",
             side  =side,   ## 开多：bug long   开空：sell short   平多：sell long   平空：bug short
             posSide=posSide, 
-            ordType="trigger", ## 限价：limit 市价：market
+            ordType="trigger",
             sz     = str(num), ## 委托数量
 
             triggerPx = price, ## 触发价格 
-            orderPx   = price, ## 委托价格 
+            orderPx   = "-1", ## 委托价格 , -1为市价
             instId =self.coin_name+"-USDT-SWAP"
         )
 
@@ -195,7 +195,7 @@ class Coin():
     def modify_order(self, order_id, price):
         result = tradeAPI.amend_algo_order(
             newTriggerPx =price,   ## 触发价格 
-            newOrdPx     =price,   ## 委托价格 
+            newOrdPx     ="-1",   ## 委托价格 
             algoId       =order_id,  
             instId       =self.coin_name+"-USDT-SWAP"
         )

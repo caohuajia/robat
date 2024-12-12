@@ -392,6 +392,7 @@ if __name__ == "__main__":
     print("initial done")
     while 1:
         try:
+            global_log = ""
             cur_int_time_s = get_current_system_time(ms=0, int_value=1)
             cur_int_time_ms = str(cur_int_time_s)+"000"
             cur_ctime = time.ctime(cur_int_time_s)
@@ -412,7 +413,7 @@ if __name__ == "__main__":
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].run()
                 interval_sleep(40)
-            print("finish order")
+            global_log += cur_ctime + "finish older\n"
 
             total_hold = 0
             merge_hold = 0
@@ -429,10 +430,13 @@ if __name__ == "__main__":
             else:
                 prefer_idx =  merge_hold / 100
 
-            print("total:{} merge:{}".format(total_hold,merge_hold))
+            global_log += "total:{} merge:{} \n".format(total_hold,merge_hold)
             config_dict = get_config()
 
-            print("sleep")
+            global_log += "sleep"
+            log_info(global_log, "./log/run_log/111_global_log.log")
+            global_log = ""
+
             cur_int_time_s = get_current_system_time(ms=0, int_value=1)
             cur_ctime = time.ctime(cur_int_time_s)
             time_flag_per_minite(cur_ctime)

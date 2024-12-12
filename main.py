@@ -4,6 +4,7 @@ from base_okx import *
 class Coin():
     global cur_ctime
     global config_dict
+    global prefer_idx
     log = ""
     coin_name = ""
 
@@ -135,13 +136,14 @@ class Coin():
         # self.get_15m_ma60()
 
         self.open_num = int(self.money_u * self.lever // (self.m_stable * self.value))
-        self.buy_long_water_line   = self.refer * (1-(self.burst))
-        self.sell_short_water_line = self.refer * (1+(self.burst))
+        self.buy_long_water_line   = self.refer * (1-(self.burst) - max(prefer_idx,0))
+        self.sell_short_water_line = self.refer * (1+(self.burst) + min(prefer_idx,0))
 
         self.log += "[{}] ".format(cur_ctime) + self.coin_name + \
                     " ma60: {:.8f}".format(self.m_stable) + \
                     " last_hit_m60: {:8f}".format(self.last_hit_m_stable) + \
                     " refer: {:.5f}".format(self.refer) + \
+                    " prefer: {:.5f}%".format(prefer_idx*100) + \
                     " open_num: {:.5f}".format(self.open_num) + \
                     " buy long water line: {:.5f}".format(self.buy_long_water_line) + \
                     " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
@@ -209,7 +211,7 @@ class Coin():
             return order_id
         else: ## modify fail, cancel order
             # self.cancel_order(order_id)
-            self.log += "modify_order_fail(need handle): " + str(result) + "\n"
+            self.log += "modify_order_fail(need handle): id:{} new_price:{:5f} ".format(order_id, float(price)) + str(result) + "\n"
             # print(result)
             return ""
 
@@ -381,6 +383,7 @@ if __name__ == "__main__":
 
     coin_obejcts = {}
     sleep_counter = 0
+    prefer_idx = 0
     for coin_name in all_coins:
         coin_obj = Coin(coin_name)
         if len(coin_obj.newest_15m_100_history_price) > 95:
@@ -411,10 +414,22 @@ if __name__ == "__main__":
                 interval_sleep(40)
             print("finish order")
 
+            total_hold = 0
+            merge_hold = 0
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].back_call()
+                total_hold += coin_obejcts[coin].short_position_value
+                total_hold += coin_obejcts[coin].long_position_value
+                merge_hold -= coin_obejcts[coin].short_position_value
+                merge_hold += coin_obejcts[coin].long_position_value
                 interval_sleep(10)
 
+            if total_hold == 0:
+                prefer_idx = 0
+            else:
+                prefer_idx =  merge_hold / 100
+
+            print("total:{} merge:{}".format(total_hold,merge_hold))
             config_dict = get_config()
 
             print("sleep")

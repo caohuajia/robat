@@ -49,7 +49,7 @@ class Coin():
     def update_newest_15m_100_history(self):
 
         ## ['1729861200000', '0.14621', '0.14662', '0.14578', '0.14656', '33498', '334980', '48981.5551', '1']
-        history_15m_k_line_100 = get_k_line(self.coin_name, cur_int_time_ms, "15m") ##[new ... old]
+        history_15m_k_line_100 = get_k_line(self.coin_name, cur_int_time_ms, "15m") ##[new ... old] 300 result
         self.newest_15m_100_history_price = []
         try:
             for i in range(98): ## 可能偶尔返回不了100个历史
@@ -212,6 +212,9 @@ class Coin():
         else: ## modify fail, cancel order
             # self.cancel_order(order_id)
             self.log += "modify_order_fail(need handle): id:{} new_price:{:5f} ".format(order_id, float(price)) + str(result) + "\n"
+            global global_log
+            global_log += "{} {} modify_order_fail(need handle): id:{} new_price:{:5f} ".format(cur_ctime, self.coin_name, order_id, float(price)) + str(result) + "\n"
+            
             # print(result)
             return ""
 
@@ -372,6 +375,9 @@ def interval_sleep(max_operate = 10):  ## max_operate means operate per second
         sleep_counter = 0
 
 if __name__ == "__main__":
+    global_log = ""
+
+
     config_dict = get_config()
     coin_list = config_dict.keys()
     all_coins = get_all_swap_list()
@@ -392,7 +398,6 @@ if __name__ == "__main__":
     print("initial done")
     while 1:
         try:
-            global_log = ""
             cur_int_time_s = get_current_system_time(ms=0, int_value=1)
             cur_int_time_ms = str(cur_int_time_s)+"000"
             cur_ctime = time.ctime(cur_int_time_s)

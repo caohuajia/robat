@@ -63,7 +63,7 @@ def get_k_line_piece(coin, end_time, interval, data_num = 300): ## data_num max 
         offset = 15 * 60 * 1000
 
     ## 交易产品k线数据
-    result = marketDataAPI.get_candlesticks( ##  limit:40/2s  100num/time
+    result = marketDataAPI.get_candlesticks( ##  limit:40/2s  300 result once, all avail is 1440 result
         before= str(end_time - data_num * offset), 
         after = str(end_time),
         bar   = interval,      
@@ -72,7 +72,7 @@ def get_k_line_piece(coin, end_time, interval, data_num = 300): ## data_num max 
     )
     return result
 
-def get_k_line(coin, end_time, interval, num=1): ## 1m 3m 5m 15m 30m 1H 2H 4H
+def get_k_line(coin, end_time, interval, num=1): ## 300 result, 40 time/2s
     full_k_line = []
     offset   = 0
     min_1m_300_data = 60 * 1000  * 300
@@ -94,7 +94,7 @@ def get_k_line(coin, end_time, interval, num=1): ## 1m 3m 5m 15m 30m 1H 2H 4H
     return full_k_line
 
 
-def get_history_k_line_piece(coin, end_time, interval, data_num = 100): ## data_num max is 300
+def get_history_k_line_piece(coin, end_time, interval, data_num = 100): ##  limit:20/2s  100 result
     offset = 0
     if interval == "1s":
         offset = 1000
@@ -104,7 +104,7 @@ def get_history_k_line_piece(coin, end_time, interval, data_num = 100): ## data_
         offset = 15 * 60 * 1000
 
     ## 交易产品k线数据
-    result = marketDataAPI.get_history_candlesticks( ##  limit:40/2s  100num/time
+    result = marketDataAPI.get_history_candlesticks( ##  limit:20/2s  100 result
         before= str(int(end_time) - data_num * offset), 
         after = str(int(end_time)),
         bar   = interval,

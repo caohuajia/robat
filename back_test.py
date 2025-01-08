@@ -45,9 +45,9 @@ if __name__ == "__main__":
     total_days = 1 + 30
     initial_money = 25
     interval = "15m"
-    test_one = 0
+    test_one = 1
     # test_coin = "11test"
-    test_coin = "APE"
+    test_coin = "USTC"
     download_data = 0
 
     all_coins = get_all_swap_list()

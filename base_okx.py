@@ -58,9 +58,11 @@ def get_all_swap_current_price():
 def get_k_line_piece(coin, end_time, interval, data_num = 300): ## data_num max is 300
     offset = 0
     if interval == "1m":
-        offset = 60 * 1000
+        offset =      60 * 1000
     elif interval == "15m":
         offset = 15 * 60 * 1000
+    elif interval == "1H":
+        offset = 60 * 60 * 1000
 
     ## 交易产品k线数据
     result = marketDataAPI.get_candlesticks( ##  limit:40/2s  300 result once, all avail is 1440 result
@@ -80,6 +82,8 @@ def get_k_line(coin, end_time, interval, num=1): ## 300 result, 40 time/2s
         offset = 1 * min_1m_300_data
     elif interval == "15m":
         offset = 15 * min_1m_300_data
+    elif interval == "1H":
+        offset = 60 * min_1m_300_data
 
     for i in range(num): # once: num * coin_type_num
         k_line_piece = get_k_line_piece(coin, int(end_time) - i * offset, interval)

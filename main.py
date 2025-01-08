@@ -20,6 +20,7 @@ class Coin():
             self.log += "set leverage: " + result + "\n"
 
         self.get_swap_value()
+        self.update_newest_1h_300_history()
         self.update_newest_15m_300_history()
         
         ##  timestap         begin      highest    lowest     end                                      complete
@@ -49,6 +50,26 @@ class Coin():
         return 0
 
 
+    def update_newest_1h_300_history(self):
+        history_1h_k_line_300 = get_k_line(self.coin_name, cur_int_time_ms, "1H") ##[new ... old] 300 result
+        # print(history_1h_k_line_300)
+        self.newest_1h_300_history_price = []
+        try:
+            for i in range(298): ## 可能偶尔返回不了100个历史
+                if history_1h_k_line_300[i][-1]=="0": ##history_1m_k_line_100[i][-1] == "0":
+                    continue ## newest does not finish
+                else:
+                    end_price_1h = float(history_1h_k_line_300[i][4])
+                    self.newest_1h_300_history_price.append(end_price_1h) ##[new ... old]
+            self.newest_1h_300_history_price.reverse() ##[old ... new]
+        except:
+            print("{} can not get 1h 300 history".format(self.coin_name))
+            return
+
+        refer_before = self.newest_1h_300_history_price[-4*24*3:]
+        self.refer_1h_300 = sum(refer_before)/len(refer_before)
+
+
     def update_newest_15m_300_history(self):
 
         ## ['1729861200000', '0.14621', '0.14662', '0.14578', '0.14656', '33498', '334980', '48981.5551', '1']
@@ -63,7 +84,7 @@ class Coin():
                     self.newest_15m_300_history_price.append(end_price_15m) ##[new ... old]
             self.newest_15m_300_history_price.reverse() ##[old ... new]
         except:
-            print("{} can not get 300 history".format(self.coin_name))
+            # print("{} can not get 300 history".format(self.coin_name))
             return
 
         n = -60
@@ -86,11 +107,10 @@ class Coin():
         else:
             self.log += " newest_rng not hit ma60 : {} {}-{} {:8f}\n".format(time.ctime(int(history_15m_k_line_300[1][0][:-3])), history_15m_k_line_300[1][3], history_15m_k_line_300[1][2], self.m_stable)
 
-
-
     def get_self_config(self):
         try:
             self.burst   = config_dict[self.coin_name]["burst"]
+            self.burst_1h= config_dict[self.coin_name]["burst_1h"]
             self.gain    = config_dict[self.coin_name]["gain"]
             self.money_u = config_dict[self.coin_name]["money_u"]
             self.lever   = config_dict[self.coin_name]["lever"]
@@ -101,6 +121,7 @@ class Coin():
             self.hit_m_dn= config_dict[self.coin_name]["hit_m_dn"]
         except:
             self.burst   = config_dict["DEFAULT"]["burst"]
+            self.burst_1h= config_dict["DEFAULT"]["burst_1h"]
             self.gain    = config_dict["DEFAULT"]["gain"]
             self.money_u = config_dict["DEFAULT"]["money_u"]
             self.lever   = config_dict["DEFAULT"]["lever"]
@@ -141,8 +162,8 @@ class Coin():
         self.open_num = int(self.money_u * self.lever // (self.m_stable * self.value))
         self.buy_long_burst   = (1-(self.burst) - max(prefer_idx,0))
         self.sell_short_burst = (1+(self.burst) - min(prefer_idx,0))
-        self.buy_long_water_line   = self.refer * self.buy_long_burst
-        self.sell_short_water_line = self.refer * self.sell_short_burst
+        self.buy_long_water_line   = min(self.refer * self.buy_long_burst,   self.refer_1h_300 * (1-self.burst_1h))
+        self.sell_short_water_line = max(self.refer * self.sell_short_burst, self.refer_1h_300 * (1+self.burst_1h))
 
         self.log += "[{}] ".format(cur_ctime) + self.coin_name + \
                     " ma60: {:.8f}".format(self.m_stable) + \
@@ -383,6 +404,7 @@ class Coin():
 
     def back_call(self):
         self.update_newest_15m_300_history()
+        self.update_newest_1h_300_history()
         self.write_log()
 
 def interval_sleep(max_operate = 10):  ## max_operate means operate per second
@@ -410,8 +432,8 @@ if __name__ == "__main__":
     prefer_idx = 0
     for coin_name in all_coins:
         coin_obj = Coin(coin_name)
-        if len(coin_obj.newest_15m_300_history_price) > 295:
-            coin_obejcts[coin_name] = Coin(coin_name)
+        if len(coin_obj.newest_1h_300_history_price) > 295:
+            coin_obejcts[coin_name] = coin_obj ##Coin(coin_name)
         interval_sleep(8)
     print("initial done")
     while 1:

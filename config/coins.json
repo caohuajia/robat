@@ -1,7 +1,7 @@
 [
   {
     "DEFAULT":{
-      "burst"  :0.1, "burst_1h"  :0,   "gain" :0.03,   "money_u":4,   "max_num":1, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.03, "hit_m_dn":0.97, "type" : 1
+      "burst"  :0.1, "burst_1h"  :0.1,   "gain" :0.03,   "money_u":4,   "max_num":1, "lever"  :5, "tdMode" : "isolated", "hit_m_up":1.03, "hit_m_dn":0.97, "type" : 1
     }
   },
   {

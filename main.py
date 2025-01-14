@@ -199,11 +199,24 @@ class Coin():
         # self.log += " [pos] long pos value:{:5f} short pos value:{:5f}\n".format(self.long_position_value, self.short_position_value)
 
 
+    def cancel_order(self, order_id):
+        result = tradeAPI.cancel_algo_order(
+            params= [{ "algoId":order_id, "instId" : self.coin_name+"-USDT-SWAP"}]
+        )
+        if result["code"] == "0":
+            # data = result["data"][0]
+            # cl_ord_id = data["clOrdId"]
+            self.log += "cancel order : orderid:{} ".format(order_id)
+            return 1
+        else:
+            self.log += "cancel fail: orderid: {} info: {} ".format(order_id, str(result))
+            return 0
+
     def create_order(self, side, posSide, price, num):
         result = tradeAPI.place_algo_order(
             tdMode=self.tdMode, ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
             ccy   ="USDT",
-            side  =side,   ## 开多：bug long   开空：sell short   平多：sell long   平空：bug short
+            side  =side,   ## 开多：buy long   开空：sell short   平多：sell long   平空：buy short
             posSide=posSide, 
             ordType="trigger",
             sz     = str(num), ## 委托数量
@@ -241,21 +254,9 @@ class Coin():
             global global_log
             global_log += "{} {} modify_order_fail(need handle): id:{} new_price:{:5f} ".format(cur_ctime, self.coin_name, order_id, float(price)) + str(result) + "\n"
             
+            self.cancel_order(order_id)
             # print(result)
             return ""
-
-    def cancel_order(self, order_id):
-        result = tradeAPI.cancel_algo_order(
-            params= [{ "algoId":order_id, "instId" : self.coin_name+"-USDT-SWAP"}]
-        )
-        if result["code"] == "0":
-            # data = result["data"][0]
-            # cl_ord_id = data["clOrdId"]
-            self.log += "cancel order : orderid:{} ".format(order_id)
-            return 1
-        else:
-            self.log += "cancel fail: orderid: {} info: {} ".format(order_id, str(result))
-            return 0
 
     def order_maintain(self, side, posSide, open_price, old_order_id, num): ## 20/2s
         open_price = "{:.9f}".format(open_price)
@@ -414,6 +415,28 @@ def interval_sleep(max_operate = 10):  ## max_operate means operate per second
         time.sleep(1)
         sleep_counter = 0
 
+
+def create_working_order():
+    result = tradeAPI.place_algo_order(
+        tdMode="isolated", ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
+        ccy   ="USDT",
+        side  ="buy",   ## 开多：buy long   开空：sell short   平多：sell long   平空：buy short
+        posSide="long", 
+        ordType="trigger",
+        sz     = "1", ## 委托数量
+
+        triggerPx = "1", ## 触发价格 
+        orderPx   = "-1", ## 委托价格 , -1为市价
+        instId ="BTC-USDT-SWAP"
+    )
+
+    if result["code"] == "0":
+        print("working...")
+    else:
+        print("create working order fail")
+        exit(0)
+
+
 if __name__ == "__main__":
     global_log = ""
 
@@ -436,8 +459,9 @@ if __name__ == "__main__":
             coin_obejcts[coin_name] = coin_obj ##Coin(coin_name)
         interval_sleep(8)
     print("initial done")
+    create_working_order()
     while 1:
-        # try:
+        try:
             cur_int_time_s = get_current_system_time(ms=0, int_value=1)
             cur_int_time_ms = str(cur_int_time_s)+"000"
             cur_ctime = time.ctime(cur_int_time_s)
@@ -454,6 +478,11 @@ if __name__ == "__main__":
             fill_order_list = get_fills()
             position_list   = get_current_positions()
             all_cur_price   = get_all_swap_current_price()
+
+            # if len(fill_order_list) == 0: ## to detect the script is on working
+            #     create_working_order()
+            #     global_log += cur_ctime + " create working order\n"
+
 
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].run()
@@ -486,16 +515,16 @@ if __name__ == "__main__":
             cur_ctime = time.ctime(cur_int_time_s)
             time_flag_per_minite(cur_ctime)
 
-        # except KeyboardInterrupt:
-        #     print("kill and cancel order")
-        #     for coin in coin_obejcts.keys():
-        #         log_info(coin_obejcts[coin].log, "./log/run_log/{}.log".format(coin))
-        #         coin_obejcts[coin].cancel_open_order()
-        #         interval_sleep(20)
-        #     log_info(cur_ctime + " some exception\n", "./log/run_log/{}.log".format(coin))
-        #     break
-        # except Exception as e:
-        #     print(e)
-        #     break
+        except KeyboardInterrupt:
+            print("kill and cancel order")
+            for coin in coin_obejcts.keys():
+                log_info(coin_obejcts[coin].log, "./log/run_log/{}.log".format(coin))
+                coin_obejcts[coin].cancel_open_order()
+                interval_sleep(20)
+            log_info(cur_ctime + " some exception\n", "./log/run_log/{}.log".format(coin))
+            break
+        except Exception as e:
+            print(e)
+            break
     exit(0)
 

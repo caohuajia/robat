@@ -13,11 +13,6 @@ class Coin():
         self.init = 0
 
         self.get_self_config()
-        result = set_leverage(self.coin_name+"-USDT-SWAP",self.lever)
-        if "'code': '0'" in result:
-            self.log += "set leverage: " + str(self.lever) + "\n"
-        else:
-            self.log += "set leverage: " + result + "\n"
 
         self.get_swap_value()
         self.update_newest_1h_300_history()
@@ -113,9 +108,14 @@ class Coin():
             self.burst_1h= config_dict[self.coin_name]["burst_1h"]
             self.gain    = config_dict[self.coin_name]["gain"]
             self.money_u = config_dict[self.coin_name]["money_u"]
-            self.lever   = config_dict[self.coin_name]["lever"]
             self.max_num = config_dict[self.coin_name]["max_num"]
-            self.tdMode  = config_dict[self.coin_name]["tdMode"]
+
+            self.b_lever = config_dict[self.coin_name]["b_lever"]
+            self.b_tdMode= config_dict[self.coin_name]["b_tdMode"]
+
+            self.s_lever = config_dict[self.coin_name]["s_lever"]
+            self.s_tdMode= config_dict[self.coin_name]["s_tdMode"]
+
             self.type    = config_dict[self.coin_name]["type"]
             self.hit_m_up= config_dict[self.coin_name]["hit_m_up"]
             self.hit_m_dn= config_dict[self.coin_name]["hit_m_dn"]
@@ -124,13 +124,17 @@ class Coin():
             self.burst_1h= config_dict["DEFAULT"]["burst_1h"]
             self.gain    = config_dict["DEFAULT"]["gain"]
             self.money_u = config_dict["DEFAULT"]["money_u"]
-            self.lever   = config_dict["DEFAULT"]["lever"]
             self.max_num = config_dict["DEFAULT"]["max_num"]
-            self.tdMode  = config_dict["DEFAULT"]["tdMode"]
+
+            self.b_lever = config_dict["DEFAULT"]["b_lever"]
+            self.b_tdMode= config_dict["DEFAULT"]["b_tdMode"]
+
+            self.s_lever = config_dict["DEFAULT"]["s_lever"]
+            self.s_tdMode= config_dict["DEFAULT"]["s_tdMode"]
+
             self.type    = config_dict["DEFAULT"]["type"]
             self.hit_m_up= config_dict["DEFAULT"]["hit_m_up"]
             self.hit_m_dn= config_dict["DEFAULT"]["hit_m_dn"]
-
 
     def get_current_price(self):
         global all_cur_price
@@ -159,7 +163,7 @@ class Coin():
         # if self.flag_15m:
         # self.get_15m_ma60()
 
-        self.open_num = int(self.money_u * self.lever // (self.m_stable * self.value))
+        self.open_num = int(self.money_u * 5 // (self.m_stable * self.value))
         self.buy_long_burst   = (1-(self.burst) - max(prefer_idx,0))
         self.sell_short_burst = (1+(self.burst) - min(prefer_idx,0))
         self.buy_long_water_line   = min(self.refer * self.buy_long_burst,   self.refer_1h_300 * (1-self.burst_1h))
@@ -192,10 +196,10 @@ class Coin():
             if (coin+"-USDT-SWAP") == i["instId"]:
                 if i["posSide"] == "short":
                     self.sell_short_position.append({"price":float(i["avgPx"]), "number":i["pos"]})
-                    self.short_position_value = (float(i["avgPx"]) * float(i["pos"]) * self.value / self.lever)
+                    self.short_position_value = (float(i["avgPx"]) * float(i["pos"]) * self.value / 5)
                 if i["posSide"] == "long":
                     self.buy_long_position.append({"price":float(i["avgPx"]), "number":i["pos"]})
-                    self.long_position_value = (float(i["avgPx"]) * float(i["pos"]) * self.value / self.lever)
+                    self.long_position_value = (float(i["avgPx"]) * float(i["pos"]) * self.value / 5)
         # self.log += " [pos] long pos value:{:5f} short pos value:{:5f}\n".format(self.long_position_value, self.short_position_value)
 
 
@@ -213,8 +217,18 @@ class Coin():
             return 0
 
     def create_order(self, side, posSide, price, num):
+        global global_log
+        global_log += "{} {} modify_order_fail(need handle): id:{} new_price:{:5f} ".format(cur_ctime, self.coin_name, order_id, float(price)) + str(result) + "\n"
+            
+        result = set_leverage(self.coin_name+"-USDT-SWAP", self.b_lever if (side=="buy") else self.s_lever )
+        if "'code': '0'" in result:
+            self.log += "set leverage success\n"
+        else:
+            self.log += "set leverage fail: " + result + "\n"
+            global_log += "{} set leverage fail: ".format(self.coin_name) + result + "\n"
+
         result = tradeAPI.place_algo_order(
-            tdMode=self.tdMode, ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
+            tdMode= self.b_tdMode if (side=="buy") else self.s_tdMode, ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
             ccy   ="USDT",
             side  =side,   ## 开多：buy long   开空：sell short   平多：sell long   平空：buy short
             posSide=posSide, 
@@ -502,7 +516,7 @@ if __name__ == "__main__":
             if total_hold == 0:
                 prefer_idx = 0
             else:
-                prefer_idx =  merge_hold / 100
+                prefer_idx =  merge_hold / config_dict["DEFAULT"]["total_u"]
 
             global_log += "total:{} merge:{} \n".format(total_hold,merge_hold)
             config_dict = get_config()

@@ -229,7 +229,7 @@ class Coin():
             global_log += "{} set leverage fail: ".format(self.coin_name) + result + "\n"
 
         result = tradeAPI.place_algo_order(
-            tdMode= self.b_tdMode if (side=="buy") else self.s_tdMode, ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
+            tdMode= self.b_tdMode if (posSide=="long") else self.s_tdMode, ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
             ccy   ="USDT",
             side  =side,   ## 开多：buy long   开空：sell short   平多：sell long   平空：buy short
             posSide=posSide, 
@@ -417,6 +417,9 @@ class Coin():
     def cancel_open_order(self):
         self.cancel_order(self.buy_long_id)
         self.cancel_order(self.sell_short_id)
+        self.cancel_order(self.sell_long_id )
+        self.cancel_order(self.buy_short_id )
+
 
     def back_call(self):
         self.update_newest_15m_300_history()
@@ -543,6 +546,7 @@ if __name__ == "__main__":
             log_info(cur_ctime + " some exception\n", "./log/run_log/{}.log".format(coin))
             break
         except Exception as e:
+            tradeAPI.cancel_algo_order( params= [{ "algoId":working_id, "instId" : "BTC-USDT-SWAP"}])
             print(e)
             break
     exit(0)

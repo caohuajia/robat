@@ -218,18 +218,24 @@ class Coin():
 
     def create_order(self, side, posSide, price, num):
         global global_log
+        tdMode = self.b_tdMode if (posSide=="long") else self.s_tdMode
         if (posSide=="long"):
-            result = set_long_leverage(self.coin_name+"-USDT-SWAP", self.b_lever)
+            result = set_long_leverage(self.coin_name+"-USDT-SWAP", self.b_lever, tdMode)
+            if "'code': '0'" in result:
+                pass
+            else:
+                self.log += "set leverage fail: " + result + "\n"
+                global_log += "{} set leverage fail: ".format(self.coin_name) + result + "\n"
         else:
-            result = set_short_leverage(self.coin_name+"-USDT-SWAP", self.s_lever)
-        if "'code': '0'" in result:
-            self.log += "set leverage {} success ".format(self.s_lever)
-        else:
-            self.log += "set leverage fail: " + result + "\n"
-            global_log += "{} set leverage fail: ".format(self.coin_name) + result + "\n"
-
+            result = set_short_leverage(self.coin_name+"-USDT-SWAP", self.s_lever, tdMode)
+            if "'code': '0'" in result:
+                pass
+            else:
+                self.log += "set leverage fail: " + result + "\n"
+                global_log += "{} set leverage fail: ".format(self.coin_name) + result + "\n"
+        time.sleep(1)
         result = tradeAPI.place_algo_order(
-            tdMode= self.b_tdMode if (posSide=="long") else self.s_tdMode, ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
+            tdMode= tdMode, ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
             ccy   ="USDT",
             side  =side,   ## 开多：buy long   开空：sell short   平多：sell long   平空：buy short
             posSide=posSide, 

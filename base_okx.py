@@ -10,6 +10,7 @@ from util import *
 
 flag = "0"  # live trading: 0, demo trading: 1
 debug = False
+# debug = True
 
 PublicDataAPI = PublicData.PublicAPI(flag=flag, debug=debug)
 accountAPI    = Account.AccountAPI(api_key, secret_key, passphrase, False, flag, debug=debug)
@@ -160,23 +161,23 @@ def get_fills():
     return data
 
 
-def set_long_leverage(coin, lever):  
+def set_long_leverage(coin, lever, tdMode):  
     log = ""
     result = accountAPI.set_leverage(  ## 20/2s
         instId = coin,
         lever  = str(lever),
-        mgnMode= "isolated",
+        mgnMode= tdMode,
         posSide= "long"
     )
     log += str(result)
     return log
 
-def set_short_leverage(coin, lever):  
+def set_short_leverage(coin, lever, tdMode):  
     log = ""
     result = accountAPI.set_leverage(
         instId = coin,
         lever  = str(lever),
-        mgnMode= "isolated",
+        mgnMode= tdMode,
         posSide= "short"
     )
     log += str(result)

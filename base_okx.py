@@ -160,7 +160,7 @@ def get_fills():
     return data
 
 
-def set_leverage(coin, lever):  
+def set_long_leverage(coin, lever):  
     log = ""
     result = accountAPI.set_leverage(  ## 20/2s
         instId = coin,
@@ -169,6 +169,10 @@ def set_leverage(coin, lever):
         posSide= "long"
     )
     log += str(result)
+    return log
+
+def set_short_leverage(coin, lever):  
+    log = ""
     result = accountAPI.set_leverage(
         instId = coin,
         lever  = str(lever),

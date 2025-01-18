@@ -218,11 +218,12 @@ class Coin():
 
     def create_order(self, side, posSide, price, num):
         global global_log
-        global_log += "{} {} modify_order_fail(need handle): id:{} new_price:{:5f} ".format(cur_ctime, self.coin_name, order_id, float(price)) + str(result) + "\n"
-            
-        result = set_leverage(self.coin_name+"-USDT-SWAP", self.b_lever if (side=="buy") else self.s_lever )
+        if (posSide=="long"):
+            result = set_long_leverage(self.coin_name+"-USDT-SWAP", self.b_lever)
+        else:
+            result = set_short_leverage(self.coin_name+"-USDT-SWAP", self.s_lever)
         if "'code': '0'" in result:
-            self.log += "set leverage success\n"
+            self.log += "set leverage {} success ".format(self.s_lever)
         else:
             self.log += "set leverage fail: " + result + "\n"
             global_log += "{} set leverage fail: ".format(self.coin_name) + result + "\n"
@@ -446,6 +447,9 @@ def create_working_order():
 
     if result["code"] == "0":
         print("working...")
+        data = result["data"][0]
+        order_id = data["algoId"]
+        return order_id
     else:
         print("create working order fail")
         exit(0)
@@ -473,7 +477,7 @@ if __name__ == "__main__":
             coin_obejcts[coin_name] = coin_obj ##Coin(coin_name)
         interval_sleep(8)
     print("initial done")
-    create_working_order()
+    working_id = create_working_order()
     while 1:
         try:
             cur_int_time_s = get_current_system_time(ms=0, int_value=1)
@@ -535,6 +539,7 @@ if __name__ == "__main__":
                 log_info(coin_obejcts[coin].log, "./log/run_log/{}.log".format(coin))
                 coin_obejcts[coin].cancel_open_order()
                 interval_sleep(20)
+            tradeAPI.cancel_algo_order( params= [{ "algoId":working_id, "instId" : "BTC-USDT-SWAP"}])
             log_info(cur_ctime + " some exception\n", "./log/run_log/{}.log".format(coin))
             break
         except Exception as e:

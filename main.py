@@ -119,6 +119,7 @@ class Coin():
             self.type    = config_dict[self.coin_name]["type"]
             self.hit_m_up= config_dict[self.coin_name]["hit_m_up"]
             self.hit_m_dn= config_dict[self.coin_name]["hit_m_dn"]
+            self.withdraw= config_dict[self.coin_name]["withdraw"]
         except:
             self.burst   = config_dict["DEFAULT"]["burst"]
             self.burst_1h= config_dict["DEFAULT"]["burst_1h"]
@@ -135,6 +136,7 @@ class Coin():
             self.type    = config_dict["DEFAULT"]["type"]
             self.hit_m_up= config_dict["DEFAULT"]["hit_m_up"]
             self.hit_m_dn= config_dict["DEFAULT"]["hit_m_dn"]
+            self.withdraw= config_dict["DEFAULT"]["withdraw"]
 
     def get_current_price(self):
         global all_cur_price
@@ -288,20 +290,42 @@ class Coin():
         position_value_ok = 0
         if ((side=="buy") and (posSide=="long")):
             if (self.type >= 1):
-                water_line_ok = (self.m_stable <= self.buy_long_water_line)
-                m_stable_ok   = self.m_stable <= (self.last_hit_m_stable * self.hit_m_dn)
-                need_create_modify_cond = water_line_ok and (self.cur_price <= self.m_stable) and (num > 0) and m_stable_ok
+                if num > 0:
+                    if (self.m_stable <= self.buy_long_water_line):
+                        if (self.m_stable <= (self.last_hit_m_stable * self.hit_m_dn)):
+                            if ((self.cur_price <= self.m_stable)):
+                                need_create_modify_cond = 1
+                            else:
+                                self.log += "cur_price > m_stable , should not create/modify "
+                        else:
+                            self.log += "hit ma60 does not up enough   {:3f}% ".format((self.last_hit_m_stable / self.m_stable -1)*100)
+                    else:
+                        self.log += "ma60 does not catch buy long water line   {:3f}% ".format((self.m_stable / self.buy_long_water_line -1)*100)
+                else:
+                    self.log += "money_u does not enough for a swap "
                 position_value_ok = (2*self.long_position_value) < float(self.money_u * self.max_num)
             else:
                 self.log += "type not allow. "
         elif ((side=="sell") and (posSide=="short")):
-            if(self.type <= 1):
-                water_line_ok = (self.m_stable >= self.sell_short_water_line)
-                m_stable_ok   = self.m_stable >= (self.last_hit_m_stable * self.hit_m_up)
-                need_create_modify_cond = water_line_ok and (self.cur_price >= self.m_stable) and (num > 0) and m_stable_ok
+            if (self.type <= 1):
+                if num > 0:
+                    if (self.m_stable >= self.sell_short_water_line):
+                        if (self.m_stable >= (self.last_hit_m_stable * self.hit_m_up)):
+                            if (self.cur_price >= self.m_stable):
+                                need_create_modify_cond = 1
+                            else:
+                                self.log += "cur_price < m_stable, should not create/modify "
+                        else:
+                            self.log += "hit ma60 does not down enough   {:3f}% ".format((self.m_stable / self.last_hit_m_stable -1)*100)
+                    else:
+                        self.log += "ma60 does not catch sell short water line   {:3f}% ".format((self.sell_short_water_line / self.m_stable -1)*100)
+                else:
+                    self.log += "money_u does not enough for a swap "
                 position_value_ok = (2*self.short_position_value) < float(self.money_u * self.max_num)
             else:
                 self.log += "type not allow. "
+
+
         elif ((side=="sell") and (posSide=="long")):
             need_create_modify_cond = 1
             position_value_ok = 1
@@ -332,40 +356,6 @@ class Coin():
             return modify_order_id
 
         else: ## not meet cond, cancel it
-            if num <= 0:
-                self.log += "money_u does not enough for a swap "                
-            else:
-                if m_stable_ok == 0:
-                    if side == "buy":
-                        self.log += "hit ma60 does not up enough   {:3f}% ".format((self.last_hit_m_stable / self.m_stable -1)*100)
-                    else:
-                        self.log += "hit ma60 does not down enough   {:3f}% ".format((self.m_stable / self.last_hit_m_stable -1)*100)
-
-                if water_line_ok == 0:
-                    if m_stable_ok == 1:
-                        if side == "buy":
-                            self.log += "ma60 does not catch buy long water line   {:3f}% ".format((self.m_stable / self.buy_long_water_line -1)*100)
-                        else:
-                            self.log += "ma60 does not catch sell short water line   {:3f}% ".format((self.sell_short_water_line / self.m_stable -1)*100)
-                    else:
-                        if side == "buy":
-                            self.log += "hit ma60 does not up enough   {:3f}% ".format((self.last_hit_m_stable / self.m_stable -1)*100)
-                        else:
-                            self.log += "hit ma60 does not down enough   {:3f}% ".format((self.m_stable / self.last_hit_m_stable -1)*100)
-
-                else:
-                    if m_stable_ok == 1:
-                        if side == "buy":
-                            self.log += "cur_price > m_stable , should not create/modify "
-                        else:
-                            self.log += "cur_price < m_stable, should not create/modify "
-                    else:
-                        if side == "buy":
-                            self.log += "hit ma60 does not up enough   {:3f}% ".format((self.last_hit_m_stable / self.m_stable -1)*100)
-                        else:
-                            self.log += "hit ma60 does not down enough   {:3f}% ".format((self.m_stable / self.last_hit_m_stable -1)*100)
-
-
             if old_order_id != "":
                 self.cancel_order(old_order_id)
             self.log += "\n"

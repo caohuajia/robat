@@ -91,6 +91,12 @@ class Coin():
         refer_before = self.newest_15m_300_history_price[-4*24*3:]
         self.refer = sum(refer_before)/len(refer_before)
 
+        m = -30
+        newest_m =  self.newest_15m_300_history_price[m:]
+        newest_m_sum = sum(newest_m)
+        newest_m_num = len(newest_m)
+        self.m_trend = newest_m_sum/newest_m_num
+
         if self.init == 0:
             self.last_hit_m_stable = self.m_stable
             self.init = 1
@@ -147,23 +153,9 @@ class Coin():
                 # print(i)
                 return float(i["last"])
 
-    def get_15m_ma60(self):
-        # self.update_newest_15m_100_history()
-
-        n = -59
-        newest_n =  self.newest_15m_300_history_price[n:]
-        newest_sum = sum(newest_n) + self.cur_price
-        newest_num = len(newest_n) + 1
-        self.m_stable = newest_sum/newest_num
-
-        refer_before = self.newest_15m_300_history_price[-4*24-1:-4*24+3]
-        self.refer = sum(refer_before)/len(refer_before)
-
     def gen_current_parameter(self):
         self.get_self_config()
         self.cur_price = self.get_current_price()
-        # if self.flag_15m:
-        # self.get_15m_ma60()
 
         self.open_num = int(self.money_u * 5 // (self.m_stable * self.value))
         self.buy_long_burst   = (1-(self.burst) - max(prefer_idx,0))
@@ -221,6 +213,7 @@ class Coin():
     def create_order(self, side, posSide, price, num):
         global global_log
         tdMode = self.b_tdMode if (posSide=="long") else self.s_tdMode
+        lever  = self.b_lever  if (posSide=="long") else self.s_lever
         if (posSide=="long"):
             result = set_long_leverage(self.coin_name+"-USDT-SWAP", self.b_lever, tdMode)
             if "'code': '0'" in result:
@@ -242,7 +235,7 @@ class Coin():
             side  =side,   ## 开多：buy long   开空：sell short   平多：sell long   平空：buy short
             posSide=posSide, 
             ordType="trigger",
-            sz     = str(num), ## 委托数量
+            sz     = str(num * lever / 5), ## 委托数量
 
             triggerPx = price, ## 触发价格 
             orderPx   = "-1", ## 委托价格 , -1为市价
@@ -294,7 +287,10 @@ class Coin():
                     if (self.m_stable <= self.buy_long_water_line):
                         if (self.m_stable <= (self.last_hit_m_stable * self.hit_m_dn)):
                             if ((self.cur_price <= self.m_stable)):
-                                need_create_modify_cond = 1
+                                if (self.m_trend >= (self.m_stable*(1-self.withdraw))):
+                                    need_create_modify_cond = 1
+                                else:
+                                    self.log += "not stable , m_tread {} need {} ".format(self.m_trend, self.m_stable*(1-self.withdraw))
                             else:
                                 self.log += "cur_price > m_stable , should not create/modify "
                         else:
@@ -312,7 +308,10 @@ class Coin():
                     if (self.m_stable >= self.sell_short_water_line):
                         if (self.m_stable >= (self.last_hit_m_stable * self.hit_m_up)):
                             if (self.cur_price >= self.m_stable):
-                                need_create_modify_cond = 1
+                                if (self.m_trend <= (self.m_stable*(1+self.withdraw))):
+                                    need_create_modify_cond = 1
+                                else:
+                                    self.log += "not stable , m_tread {} need {} ".format(self.m_trend, self.m_stable*(1+self.withdraw))        
                             else:
                                 self.log += "cur_price < m_stable, should not create/modify "
                         else:

@@ -53,20 +53,22 @@ def get_config():
         config = json.load(f)[0]
     return config
 
-def time_flag_per_minite(cur_ctime, flag_15m = 1):
+def time_flag_per_minite(cur_ctime, time_mode = "1m"):
     cur_clock_str = cur_ctime.split(" ")[-2]
     cur_sec = cur_clock_str[-2:]
     cur_min = cur_clock_str[-5:-3]
     cur_sec_int = int(cur_sec)
     cur_min_int = int(cur_min)
 
-    if flag_15m:
+    if time_mode == "1m":
+        wait_sec = 60 - cur_sec_int%60
+        time.sleep(wait_sec)
+    else:  ## 15m
         wait_min = 15 - cur_min_int%15 -1
         time.sleep(wait_min * 60)
+        time.sleep(60 - cur_sec_int)
 
-    time.sleep(60 - cur_sec_int)
-
-    time.sleep(1) ## wait 1s to get newest complete data
+        time.sleep(1) ## wait 1s to get newest complete data
 
     if cur_min == "14" or cur_min == "29" or cur_min == "44" or cur_min == "59":
         return 2

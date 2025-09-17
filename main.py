@@ -8,27 +8,23 @@ class Coin():
     log = ""
     coin_name = ""
 
-    def __init__(self, coin_name):
+    def __init__(self, coin_name, time_mode="1m"):
         self.coin_name = coin_name
         self.init = 0
+        self.time_mode = time_mode
 
         self.get_self_config()
 
         self.get_swap_value()
-        self.update_newest_1h_300_history()
-        self.update_newest_15m_300_history()
-        
-        ##  timestap         begin      highest    lowest     end                                      complete
-        ##['1728006240000', '0.15846', '0.15859', '0.15785', '0.15785', '4480', '44800', '7090.9912', '0']
-        # history_1m_k_line_100 = get_k_line(self.coin_name, "1m") ##[new ... old]
-        # self.newest_1m_100_history_price = []
-        # for i in range(98): ## 可能偶尔返回不了100个历史
-        #     if 0: ##history_1m_k_line_100[i][-1] == "0":
-        #         continue ## newest does not finish
-        #     else:
-        #         end_price_1m  = float(history_1m_k_line_100[i][4])
-        #         self.newest_1m_100_history_price.append(end_price_1m) ##[new ... old]
-        # self.newest_1m_100_history_price.reverse() ##[old ... new]
+        self.newest_1m_history_price = []
+        if self.time_mode == "1m":
+            pass
+            # self.update_newest_300_history()
+        else:
+            pass
+            # self.update_newest_15m_300_history()
+            # self.update_newest_1h_300_history()
+
 
     def get_swap_value(self):
         global public_data
@@ -64,6 +60,29 @@ class Coin():
         refer_before = self.newest_1h_300_history_price[-4*24*3:]
         self.refer_1h_300 = sum(refer_before)/len(refer_before)
 
+
+    def update_newest_300_history(self): ## does not use, 1m need push current price to get newest history
+        ##  timestap         begin      highest    lowest     end                                      complete
+        ## ['1729861200000', '0.14621', '0.14662', '0.14578', '0.14656', '33498', '334980', '48981.5551', '1']
+        history_k_line_300 = get_k_line(self.coin_name, cur_int_time_ms, self.time_mode) ##[new ... old] 300 result
+        self.newest_300_history_price = []
+        try:
+            for i in range(298): ## 可能偶尔返回不了100个历史
+                if history_k_line_300[i][-1]=="0": ##history_1m_k_line_100[i][-1] == "0":
+                    continue ## newest does not finish
+                else:
+                    end_price = float(history_k_line_300[i][4])
+                    self.newest_300_history_price.append(end_price) ##[new ... old]
+            self.newest_300_history_price.reverse() ##[old ... new]
+        except:
+            # print("{} can not get 300 history".format(self.coin_name))
+            return
+
+        n = -5
+        newest_n =  self.newest_300_history_price[n:]
+        newest_sum = sum(newest_n)
+        newest_num = len(newest_n)
+        self.ma5 = newest_sum/newest_num
 
     def update_newest_15m_300_history(self):
 
@@ -156,25 +175,45 @@ class Coin():
     def gen_current_parameter(self):
         self.get_self_config()
         self.cur_price = self.get_current_price()
+        if len(self.newest_1m_history_price) == 0: ## if 1m do not have history, fill it with current price
+            for i in range(20):
+                self.newest_1m_history_price.append(self.cur_price)
+        else:
+            self.newest_1m_history_price.append(self.cur_price)
+            self.newest_1m_history_price.pop(0)
 
-        self.open_num = int(self.money_u * 5 // (self.m_stable * self.value))
+        n = -5
+        newest_n =  self.newest_1m_history_price[n:]
+        newest_sum = sum(newest_n)
+        newest_num = len(newest_n)
+        self.ma5 = newest_sum/newest_num
+
+        self.open_num = int(self.money_u * 5 // (self.ma5 * self.value))
         self.buy_long_burst   = (1-(self.burst) - max(prefer_idx,0))
         self.sell_short_burst = (1+(self.burst) - min(prefer_idx,0))
-        self.buy_long_water_line   = min(self.refer * self.buy_long_burst,   self.refer_1h_300 * (1-self.burst_1h))
-        self.sell_short_water_line = max(self.refer * self.sell_short_burst, self.refer_1h_300 * (1+self.burst_1h))
+        self.buy_long_water_line   = 0 ##min(self.refer * self.buy_long_burst,   self.refer_1h_300 * (1-self.burst_1h))
+        self.sell_short_water_line = 0 ##max(self.refer * self.sell_short_burst, self.refer_1h_300 * (1+self.burst_1h))
+
+        # self.log += "[{}] ".format(cur_ctime) + self.coin_name + \
+        #             " ma60: {:.8f}".format(self.ma5) + \
+        #             " last_hit_m60: {:8f}".format(self.last_hit_m_stable) + \
+        #             " 3day: {:.8f}".format(self.refer) + \
+        #             " prefer: {:.5f}%".format(prefer_idx*100) + \
+        #             " open_num: {:.5f}".format(self.open_num) + \
+        #             " buy long water line: {:.5f} {:.3f}".format(self.buy_long_water_line, self.buy_long_burst) + \
+        #             " sell short water line: {:.5f} {:.3f}".format(self.sell_short_water_line, self.sell_short_burst) + \
+        #             " newest_10:{} \n".format(str(self.newest_15m_300_history_price[-10:]))
 
         self.log += "[{}] ".format(cur_ctime) + self.coin_name + \
-                    " ma60: {:.8f}".format(self.m_stable) + \
-                    " last_hit_m60: {:8f}".format(self.last_hit_m_stable) + \
-                    " 3day: {:.8f}".format(self.refer) + \
+                    " ma5: {:.8f}".format(self.ma5) + \
                     " prefer: {:.5f}%".format(prefer_idx*100) + \
                     " open_num: {:.5f}".format(self.open_num) + \
                     " buy long water line: {:.5f} {:.3f}".format(self.buy_long_water_line, self.buy_long_burst) + \
                     " sell short water line: {:.5f} {:.3f}".format(self.sell_short_water_line, self.sell_short_burst) + \
-                    " newest_10:{} \n".format(str(self.newest_15m_300_history_price[-10:]))
+                    " newest_10:{} \n".format(str(self.newest_1m_history_price[-10:]))
 
     def get_current_status(self):
-
+        global global_log
         global fill_order_list
         self.fill_id = []
         for i in fill_order_list:
@@ -195,6 +234,11 @@ class Coin():
                     self.buy_long_position.append({"price":float(i["avgPx"]), "number":i["pos"]})
                     self.long_position_value = (float(i["avgPx"]) * float(i["pos"]) * self.value / 5)
         # self.log += " [pos] long pos value:{:5f} short pos value:{:5f}\n".format(self.long_position_value, self.short_position_value)
+                if self.short_position_value > 0:
+                    global_log += "coin:{} hold short value:{} \n".format(coin,self.short_position_value)
+                if self.long_position_value > 0:
+                    global_log += "coin:{} hold long value:{} \n".format(coin,self.long_position_value)
+
 
 
     def cancel_order(self, order_id):
@@ -234,11 +278,12 @@ class Coin():
             ccy   ="USDT",
             side  =side,   ## 开多：buy long   开空：sell short   平多：sell long   平空：buy short
             posSide=posSide, 
-            ordType="trigger",
-            sz     = str(num * lever / 5), ## 委托数量
+            ordType="trigger", ## trigger:计划委托
+            sz     = str(int(num) * lever / 5), ## 委托数量  /5是因为okx的币本位合约是5倍杠杆?
 
             triggerPx = price, ## 触发价格 
             orderPx   = "-1", ## 委托价格 , -1为市价
+
             instId =self.coin_name+"-USDT-SWAP"
         )
 
@@ -284,19 +329,24 @@ class Coin():
         if ((side=="buy") and (posSide=="long")):
             if (self.type >= 1):
                 if num > 0:
-                    if (self.m_stable <= self.buy_long_water_line):
-                        if (self.m_stable <= (self.last_hit_m_stable * self.hit_m_dn)):
-                            if ((self.cur_price <= self.m_stable)):
-                                if (self.m_trend >= (self.m_stable*(1-self.withdraw))):
+                    # if (self.m_stable <= self.buy_long_water_line):
+                    if (1):
+                        # if (self.m_stable <= (self.last_hit_m_stable * self.hit_m_dn)):
+                        if (1):
+                            # if ((self.cur_price <= self.m_stable)):
+                            if ((self.cur_price <= self.ma5)) or 1:
+                                # if (self.m_trend >= (self.ma5*(1-self.withdraw))):
+                                if (1):
                                     need_create_modify_cond = 1
                                 else:
-                                    self.log += "not stable , m_tread {} need {} ".format(self.m_trend, self.m_stable*(1-self.withdraw))
+                                    self.log += "not stable , m_tread {} need {} ".format(self.m_trend, self.ma5*(1-self.withdraw))
                             else:
-                                self.log += "cur_price > m_stable , should not create/modify "
+                                self.log += "cur_price > ma5 , should not create/modify "
                         else:
-                            self.log += "hit ma60 does not up enough   {:3f}% ".format((self.last_hit_m_stable / self.m_stable -1)*100)
+                            # self.log += "hit ma60 does not up enough   {:3f}% ".format((self.last_hit_m_stable / self.ma5 -1)*100)
+                            pass
                     else:
-                        self.log += "ma60 does not catch buy long water line   {:3f}% ".format((self.m_stable / self.buy_long_water_line -1)*100)
+                        self.log += "ma60 does not catch buy long water line   {:3f}% ".format((self.ma5 / self.buy_long_water_line -1)*100)
                 else:
                     self.log += "money_u does not enough for a swap "
                 position_value_ok = (2*self.long_position_value) < float(self.money_u * self.max_num)
@@ -305,19 +355,22 @@ class Coin():
         elif ((side=="sell") and (posSide=="short")):
             if (self.type <= 1):
                 if num > 0:
-                    if (self.m_stable >= self.sell_short_water_line):
-                        if (self.m_stable >= (self.last_hit_m_stable * self.hit_m_up)):
-                            if (self.cur_price >= self.m_stable):
-                                if (self.m_trend <= (self.m_stable*(1+self.withdraw))):
+                    if (self.ma5 >= self.sell_short_water_line) or 1:
+                        # if (self.ma5 >= (self.last_hit_m_stable * self.hit_m_up)) or 1:
+                        if 1:
+                            if (self.cur_price >= self.ma5) or 1:
+                                # if (self.m_trend <= (self.ma5*(1+self.withdraw))) or 1:
+                                if 1:
                                     need_create_modify_cond = 1
                                 else:
-                                    self.log += "not stable , m_tread {} need {} ".format(self.m_trend, self.m_stable*(1+self.withdraw))        
+                                    self.log += "not stable , m_tread {} need {} ".format(self.m_trend, self.ma5*(1+self.withdraw))        
                             else:
-                                self.log += "cur_price < m_stable, should not create/modify "
+                                self.log += "cur_price < ma5, should not create/modify "
                         else:
-                            self.log += "hit ma60 does not down enough   {:3f}% ".format((self.m_stable / self.last_hit_m_stable -1)*100)
+                            # self.log += "hit ma60 does not down enough   {:3f}% ".format((self.ma5 / self.last_hit_m_stable -1)*100)
+                            pass
                     else:
-                        self.log += "ma60 does not catch sell short water line   {:3f}% ".format((self.sell_short_water_line / self.m_stable -1)*100)
+                        self.log += "ma60 does not catch sell short water line   {:3f}% ".format((self.sell_short_water_line / self.ma5 -1)*100)
                 else:
                     self.log += "money_u does not enough for a swap "
                 position_value_ok = (2*self.short_position_value) < float(self.money_u * self.max_num)
@@ -364,31 +417,31 @@ class Coin():
     sell_short_id = ""
     sell_long_id  = ""
     buy_short_id = ""
-    def run(self, flag_15m = 0): ## 0:1m  1:15m
+    def run(self, flag_15m = 0): ## 0:1m  1:15m  ## run is the 1st function when a period run
         self.flag_15m = flag_15m
         self.gen_current_parameter()
         self.get_current_status()
 
-        self.log += " [sell long ] "
+        self.log += " [sell long ] "  ## 平多
         if len(self.buy_long_position):
             price = self.buy_long_position[0]["price"]
             num   = self.buy_long_position[0]["number"]
-            if (self.m_stable/price >= (1+float(self.gain))):
+            if (self.ma5/price >= (1+float(self.gain))) or 1:
                 self.log += "try sell long hold_price:{} num:{} ".format(price, num)
-                self.sell_long_id = self.order_maintain("sell", "long", self.m_stable, self.sell_long_id, num)
+                self.sell_long_id = self.order_maintain("sell", "long", price * (1 + float(self.gain)), self.sell_long_id, num)
             else:
                 self.log += "fail sell long hold:{} num:{}, ma60 target {:5f} \n".format(price, num, price*(1+float(self.gain)))
         else:
             self.log += "does not hold\n"
 
-        self.log += " [buy short ] "
+        self.log += " [buy short ] "  ## 平空
         if len(self.sell_short_position):
             price = self.sell_short_position[0]["price"]
             num   = self.sell_short_position[0]["number"]
-            if (self.m_stable/price <= (1-float(self.gain))):
+            if (self.ma5/price <= (1-float(self.gain))) or 1:
                 # print("try buy short {} {}".format(price, number))
                 self.log += "try buy short hold_price:{:5f} num:{} ".format(price, num)
-                self.buy_short_id = self.order_maintain("buy", "short", self.m_stable, self.buy_short_id, num)
+                self.buy_short_id = self.order_maintain("buy", "short", price * (1 - float(self.gain)), self.buy_short_id, num)
             else:
                 self.log += "fail buy short hold:{:5f} num:{}, ma60 target {:5f} \n".format(price, num, price*(1-float(self.gain)))
                 # print("fail buy short {} {}, target {}".format(price, num, price*(1-float(self.gain))))
@@ -396,12 +449,12 @@ class Coin():
             self.log += "does not hold\n"
 
 
-        self.log += " [buy long  ] "
-        self.buy_long_id   = self.order_maintain("buy", "long",   self.m_stable, self.buy_long_id, self.open_num)
+        self.log += " [buy long  ] "  ## 开多
+        self.buy_long_id   = self.order_maintain("buy", "long",   self.ma5 * (1-float(self.burst)), self.buy_long_id, self.open_num)
 
 
-        self.log += " [sell short] "
-        self.sell_short_id = self.order_maintain("sell", "short", self.m_stable, self.sell_short_id, self.open_num)
+        self.log += " [sell short] "  ## 开空
+        self.sell_short_id = self.order_maintain("sell", "short", self.ma5 * (1+float(self.burst)), self.sell_short_id, self.open_num)
 
 
     def write_log(self):
@@ -415,10 +468,11 @@ class Coin():
         self.cancel_order(self.sell_long_id )
         self.cancel_order(self.buy_short_id )
 
-
+    ## when finish make order, update the newest kline history
     def back_call(self):
-        self.update_newest_15m_300_history()
-        self.update_newest_1h_300_history()
+        # self.update_newest_15m_300_history()
+        # self.update_newest_1h_300_history()
+        # self.update_newest_300_history()
         self.write_log()
 
 def interval_sleep(max_operate = 10):  ## max_operate means operate per second
@@ -429,6 +483,7 @@ def interval_sleep(max_operate = 10):  ## max_operate means operate per second
         sleep_counter = 0
 
 
+## create a BTC order to make sure the script is working
 def create_working_order():
     result = tradeAPI.place_algo_order(
         tdMode="isolated", ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
@@ -454,12 +509,14 @@ def create_working_order():
 
 
 if __name__ == "__main__":
-    global_log = ""
+    time_mode = "1m"  ## 1m or 15m
 
+    global_log = ""
 
     config_dict = get_config()
     coin_list = config_dict.keys()
     all_coins = get_all_swap_list()
+    all_coins = ["WLFI","CFX"] ## only for test
     public_data = get_public_data()
 
     cur_int_time_s = get_current_system_time(ms=0, int_value=1)
@@ -470,14 +527,18 @@ if __name__ == "__main__":
     sleep_counter = 0
     prefer_idx = 0
     for coin_name in all_coins:
-        coin_obj = Coin(coin_name)
-        if len(coin_obj.newest_1h_300_history_price) > 295:
+        coin_obj = Coin(coin_name, time_mode)
+        if time_mode == "1m":
             coin_obejcts[coin_name] = coin_obj ##Coin(coin_name)
-        interval_sleep(8)
+        else:
+            if len(coin_obj.newest_300_history_price) > 295: ## make sure 300 history get ok
+                coin_obejcts[coin_name] = coin_obj ##Coin(coin_name)
+            interval_sleep(8)
     print("initial done")
     working_id = create_working_order()
     while 1:
         try:
+        # if 1:
             cur_int_time_s = get_current_system_time(ms=0, int_value=1)
             cur_int_time_ms = str(cur_int_time_s)+"000"
             cur_ctime = time.ctime(cur_int_time_s)
@@ -502,18 +563,24 @@ if __name__ == "__main__":
 
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].run()
-                interval_sleep(40)
+                if time_mode == "1m":
+                    pass
+                else:
+                    interval_sleep(40)
             global_log += cur_ctime + "finish older\n"
 
             total_hold = 0
             merge_hold = 0
             for coin in coin_obejcts.keys():
                 coin_obejcts[coin].back_call()
-                total_hold += coin_obejcts[coin].short_position_value
-                total_hold += coin_obejcts[coin].long_position_value
-                merge_hold -= coin_obejcts[coin].short_position_value
-                merge_hold += coin_obejcts[coin].long_position_value
-                interval_sleep(10)
+                # total_hold += coin_obejcts[coin].short_position_value
+                # total_hold += coin_obejcts[coin].long_position_value
+                # merge_hold -= coin_obejcts[coin].short_position_value
+                # merge_hold += coin_obejcts[coin].long_position_value
+                if time_mode == "1m":
+                    pass
+                else:
+                    interval_sleep(10)
 
             if total_hold == 0:
                 prefer_idx = 0
@@ -529,8 +596,9 @@ if __name__ == "__main__":
 
             cur_int_time_s = get_current_system_time(ms=0, int_value=1)
             cur_ctime = time.ctime(cur_int_time_s)
-            time_flag_per_minite(cur_ctime)
+            time_flag_per_minite(cur_ctime, time_mode)
 
+        # elif 0:
         except KeyboardInterrupt:
             print("kill and cancel order")
             for coin in coin_obejcts.keys():
@@ -541,6 +609,8 @@ if __name__ == "__main__":
             log_info(cur_ctime + " some exception\n", "./log/run_log/{}.log".format(coin))
             break
         except Exception as e:
+        # else:
+            print("some exception, need handle and exit")
             tradeAPI.cancel_algo_order( params= [{ "algoId":working_id, "instId" : "BTC-USDT-SWAP"}])
             print(e)
             break

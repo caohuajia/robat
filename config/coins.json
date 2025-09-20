@@ -1,7 +1,7 @@
 [
   {
     "DEFAULT":{
-      "burst"  :0.03, "burst_1h"  :0.1,   "gain" :0.01, "total_u":100,   "money_u":4,   "max_num":1,
+      "burst"  :0.01, "burst_1h"  :0.1,   "gain" :0.008, "loss" :0.02, "total_u":100,   "money_u":4,   "max_num":1,
       "b_lever"  :10, "b_tdMode" : "isolated", 
       "s_lever"  :10, "s_tdMode" : "isolated", 
       "hit_m_up":1.03, "hit_m_dn":0.97, "withdraw" : 0.03, "type" : 1

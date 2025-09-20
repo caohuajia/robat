@@ -132,6 +132,7 @@ class Coin():
             self.burst   = config_dict[self.coin_name]["burst"]
             self.burst_1h= config_dict[self.coin_name]["burst_1h"]
             self.gain    = config_dict[self.coin_name]["gain"]
+            self.loss    = config_dict[self.coin_name]["loss"]
             self.money_u = config_dict[self.coin_name]["money_u"]
             self.max_num = config_dict[self.coin_name]["max_num"]
 
@@ -149,6 +150,7 @@ class Coin():
             self.burst   = config_dict["DEFAULT"]["burst"]
             self.burst_1h= config_dict["DEFAULT"]["burst_1h"]
             self.gain    = config_dict["DEFAULT"]["gain"]
+            self.loss    = config_dict["DEFAULT"]["loss"]
             self.money_u = config_dict["DEFAULT"]["money_u"]
             self.max_num = config_dict["DEFAULT"]["max_num"]
 
@@ -254,7 +256,7 @@ class Coin():
             self.log += "cancel fail: orderid: {} info: {} ".format(order_id, str(result))
             return 0
 
-    def create_order(self, side, posSide, price, num):
+    def create_order(self, side, posSide, price, stop_gain_price, stop_loss_price, num):
         global global_log
         tdMode = self.b_tdMode if (posSide=="long") else self.s_tdMode
         lever  = self.b_lever  if (posSide=="long") else self.s_lever
@@ -284,6 +286,12 @@ class Coin():
             triggerPx = price, ## 触发价格 
             orderPx   = "-1", ## 委托价格 , -1为市价
 
+            attachAlgoOrds=[], ## 附带止盈止损
+            tpTriggerPx=stop_gain_price, ## 止盈触发价格
+            tpOrdPx="-1",  ## 止盈委托价格 -1为市价
+            slTriggerPx=stop_loss_price, ## 止损触发价格
+            slOrdPx="-1",  ## 止损委托价格 -1为市价
+
             instId =self.coin_name+"-USDT-SWAP"
         )
 
@@ -297,11 +305,18 @@ class Coin():
             self.log += "create_order_fail: " + str(result) + " open_price: " + str(price) + " num: " + str(num) + "\n"
             return ""
 
-    def modify_order(self, order_id, price):
+    def modify_order(self, order_id, price, stop_gain_price, stop_loss_price):
         result = tradeAPI.amend_algo_order(
             newTriggerPx =price,   ## 触发价格 
             newOrdPx     ="-1",   ## 委托价格 
             algoId       =order_id,  
+
+            attachAlgoOrds=[], ## 附带止盈止损
+            newTpTriggerPx=stop_gain_price, ## 止盈触发价格
+            newTpOrdPx="-1",  ## 止盈委托价格 -1为市价
+            newSlTriggerPx=stop_loss_price, ## 止损触发价格
+            newSlOrdPx="-1",  ## 止损委托价格 -1为市价
+
             instId       =self.coin_name+"-USDT-SWAP"
         )
         if result["code"] == "0":
@@ -320,8 +335,9 @@ class Coin():
             return ""
 
     def order_maintain(self, side, posSide, open_price, old_order_id, num): ## 20/2s
+        stop_gain_price = "{:.9}".format(open_price * ((1+float(self.gain)) if side=="buy" else open_price * (1-float(self.gain))))
+        stop_loss_price = "{:.9}".format(open_price * ((1-float(self.loss)) if side=="buy" else open_price * (1+float(self.loss))))
         open_price = "{:.9f}".format(open_price)
-
         need_create_modify_cond = 0
         water_line_ok = 0
         m_stable_ok = 0
@@ -390,7 +406,7 @@ class Coin():
         if need_create_modify_cond:
             if old_order_id == "": ## no order, create new
                 if position_value_ok:
-                    open_order_id = self.create_order(side, posSide, open_price, num)
+                    open_order_id = self.create_order(side, posSide, open_price, stop_gain_price, stop_loss_price, num)
                     return open_order_id
                 else:
                     self.log += "too more order, not create order\n" 
@@ -403,8 +419,8 @@ class Coin():
                 else:
                     self.log += "too more order, not create order\n" 
                     return ""
-                
-            modify_order_id = self.modify_order(old_order_id, open_price)
+
+            modify_order_id = self.modify_order(old_order_id, open_price, stop_gain_price, stop_loss_price)
             return modify_order_id
 
         else: ## not meet cond, cancel it
@@ -516,7 +532,8 @@ if __name__ == "__main__":
     config_dict = get_config()
     coin_list = config_dict.keys()
     all_coins = get_all_swap_list()
-    all_coins = ["WLFI","CFX"] ## only for test
+    all_coins = ["WLFI","CFX","DOGE","PUMP","OKB","PEPE"] ## only for test
+    # all_coins = ["WLFI"] ## only for test
     public_data = get_public_data()
 
     cur_int_time_s = get_current_system_time(ms=0, int_value=1)

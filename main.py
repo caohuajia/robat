@@ -14,7 +14,8 @@ class Coin():
         self.time_mode = time_mode
 
         self.get_self_config()
-
+        self.set_leverage()
+        
         self.get_swap_value()
         self.newest_1m_history_price = []
         if self.time_mode == "1m":
@@ -25,6 +26,21 @@ class Coin():
             # self.update_newest_15m_300_history()
             # self.update_newest_1h_300_history()
 
+    def set_leverage(self):
+        global global_log
+        result = set_long_leverage(self.coin_name+"-USDT-SWAP", self.b_lever, "isolated")
+        if "'code': '0'" in result:
+            pass
+        else:
+            self.log += "set leverage fail: " + result + "\n"
+            global_log += "{} set leverage fail: ".format(self.coin_name) + result + "\n"
+
+        result = set_short_leverage(self.coin_name+"-USDT-SWAP", self.s_lever, "isolated")
+        if "'code': '0'" in result:
+            pass
+        else:
+            self.log += "set leverage fail: " + result + "\n"
+            global_log += "{} set leverage fail: ".format(self.coin_name) + result + "\n"
 
     def get_swap_value(self):
         global public_data
@@ -250,7 +266,7 @@ class Coin():
         if result["code"] == "0":
             # data = result["data"][0]
             # cl_ord_id = data["clOrdId"]
-            self.log += "cancel order : orderid:{} ".format(order_id)
+            self.log += "cancel order : orderid:{} \n".format(order_id)
             return 1
         else:
             self.log += "cancel fail: orderid: {} info: {} ".format(order_id, str(result))
@@ -260,21 +276,7 @@ class Coin():
         global global_log
         tdMode = self.b_tdMode if (posSide=="long") else self.s_tdMode
         lever  = self.b_lever  if (posSide=="long") else self.s_lever
-        if (posSide=="long"):
-            result = set_long_leverage(self.coin_name+"-USDT-SWAP", self.b_lever, tdMode)
-            if "'code': '0'" in result:
-                pass
-            else:
-                self.log += "set leverage fail: " + result + "\n"
-                global_log += "{} set leverage fail: ".format(self.coin_name) + result + "\n"
-        else:
-            result = set_short_leverage(self.coin_name+"-USDT-SWAP", self.s_lever, tdMode)
-            if "'code': '0'" in result:
-                pass
-            else:
-                self.log += "set leverage fail: " + result + "\n"
-                global_log += "{} set leverage fail: ".format(self.coin_name) + result + "\n"
-        time.sleep(1)
+
         result = tradeAPI.place_algo_order(
             tdMode= tdMode, ## cross:全仓杠杆/永续 isolated:逐仓杠杆/永续 cash:非保证金币币
             ccy   ="USDT",
@@ -286,11 +288,14 @@ class Coin():
             triggerPx = price, ## 触发价格 
             orderPx   = "-1", ## 委托价格 , -1为市价
 
-            attachAlgoOrds=[], ## 附带止盈止损
-            tpTriggerPx=stop_gain_price, ## 止盈触发价格
-            tpOrdPx="-1",  ## 止盈委托价格 -1为市价
-            slTriggerPx=stop_loss_price, ## 止损触发价格
-            slOrdPx="-1",  ## 止损委托价格 -1为市价
+            attachAlgoOrds=[
+                {
+                    "tpTriggerPx":stop_gain_price,  ## 止盈触发价格
+                    "tpOrdPx":stop_gain_price,# "-1",  ## 止盈委托价格 -1为市价
+                    "slTriggerPx":stop_loss_price,  ## 止损触发价格
+                    "slOrdPx":stop_loss_price #"-1"   ## 止损委托价格 -1为市价
+                }
+            ], ## 附带止盈止损
 
             instId =self.coin_name+"-USDT-SWAP"
         )
@@ -299,7 +304,7 @@ class Coin():
             data = result["data"][0]
             order_id = data["algoId"]
             self.log += "id:" + order_id + " " + side + " " + posSide + " create_success: " + \
-                "price : " + str(price) + "\n"
+                "price : " + str(price) + " stop : {} {} ".format(stop_gain_price, stop_loss_price) + "\n"
             return order_id
         else:
             self.log += "create_order_fail: " + str(result) + " open_price: " + str(price) + " num: " + str(num) + "\n"
@@ -311,22 +316,25 @@ class Coin():
             newOrdPx     ="-1",   ## 委托价格 
             algoId       =order_id,  
 
-            attachAlgoOrds=[], ## 附带止盈止损
-            newTpTriggerPx=stop_gain_price, ## 止盈触发价格
-            newTpOrdPx="-1",  ## 止盈委托价格 -1为市价
-            newSlTriggerPx=stop_loss_price, ## 止损触发价格
-            newSlOrdPx="-1",  ## 止损委托价格 -1为市价
+            attachAlgoOrds=[
+                {
+                    "newTpTriggerPx":stop_gain_price,  ## 止盈触发价格
+                    "newTpOrdPx":stop_gain_price,# "-1",  ## 止盈委托价格 -1为市价
+                    "newSlTriggerPx":stop_loss_price,  ## 止损触发价格
+                    "newSlOrdPx":stop_loss_price #"-1"   ## 止损委托价格 -1为市价
+                }
+            ], ## 附带止盈止损
 
             instId       =self.coin_name+"-USDT-SWAP"
         )
         if result["code"] == "0":
             data = result["data"][0]
             order_id = data["algoId"]
-            self.log += "id:{} modify_success, new price {:5f}\n".format(order_id, float(price))
+            self.log += "id:{} modify_success, new price {:5f} stop: {} {}\n".format(order_id, float(price), stop_gain_price, stop_loss_price)
             return order_id
         else: ## modify fail, cancel order
             # self.cancel_order(order_id)
-            self.log += "modify_order_fail(need handle): id:{} new_price:{:5f} ".format(order_id, float(price)) + str(result) + "\n"
+            self.log += "modify_order_fail(need handle): id:{} new_price:{:5f} stop: {} {}".format(order_id, float(price), stop_gain_price, stop_loss_price) + str(result) + "\n"
             global global_log
             global_log += "{} {} modify_order_fail(need handle): id:{} new_price:{:5f} ".format(cur_ctime, self.coin_name, order_id, float(price)) + str(result) + "\n"
             
@@ -335,8 +343,8 @@ class Coin():
             return ""
 
     def order_maintain(self, side, posSide, open_price, old_order_id, num): ## 20/2s
-        stop_gain_price = "{:.9}".format(open_price * ((1+float(self.gain)) if side=="buy" else open_price * (1-float(self.gain))))
-        stop_loss_price = "{:.9}".format(open_price * ((1-float(self.loss)) if side=="buy" else open_price * (1+float(self.loss))))
+        stop_gain_price = "{:.9f}".format(open_price * ((1+float(self.gain)) if side=="buy" else (1-float(self.gain))))
+        stop_loss_price = "{:.9f}".format(open_price * ((1-float(self.loss)) if side=="buy" else (1+float(self.loss))))
         open_price = "{:.9f}".format(open_price)
         need_create_modify_cond = 0
         water_line_ok = 0
@@ -438,31 +446,31 @@ class Coin():
         self.gen_current_parameter()
         self.get_current_status()
 
-        self.log += " [sell long ] "  ## 平多
-        if len(self.buy_long_position):
-            price = self.buy_long_position[0]["price"]
-            num   = self.buy_long_position[0]["number"]
-            if (self.ma5/price >= (1+float(self.gain))) or 1:
-                self.log += "try sell long hold_price:{} num:{} ".format(price, num)
-                self.sell_long_id = self.order_maintain("sell", "long", price * (1 + float(self.gain)), self.sell_long_id, num)
-            else:
-                self.log += "fail sell long hold:{} num:{}, ma60 target {:5f} \n".format(price, num, price*(1+float(self.gain)))
-        else:
-            self.log += "does not hold\n"
+        # self.log += " [sell long ] "  ## 平多
+        # if len(self.buy_long_position):
+        #     price = self.buy_long_position[0]["price"]
+        #     num   = self.buy_long_position[0]["number"]
+        #     if (self.ma5/price >= (1+float(self.gain))) or 1:
+        #         self.log += "try sell long hold_price:{} num:{} ".format(price, num)
+        #         self.sell_long_id = self.order_maintain("sell", "long", price * (1 + float(self.gain)), self.sell_long_id, num)
+        #     else:
+        #         self.log += "fail sell long hold:{} num:{}, ma60 target {:5f} \n".format(price, num, price*(1+float(self.gain)))
+        # else:
+        #     self.log += "does not hold\n"
 
-        self.log += " [buy short ] "  ## 平空
-        if len(self.sell_short_position):
-            price = self.sell_short_position[0]["price"]
-            num   = self.sell_short_position[0]["number"]
-            if (self.ma5/price <= (1-float(self.gain))) or 1:
-                # print("try buy short {} {}".format(price, number))
-                self.log += "try buy short hold_price:{:5f} num:{} ".format(price, num)
-                self.buy_short_id = self.order_maintain("buy", "short", price * (1 - float(self.gain)), self.buy_short_id, num)
-            else:
-                self.log += "fail buy short hold:{:5f} num:{}, ma60 target {:5f} \n".format(price, num, price*(1-float(self.gain)))
-                # print("fail buy short {} {}, target {}".format(price, num, price*(1-float(self.gain))))
-        else:
-            self.log += "does not hold\n"
+        # self.log += " [buy short ] "  ## 平空
+        # if len(self.sell_short_position):
+        #     price = self.sell_short_position[0]["price"]
+        #     num   = self.sell_short_position[0]["number"]
+        #     if (self.ma5/price <= (1-float(self.gain))) or 1:
+        #         # print("try buy short {} {}".format(price, number))
+        #         self.log += "try buy short hold_price:{:5f} num:{} ".format(price, num)
+        #         self.buy_short_id = self.order_maintain("buy", "short", price * (1 - float(self.gain)), self.buy_short_id, num)
+        #     else:
+        #         self.log += "fail buy short hold:{:5f} num:{}, ma60 target {:5f} \n".format(price, num, price*(1-float(self.gain)))
+        #         # print("fail buy short {} {}, target {}".format(price, num, price*(1-float(self.gain))))
+        # else:
+        #     self.log += "does not hold\n"
 
 
         self.log += " [buy long  ] "  ## 开多
@@ -532,8 +540,8 @@ if __name__ == "__main__":
     config_dict = get_config()
     coin_list = config_dict.keys()
     all_coins = get_all_swap_list()
-    all_coins = ["WLFI","CFX","DOGE","PUMP","OKB","PEPE"] ## only for test
-    # all_coins = ["WLFI"] ## only for test
+    # all_coins = ["WLFI","CFX","DOGE","PUMP","OKB","PEPE","LINEA","SKY"] ## only for test
+    # all_coins = ["SHIB"] ## only for test
     public_data = get_public_data()
 
     cur_int_time_s = get_current_system_time(ms=0, int_value=1)
@@ -550,7 +558,7 @@ if __name__ == "__main__":
         else:
             if len(coin_obj.newest_300_history_price) > 295: ## make sure 300 history get ok
                 coin_obejcts[coin_name] = coin_obj ##Coin(coin_name)
-            interval_sleep(8)
+        interval_sleep(5) ## set leverage 20/2s
     print("initial done")
     working_id = create_working_order()
     while 1:
@@ -584,7 +592,7 @@ if __name__ == "__main__":
                     pass
                 else:
                     interval_sleep(40)
-            global_log += cur_ctime + "finish older\n"
+            global_log += cur_ctime + " finish all older\n"
 
             total_hold = 0
             merge_hold = 0

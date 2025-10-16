@@ -1,6 +1,5 @@
 from base_okx import *
 
-
 class Coin():
     global cur_ctime
     global config_dict

@@ -40,6 +40,9 @@ def download(all_coins, interval, total_days):
         print("finish {}/{}  {}".format(c+1, coin_num, all_coins[c]))
         time.sleep(2)
 
+
+
+
 if __name__ == "__main__":
 
     total_days = 1 + 30

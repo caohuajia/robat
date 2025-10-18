@@ -3,6 +3,7 @@
 
 import matplotlib.pyplot as plt
 import numpy as np
+import json
 
 pattern        = [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150]
 change_pattern = [ 3,  3,  3,  3,  3, -0.2, -0.2, -0.2, -0.2, -0.2,  3,  3,  3,  3,  3, -0.2, -0.2, -0.2, -0.2, -0.2]
@@ -13,8 +14,23 @@ def get_ma_n(lst, n):
     else:
         return sum(lst[-n:])/n
 
+def get_fft(newest_100, N=100):    ## 
+    fft_result = np.fft.fft(newest_100)
+    freqs = np.fft.fftfreq(N, 1/N)
+    fft_result = fft_result[:N//2]
+    freqs = freqs[:N//2]
+    amplitude = np.abs(fft_result)
+    fre_list = []
+    for i in range(N//2):
+        if (amplitude[i]/N*2) > 0.01:
+            fre_list.append(amplitude[i]/N*2)
+            # print("{}:{:5f} ".format(i,amplitude[i]/N*2),end="")
+    # print("")
+    return fre_list
+
 def gen_data(file_name, num_points):
     file_path = 'test_data/{}'.format(file_name)
+    all_pieces = []
     with open('test_data/z_data1.json', 'w') as f:
         time_step = 0
         last_end = 100
@@ -32,18 +48,23 @@ def gen_data(file_name, num_points):
             ma5 = get_ma_n(end_points, 5)
             ma5_points.append(ma5)
             this_piece = [str(time_step), str(last_end), str(max(last_end,this_end)), str(min(last_end,this_end)), str(this_end), '0', '0', '0', '1']
+            all_pieces.append(this_piece)
             last_end = this_end
             time_step += 1
 
-            f.write(str(this_piece) + '\n')
-    return end_points, ma5_points
+        dumps = json.dumps(all_pieces)
+        f.write(dumps)
 
-# end_points, ma5_points = gen_data('z_data1.json', 100)
-end_points, ma5_points = gen_data('z_data2.json', 50)
+    # freq = np.array(get_fft(end_points, 100))
+    # plt.plot(freq, marker='o')
+    # plt.show()
 
-ypoints = np.array(end_points)
-ma5 = np.array(ma5_points)
+    ypoints = np.array(end_points)
+    ma5 = np.array(ma5_points)
 
-plt.plot(ypoints, marker='')
-plt.plot(ma5, marker='')
-plt.show()
+    plt.plot(ypoints, marker='')
+    plt.plot(ma5, marker='')
+    plt.show()
+
+gen_data('z_data1.json', 100)
+# gen_data('z_data2.json', 50)

@@ -55,6 +55,7 @@ if __name__ == "__main__":
 
     all_coins = get_all_swap_list()
     if download_data: ## save_history_to_file
+        a = input("download data? y/n:")
         download(all_coins, interval, total_days)
         exit(0)
 

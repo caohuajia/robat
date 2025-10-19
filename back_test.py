@@ -2,7 +2,6 @@
 from test_coin_class import *
 
 
-
 if __name__ == "__main__":
 
     total_days = 1 + 30

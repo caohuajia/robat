@@ -37,9 +37,9 @@ def get_fft(newest_100, N=100):    ##
     return fre_list
 
 def gen_data(file_name, num_points):
-    file_path = 'test_data/{}'.format(file_name)
+    file_path = './data/15m/31days/{}_price.json'.format(file_name)
     all_pieces = []
-    with open('test_data/z_data1.json', 'w') as f:
+    with open(file_path, 'w') as f:
         time_step = 0
         last_end = 100
         end_points = []
@@ -48,9 +48,9 @@ def gen_data(file_name, num_points):
         for i in range(num_points):
             # this_end = last_end + 10
             # this_end = np.random.uniform(100,150)
-            if file_name == 'z_data1.json':
+            if file_name == 'aa_data1':
                 this_end = pattern[i % len(pattern)] + np.random.uniform(-0.5,0.5)
-            elif file_name == 'z_data2.json':
+            elif file_name == 'aa_data2':
                 this_end = last_end + change_pattern[i % len(pattern)] + np.random.uniform(-0.5,0.5)
             end_points.append(this_end)
             ma5 = get_ma_n(end_points, 5)
@@ -74,5 +74,5 @@ def gen_data(file_name, num_points):
     plt.plot(ma5, marker='')
     plt.show()
 
-# gen_data('z_data1.json', 1000)
-gen_data('z_data2.json', 500)
+gen_data('aa_data1', 500)
+gen_data('aa_data2', 500)

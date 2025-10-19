@@ -5,8 +5,16 @@ import matplotlib.pyplot as plt
 import numpy as np
 import json
 
-pattern        = [100, 100, 100, 100, 100, 100, 100, 100, 100, 100, 150, 150, 150, 150, 150, 150, 150, 150, 150, 150]
-change_pattern = [ 3,  3,  3,  3,  3, -0.2, -0.2, -0.2, -0.2, -0.2,  3,  3,  3,  3,  3, -0.2, -0.2, -0.2, -0.2, -0.2]
+pattern        = []
+for i in range(20):
+    pattern.append(100)
+for i in range(20):
+    pattern.append(150)
+change_pattern = []
+for i in range(20):
+    change_pattern.append(3)
+for i in range(20):
+    change_pattern.append(-0.2)
 
 def get_ma_n(lst, n):
     if len(lst) < n:
@@ -37,7 +45,7 @@ def gen_data(file_name, num_points):
         end_points = []
         ma5_points = []
         ma5_list = []
-        for i in range(100):
+        for i in range(num_points):
             # this_end = last_end + 10
             # this_end = np.random.uniform(100,150)
             if file_name == 'z_data1.json':
@@ -66,5 +74,5 @@ def gen_data(file_name, num_points):
     plt.plot(ma5, marker='')
     plt.show()
 
-gen_data('z_data1.json', 100)
-# gen_data('z_data2.json', 50)
+# gen_data('z_data1.json', 1000)
+gen_data('z_data2.json', 500)

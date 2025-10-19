@@ -1,4 +1,5 @@
-from main import * 
+import json
+import numpy as np
 
 class coin_base():
     log = ""

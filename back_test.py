@@ -48,10 +48,11 @@ if __name__ == "__main__":
     total_days = 1 + 30
     initial_money = 25
     interval = "15m"
-    test_one = 1
+    #interval = "1m"
+    test_one = 0
     # test_coin = "11test"
     test_coin = "USTC"
-    download_data = 0
+    download_data = 1
 
     all_coins = get_all_swap_list()
     if download_data: ## save_history_to_file
@@ -59,14 +60,15 @@ if __name__ == "__main__":
         download(all_coins, interval, total_days)
         exit(0)
 
-    btc_change_list = get_change_list("BTC")
-    eth_change_list = get_change_list("ETH")
+    # btc_change_list = get_change_list("BTC")
+    # eth_change_list = get_change_list("ETH")
 
     all_coin_struct = {}
     for one_coin in all_coins:
         if test_one:
             one_coin = test_coin
-        try:
+        # try:
+        if 1:
             with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), one_coin), "r") as f:
                 k_line_history = json.load(f)
                 if interval == "15m":
@@ -79,11 +81,12 @@ if __name__ == "__main__":
                     remain_k_line_history_piece = k_line_history[offset:]
                     remain_num = len(remain_k_line_history_piece)
                     for i in range(remain_num):
-                        btc_change = btc_change_list[i]
-                        eth_change = btc_change_list[i]
+                        # btc_change = btc_change_list[i]
+                        # eth_change = btc_change_list[i]
                         if coin.run(remain_k_line_history_piece[i]):
                             break
-        except:
+        # except:
+        else:
             print("{} is not downloaded".format(one_coin))
         if test_one:
             break

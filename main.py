@@ -4,6 +4,7 @@ class Coin():
     global cur_ctime
     global config_dict
     global prefer_idx
+    global back_test
     log = ""
     coin_name = ""
 
@@ -534,6 +535,7 @@ def create_working_order():
 if __name__ == "__main__":
     time_mode = "1m"  ## 1m or 15m
 
+    back_test = 0
     global_log = ""
 
     config_dict = get_config()

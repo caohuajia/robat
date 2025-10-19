@@ -1,6 +1,6 @@
 .vscode
 __*
-log
+.log
 reference
 key.py
 func_test.py

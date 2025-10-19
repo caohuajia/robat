@@ -44,12 +44,12 @@ if __name__ == "__main__":
 
     total_days = 1 + 30
     initial_money = 25
-    # interval = "15m"
-    interval = "1m"
+    interval = "15m"
+    #interval = "1m"
     test_one = 0
     # test_coin = "11test"
     test_coin = "USTC"
-    download_data = 0
+    download_data = 1
 
     all_coins = get_all_swap_list()
     if download_data: ## save_history_to_file

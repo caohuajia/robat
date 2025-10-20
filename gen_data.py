@@ -48,9 +48,9 @@ def gen_data(file_name, num_points):
         for i in range(num_points):
             # this_end = last_end + 10
             # this_end = np.random.uniform(100,150)
-            if file_name == 'aa_data1':
+            if file_name == 'aaaa1':
                 this_end = pattern[i % len(pattern)] + np.random.uniform(-0.5,0.5)
-            elif file_name == 'aa_data2':
+            elif file_name == 'aaaa2':
                 this_end = last_end + change_pattern[i % len(pattern)] + np.random.uniform(-0.5,0.5)
             end_points.append(this_end)
             ma5 = get_ma_n(end_points, 5)
@@ -74,5 +74,5 @@ def gen_data(file_name, num_points):
     plt.plot(ma5, marker='')
     plt.show()
 
-gen_data('aa_data1', 500)
-gen_data('aa_data2', 500)
+gen_data('aaaa1', 500)
+gen_data('aaaa2', 500)

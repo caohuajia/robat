@@ -21,7 +21,7 @@ class coin_base():
         pass
 
     def log_info(self, log, keep_cur_line=0):
-        with open("./log/test.log", "a+") as f:
+        with open("./log/test.log", "a+", encoding='utf-8') as f:
             f.write(log)
             if keep_cur_line:
                 pass

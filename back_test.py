@@ -1,3 +1,4 @@
+# coding=UTF-8
 
 from test_coin_class import *
 

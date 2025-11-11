@@ -12,6 +12,8 @@ def relation(list1, list2):
     return k, b
 
 
+##  timestap         begin      highest    lowest     end                                      complete
+## ['1729861200000', '0.14621', '0.14662', '0.14578', '0.14656', '33498', '334980', '48981.5551', '1']
 def get_2_coin_list(coin1, coin2):
     coin1_list = []
     coin2_list = []
@@ -19,15 +21,24 @@ def get_2_coin_list(coin1, coin2):
         k_line_history = json.load(f)
         k_line_history.reverse()  ##[old ... new]
         for i in k_line_history:
+            coin1_list.append(float(i[1]))
+            coin1_list.append(float(i[2]))
+            coin1_list.append(float(i[3]))
             coin1_list.append(float(i[4]))
     with open(f"./data/15m/31days/{coin2}_price.json", "r") as f:
         k_line_history = json.load(f)
         k_line_history.reverse()  ##[old ... new]
         for i in k_line_history:
+            coin2_list.append(float(i[1]))
+            coin2_list.append(float(i[2]))
+            coin2_list.append(float(i[3]))
             coin2_list.append(float(i[4]))
     if len(coin1_list) != len(coin2_list):
-        print("Warning: length of two coin price list is different!")
+        pass
+        # print("Warning: length of two coin price list is different!")
+    min_len = min(len(coin1_list), len(coin2_list))
     return np.array(coin1_list), np.array(coin2_list)
+    # return np.array(coin1_list[0-min_len:]), np.array(coin2_list[0-min_len:])
 
 
 def get_variance(ls):
@@ -56,6 +67,7 @@ def get_2_coin_variance(coin1, coin2):
         return None
     k, b = relation(coin1_list, coin2_list)
     shift_coin2_list = coin1_list * k + b
+    # shift_coin2_list = coin1_list * k + b
     variance = get_variance(coin1_list - shift_coin2_list)
     # print("coin2 = coin1 * {} + {}".format(k, b))
     # print("Variance:", variance)

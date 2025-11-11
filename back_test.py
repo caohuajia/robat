@@ -2,21 +2,7 @@
 from test_coin_class import *
 
 
-if __name__ == "__main__":
-
-    total_days = 1 + 30
-    initial_money = 25
-    interval = "15m"
-    #interval = "1m"
-    test_one = 1
-    # test_coin = "11test"
-    test_coin = "DOGE"
-
-    # all_coins = get_all_swap_list()
-    all_coins = ["BTC", "ETH"]
-    # btc_change_list = get_change_list("BTC")
-    # eth_change_list = get_change_list("ETH")
-
+def get_all_coin_obj(all_coins):
     all_coin_struct = {}
     for one_coin in all_coins:
         if test_one:
@@ -44,6 +30,26 @@ if __name__ == "__main__":
             print("{} is not downloaded".format(one_coin))
         if test_one:
             break
+    return all_coin_struct
+
+
+if __name__ == "__main__":
+
+    total_days = 1 + 30
+    initial_money = 25
+    interval = "15m"
+    #interval = "1m"
+    test_one = 1
+    # test_coin = "11test"
+    test_coin = "DOGE"
+    test_coin = "OKB"
+
+    # all_coins = get_all_swap_list()
+    all_coins = ["BTC", "ETH"]
+    # btc_change_list = get_change_list("BTC")
+    # eth_change_list = get_change_list("ETH")
+
+    all_coin_struct = get_all_coin_obj(all_coins)
 
     all_result = ""
     total_gain = 0

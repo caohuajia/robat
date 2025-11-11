@@ -67,7 +67,6 @@ for one_coin in all_coins:
     # print(change_list)
     # show_hist(change_list)
     show_k_line(k_line_list)
-    show_k_line(k_line_list)
     plt.show()
 
     if test_one:

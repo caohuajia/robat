@@ -46,7 +46,7 @@ if __name__ == "__main__":
     test_coin = "OKB"
 
     # all_coins = get_all_swap_list()
-    all_coins = ["BTC", "ETH"]
+    all_coins = ["DOGE", "ETH"]
     # btc_change_list = get_change_list("BTC")
     # eth_change_list = get_change_list("ETH")
 

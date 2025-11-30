@@ -1,6 +1,6 @@
 [
     {
-        "CETUS"     :{"burst"  :0.07,
+        "CETUS"     :{"burst"  :0.01,
                       "gain"   :0.03,
                       "money_u":1,
                       "lever"  :2,

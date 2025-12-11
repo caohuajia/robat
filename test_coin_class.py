@@ -3,6 +3,13 @@
 import json
 import numpy as np
 
+## 当前策略（买多买入）
+## self.m60 <= self.m300 * (1-(self.burst))
+## self.cur_price < self.m60
+## self.m60 <= (self.last_hit_m_stable * self.hit_m_dn)
+
+## 平仓 delivery_benefit > self.gain (均无杠杆)
+
 class coin_base():
     log = ""
 

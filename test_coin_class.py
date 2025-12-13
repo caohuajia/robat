@@ -2,6 +2,7 @@
 
 import json
 import numpy as np
+import joblib
 
 ## 当前策略（买多买入）
 ## self.m60 <= self.m300 * (1-(self.burst))
@@ -16,6 +17,7 @@ class coin_base():
     def __init__(self, coin_name, k_line_100_history):
         self.coin_name = coin_name
         self.get_self_config()
+        self.global_cnt = 0
 
         self.prefer_mode = 0  ## >0, prefer bug long, <0 prefer sell short
         self.blow_up_num = 0
@@ -24,6 +26,7 @@ class coin_base():
         self.total_money = 1
         self.balance = 1
         self.current_market = []
+        self.trade_history = []
 
         with open("./log/test.log", "w", encoding='utf-8') as f:
             f.write("[    ] 时间                     总计/可用            m60     prefer_mode 持有：买入价格 杠杆后当前收益率       当前动作：开始价格，爆仓/结束价格\n") 
@@ -68,6 +71,8 @@ class coin_base():
         self.get_float_money()
         self.log += "[finl] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
         self.log_info(self.log, 1)
+
+        joblib.dump(self.trade_history, "./log/{}_trade_history.sva".format(self.coin_name))
 
     float_money = 0
     def get_float_money(self):
@@ -128,7 +133,7 @@ class coin_base():
               ((self.m60 <= (self.last_hit_m_stable * self.hit_m_dn)) ):
             # if (self.buy_long_water_line > self.market_lowest) and (self.market_piece[1] < self.market_piece[4]):
                 if self.price_can_trade(self.m60):
-                    trade_info = {"time":self.cur_ctime, "price":self.m60, "money":0.01, "gain":1-(self.m300/self.m60), "mode":0}
+                    trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.m60, "money":0.01, "gain":1-(self.m300/self.m60), "mode":0, "deal_time":"", "deal_cnt": 0, "deal_price":0}
                     self.balance -= 0.1
                     self.global_money -= 0.1
                     self.hold_list.append(trade_info)
@@ -150,7 +155,7 @@ class coin_base():
             if (self.m60 >= self.sell_short_water_line) and (self.market_highest > self.m60) and ((self.m60 >= (self.last_hit_m_stable * self.hit_m_up)) ):
             # if (self.sell_short_water_line < self.market_highest) and (self.market_piece[1] > self.market_piece[4]):
                 if self.price_can_trade(self.m60):
-                    trade_info = {"time":self.cur_ctime, "price":self.m60, "money":0.01, "gain":(self.m60/self.m300)-1, "mode":1}
+                    trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.m60, "money":0.01, "gain":(self.m60/self.m300)-1, "mode":1, "deal_time":"", "deal_cnt": 0, "deal_price": 0}
                     self.balance -=0.1
                     self.global_money -= 0.1
                     self.hold_list.append(trade_info)
@@ -203,6 +208,10 @@ class coin_base():
                     self.balance     += 0.1 + 0.1 * delivery_benefit * self.lever 
                     self.global_money+= 0.1 + 0.1 * delivery_benefit * self.lever 
                     self.hold_list.remove(i)
+                    i["deal_time"] = self.cur_ctime
+                    i["deal_price"] = self.m60
+                    i["deal_cnt"] = self.global_cnt
+                    self.trade_history.append(i)
             else:
                 pass
 
@@ -316,6 +325,7 @@ class coin_base():
         self.log_info(self.log, 1)
         self.log = ""
         self.prefer_mode = 0
+        self.global_cnt += 1
         return 0
 
 

@@ -172,7 +172,7 @@ class coin_base():
         self.prob()
         if (self.balance>0.1) and (self.global_money>0.1):
             if (self.m60 <= self.buy_long_water_line) and \
-               (self.cur_price < self.m60) and \
+               (self.market_lowest < self.m60) and \
               ((self.m60 <= (self.last_hit_m_stable * self.hit_m_dn)) ):
             # if (self.buy_long_water_line > self.market_lowest) and (self.market_piece[1] < self.market_piece[4]):
                 if self.price_can_trade(self.m60):

@@ -18,6 +18,7 @@ class coin_base():
         self.coin_name = coin_name
         self.get_self_config()
         self.global_cnt = 0
+        self.m_base = 60
 
         with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), self.coin_name), "r") as f:
             k_line_history = json.load(f)
@@ -39,6 +40,7 @@ class coin_base():
         self.balance = 1
         self.current_market = []
         self.trade_history = []
+        self.float_money_list = []
 
         with open("./log/test.log", "w", encoding='utf-8') as f:
             f.write("[    ] 时间                     总计/可用            m60     prefer_mode 持有：买入价格 杠杆后当前收益率       当前动作：开始价格，爆仓/结束价格\n") 
@@ -84,7 +86,17 @@ class coin_base():
         self.log += "[finl] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
         self.log_info(self.log, 1)
 
+
+        for i in self.hold_list:
+            i["deal_time"] = self.cur_ctime
+            i["deal_price"] = i["price"]
+            i["deal_cnt"] = min(i["begin_cnt"] + 100, self.global_cnt-1)
+            self.trade_history.append(i)
+
+
         joblib.dump(self.trade_history, "./log/{}_trade_history.sva".format(self.coin_name))
+        joblib.dump(self.float_money_list, "./log/{}_float_money_list.sva".format(self.coin_name))
+        
 
     float_money = 0
     def get_float_money(self):
@@ -99,6 +111,12 @@ class coin_base():
                         self.log += "[blow] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
                                         "{:.5f}".format(self.cur_price) + self.get_cur_hold() + " order blow up\n"
                         self.hold_list.remove(i)
+                        i["deal_time"] = self.cur_ctime
+                        i["deal_price"] = blow_price
+                        i["deal_cnt"] = self.global_cnt
+                        i["blow"] = 1
+                        self.trade_history.append(i)
+
                         self.total_money -= 0.1
                         self.float_money -= 0.1
                         self.blow_up_num += 1
@@ -114,6 +132,12 @@ class coin_base():
                         self.log += "[blow] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
                                         "{:.5f}".format(self.cur_price) + self.get_cur_hold() + " order blow up\n"
                         self.hold_list.remove(i)
+                        i["deal_time"] = self.cur_ctime
+                        i["deal_price"] = blow_price
+                        i["deal_cnt"] = self.global_cnt
+                        i["blow"] = 1
+                        self.trade_history.append(i)
+
                         self.total_money -= 0.1
                         self.float_money -= 0.1
                         self.blow_up_num += 1
@@ -127,6 +151,8 @@ class coin_base():
         # self.log += self.cur_ctime + " slope: " + "{:.7f}".format(cur_slope*100000) + " variance " + "{:.5f}".format(variance) + "\n"
 
         self.get_float_money()
+        self.float_money_list.append(self.float_money)
+
         # self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
         if self.float_money < 0.01:
             self.log += self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + "\n"
@@ -145,7 +171,7 @@ class coin_base():
               ((self.m60 <= (self.last_hit_m_stable * self.hit_m_dn)) ):
             # if (self.buy_long_water_line > self.market_lowest) and (self.market_piece[1] < self.market_piece[4]):
                 if self.price_can_trade(self.m60):
-                    trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.m60, "money":0.01, "gain":1-(self.m300/self.m60), "mode":0, "deal_time":"", "deal_cnt": 0, "deal_price":0}
+                    trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.m60, "money":0.01, "gain":1-(self.m300/self.m60), "mode":0, "deal_time":"", "deal_cnt": 0, "deal_price":0, "blow": 0}
                     self.balance -= 0.1
                     self.global_money -= 0.1
                     self.hold_list.append(trade_info)
@@ -167,7 +193,7 @@ class coin_base():
             if (self.m60 >= self.sell_short_water_line) and (self.market_highest > self.m60) and ((self.m60 >= (self.last_hit_m_stable * self.hit_m_up)) ):
             # if (self.sell_short_water_line < self.market_highest) and (self.market_piece[1] > self.market_piece[4]):
                 if self.price_can_trade(self.m60):
-                    trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.m60, "money":0.01, "gain":(self.m60/self.m300)-1, "mode":1, "deal_time":"", "deal_cnt": 0, "deal_price": 0}
+                    trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.m60, "money":0.01, "gain":(self.m60/self.m300)-1, "mode":1, "deal_time":"", "deal_cnt": 0, "deal_price": 0, "blow": 0}
                     self.balance -=0.1
                     self.global_money -= 0.1
                     self.hold_list.append(trade_info)

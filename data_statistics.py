@@ -10,6 +10,9 @@ import joblib
 class KLine(object):
     def __init__(self, name):
         self.name = name
+        self.trade_history = []
+        self.float_money_list = []
+        
         self.change_list = []
         self.last_change = 0
         self.k_line_list = []
@@ -17,8 +20,6 @@ class KLine(object):
         self.ma30_list = []
         self.ma60_list = []
         self.ma300_list = []
-        
-
 
 # 输出：Mon Oct  6 17:15:00 2025    ->  10/06 17:15
 def simplify_time(time_str):
@@ -39,7 +40,7 @@ def show_hist(change_list):
     # 显示图表
     plt.show()
 
-def show_k_line(kline, trade_history=None):
+def show_k_line(kline):
     ypoints = np.array(kline.k_line_list)
     x = range(len(ypoints))
 
@@ -64,14 +65,14 @@ def show_k_line(kline, trade_history=None):
     # ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d %H:%M'))  # 设置日期格式
     ax.yaxis.set_major_locator(ticker.AutoLocator())  # 自动设置主刻度位置
     # ma5 = np.array(k_line_list)
-    if trade_history is not None:
-        for trade in trade_history:
+    if len(kline.trade_history) > 0:
+        for trade in kline.trade_history:
             begin_cnt = trade["begin_cnt"]
-            begin_price = ypoints[begin_cnt]
+            begin_price = trade["price"]
             end_cnt = trade["deal_cnt"]
-            end_price = ypoints[end_cnt]
-            if trade["mode"] == 0: ## buy long
-                ax.arrow(begin_cnt, begin_price, end_cnt-begin_cnt, end_price-begin_price, head_width=0.2, head_length=ypoints[-1]*0.02, fc='lightblue', ec='red', alpha=1)
+            end_price = trade["deal_price"]
+            if trade["blow"] == 1: ## buy long
+                ax.arrow(begin_cnt, begin_price, end_cnt-begin_cnt, end_price-begin_price, head_width=0.2, head_length=ypoints[-1]*0.02, fc='lightblue', ec='green', alpha=1)
             else:
                 ax.arrow(begin_cnt, begin_price, end_cnt-begin_cnt, end_price-begin_price, head_width=0.2, head_length=ypoints[-1]*0.02, fc='lightcoral', ec='red', alpha=1)
         #
@@ -80,9 +81,18 @@ def show_k_line(kline, trade_history=None):
     plt.grid(color='gray', linestyle='--', linewidth=0.5, alpha=0.3)
     plt.title(kline.name)
     plt.plot(ypoints, marker='', label=kline.name, linewidth=0.7)
-    # plt.plot(np.array(kline.ma30_list), marker='', label="ma30", linewidth=0.5)
+    plt.plot(np.array(kline.ma30_list), marker='', label="ma30", linewidth=0.5)
     plt.plot(np.array(kline.ma60_list), marker='', label="ma60", linewidth=0.5)
     plt.plot(np.array(kline.ma300_list), marker='', label="ma300", linewidth=0.5)
+
+
+
+    # ax2 = ax.twinx()
+    # ax2.plot(x, np.array(kline.float_money_list), marker='', label='float money', linewidth=0.6, color='r')
+    # ax2.set_ylabel('float money', color='r')
+    # ax2.set_ylim(ymin=0)  # Y轴范围为0到100
+
+
     plt.legend()
     # plt.plot(ma5, marker='x')
 
@@ -107,12 +117,12 @@ for one_coin in all_coins:
     if test_one:
         one_coin = test_coin
     
-    trade_history = joblib.load("./log/{}_trade_history.sva".format(one_coin))
-    for i in trade_history:
-        print(i)
-
-
     kline = KLine(one_coin)
+
+    kline.trade_history = joblib.load("./log/{}_trade_history.sva".format(one_coin))
+    kline.float_money_list = joblib.load("./log/{}_float_money_list.sva".format(one_coin))
+
+
     with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), one_coin), "r") as f:
         k_line_history = json.load(f)
         # print(len(k_line_history))
@@ -132,10 +142,10 @@ for one_coin in all_coins:
                 if kline.last_change < -10: ## 0.01%
                     kline.change_list.append(change)
             kline.last_change = change
-    print(np.average(kline.change_list))
+    # print(np.average(kline.change_list))
     # print(kline.change_list)
     # show_hist(kline.change_list)
-    show_k_line(kline, trade_history) ## 绘制end price
+    show_k_line(kline) ## 绘制end price
     plt.show()
 
     if test_one:

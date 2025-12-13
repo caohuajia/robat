@@ -1,7 +1,12 @@
 # coding=UTF-8
 
 from test_coin_class import *
+from datetime import datetime
 
+# 输出：Mon Oct  6 17:15:00 2025    ->  10/06 17:15
+def simplify_time(time_str):
+    dt = datetime.strptime(time_str, "%a %b %d %H:%M:%S %Y")
+    return dt.strftime("%m/%d %H:%M")
 
 def get_all_coin_obj(all_coins):
     all_coin_struct = {}
@@ -54,9 +59,9 @@ if __name__ == "__main__":
             coin = all_coin_struct[one_coin]
             if coin.run(global_money):
                 coin.finish()
-                all_result += "{:<10}:  total: {:.3f}  balance: {:.3f}  blow num: {}\n".format(one_coin, coin.float_money, coin.balance, coin.blow_up_num)
+                all_result += "{:<10}:  float: {:.3f}  balance: {:.3f}  blow num: {}\n".format(one_coin, coin.float_money, coin.balance, coin.blow_up_num)
                 # print(total_days,"days " + one_coin + " finish: total: ",coin.float_money, "balance: ", coin.balance)
-                total_gain += coin.float_money - 1
+                total_gain += (coin.float_money - 1)
                 all_coin_struct.pop(one_coin)
         if len(list(all_coin_struct.keys())) == 0:
             break
@@ -64,11 +69,26 @@ if __name__ == "__main__":
             round += 1
             # print("round {}/{}".format(round,1))
 
-    all_result += "total gain: {}%".format(total_gain/initial_money*100)
-    print("total gain: {}%".format(total_gain/initial_money*100))
     if test_one:
+        all_result += "total gain: {}%".format((total_gain/1)*100)
+        print("total gain: {}%".format((total_gain/1)*100))
+        with open("./log/all_test_log", "w") as f:
+            f.write(all_result)
+
+        with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), test_coin), "r") as f:
+            k_line_history = json.load(f)
+            begin_price = float(k_line_history[0][1])
+            begin_time = k_line_history[0][0]
+            end_price = float(k_line_history[-1][1])
+            end_time = k_line_history[-1][0]
+        with open("./all_try_log.log", "a") as f:
+            # print(len(k_line_history))
+            f.write("{:<8} total_gain:{:>8}  burst: {:.2f}  gain: {:.2f}  lever: {}  hit_m up/dn: {}-{}  time: {}  ~  {}  period_price: {:.2f}% \n".format(
+                    test_coin, "{:.2f}%".format((total_gain/1)*100), coin.burst, coin.gain, coin.lever, coin.hit_m_up, coin.hit_m_dn, simplify_time(begin_time), simplify_time(end_time), ((end_price/begin_price)-1)*100))
         pass
     else:
+        all_result += "total gain: {}%".format((total_gain/initial_money)*100)
+        print("total gain: {}%".format((total_gain/initial_money)*100))
         with open("./log/all_test_log", "w") as f:
             f.write(all_result)
 

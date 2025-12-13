@@ -11,21 +11,13 @@ def get_all_coin_obj(all_coins):
         # try:
         if 1:
             with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), one_coin), "r") as f:
-                k_line_history = json.load(f)
                 if interval == "15m":
-                    coin = coin_15m(one_coin, k_line_history)
+                    coin = coin_15m(one_coin, interval, total_days)
                     all_coin_struct[one_coin] = coin
 
                 else:
-                    offset = 1440  ## 1440min = 24h
-                    coin = coin_1m(one_coin, k_line_history[0:offset])
-                    remain_k_line_history_piece = k_line_history[offset:]
-                    remain_num = len(remain_k_line_history_piece)
-                    for i in range(remain_num):
-                        # btc_change = btc_change_list[i]
-                        # eth_change = btc_change_list[i]
-                        if coin.run(remain_k_line_history_piece[i]):
-                            break
+                    coin = coin_1m(one_coin, interval, total_days)
+                    all_coin_struct[one_coin] = coin
         # except:
         else:
             print("{} is not downloaded".format(one_coin))

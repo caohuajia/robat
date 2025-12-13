@@ -14,10 +14,26 @@ import joblib
 class coin_base():
     log = ""
 
-    def __init__(self, coin_name, k_line_100_history):
+    def __init__(self, coin_name, interval="15m", total_days=31):
         self.coin_name = coin_name
         self.get_self_config()
         self.global_cnt = 0
+
+        with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), self.coin_name), "r") as f:
+            k_line_history = json.load(f)
+
+
+        self.newest_history_price = []
+        for i in range(len(k_line_history)):##[old ... new]
+            begin_price = k_line_history[i][1]
+            self.newest_history_price.append(float(begin_price)) ##[old ... new]
+
+        self.market_end = float(k_line_history[0][4]) ## 近似值
+        self.future_market = iter(k_line_history)
+
+        self.last_hit_m_stable = self.market_end
+
+
 
         self.prefer_mode = 0  ## >0, prefer bug long, <0 prefer sell short
         self.blow_up_num = 0
@@ -342,19 +358,9 @@ class coin_1m(coin_base):
 
 class coin_15m(coin_base):
 
-    def __init__(self, coin_name, k_line_100_history):
-        super().__init__(coin_name, k_line_100_history)
+    def __init__(self, coin_name, interval="15m", total_days=31):
+        super().__init__(coin_name, interval, total_days)
 
-        offset = 1000 ## 96 * 15 = 24h
-        self.newest_history_price = []
-        for i in range(offset):##[old ... new]
-            begin_price = k_line_100_history[i][1]
-            self.newest_history_price.append(float(begin_price)) ##[old ... new]
-
-        self.market_end = float(k_line_100_history[offset-1][4])
-        self.future_market = iter(k_line_100_history[offset:])
-
-        self.last_hit_m_stable = self.market_end
 
 
 

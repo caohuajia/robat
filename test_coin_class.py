@@ -21,15 +21,11 @@ class coin_base():
 
         with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), self.coin_name), "r") as f:
             k_line_history = json.load(f)
-
-
-        self.newest_history_price = []
-        for i in range(len(k_line_history)):##[old ... new]
-            begin_price = k_line_history[i][1]
-            self.newest_history_price.append(float(begin_price)) ##[old ... new]
+            # print(len(k_line_history))
 
         self.market_end = float(k_line_history[0][4]) ## 近似值
         self.future_market = iter(k_line_history)
+        self.newest_history_price = [self.market_end]
 
         self.last_hit_m_stable = self.market_end
 
@@ -235,13 +231,14 @@ class coin_base():
         n = -60
         newest_n =  self.newest_history_price[n:]
         self.m60 = sum(newest_n)/len(newest_n)
-
-        refer_before = self.newest_history_price[-4*24-1:-4*24+3]
-        self.m300 = sum(refer_before)/len(refer_before)
+        # print(self.coin_name,"m60:",self.m60)
+        n = -300
+        newest_n =  self.newest_history_price[n:]
+        self.m300 = sum(newest_n)/len(newest_n)
         pass
 
     def get_newest_history(self):
-        self.newest_history_price.pop(0)
+        # self.newest_history_price.pop(0)
         self.newest_history_price.append(self.market_end)
 
     def gen_current_parameter(self):
@@ -292,7 +289,10 @@ class coin_base():
             self.hit_m_dn = config_dict["CETUS"]["hit_m_dn"]
 
     def get_current_market(self):
-        pass
+        current_market = next(self.future_market)
+        self.global_cnt += 1
+        return current_market
+
 
     def run(self, global_money):
         self.get_newest_history()
@@ -341,7 +341,6 @@ class coin_base():
         self.log_info(self.log, 1)
         self.log = ""
         self.prefer_mode = 0
-        self.global_cnt += 1
         return 0
 
 
@@ -360,13 +359,6 @@ class coin_15m(coin_base):
 
     def __init__(self, coin_name, interval="15m", total_days=31):
         super().__init__(coin_name, interval, total_days)
-
-
-
-
-    def get_current_market(self):
-        current_market = next(self.future_market)
-        return current_market
 
     def get_stable(self):
         n = -60

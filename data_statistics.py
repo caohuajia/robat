@@ -80,7 +80,7 @@ def show_k_line(kline, trade_history=None):
     plt.grid(color='gray', linestyle='--', linewidth=0.5, alpha=0.3)
     plt.title(kline.name)
     plt.plot(ypoints, marker='', label=kline.name, linewidth=0.7)
-    plt.plot(np.array(kline.ma30_list), marker='', label="ma30", linewidth=0.5)
+    # plt.plot(np.array(kline.ma30_list), marker='', label="ma30", linewidth=0.5)
     plt.plot(np.array(kline.ma60_list), marker='', label="ma60", linewidth=0.5)
     plt.plot(np.array(kline.ma300_list), marker='', label="ma300", linewidth=0.5)
     plt.legend()

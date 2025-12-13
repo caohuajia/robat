@@ -12,7 +12,7 @@ def get_all_coin_obj(all_coins):
         if 1:
             with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), one_coin), "r") as f:
                 if interval == "15m":
-                    coin = coin_15m(one_coin, interval, total_days)
+                    coin = coin_base(one_coin, interval, total_days)
                     all_coin_struct[one_coin] = coin
 
                 else:

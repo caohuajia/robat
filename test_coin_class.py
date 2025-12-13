@@ -53,10 +53,11 @@ class coin_base():
             else:
                 f.write("\n")
 
-    def prob(self):
-        if ("Dec  3 15" in self.cur_ctime  or\
-            "Dec  3 15" in self.cur_ctime ) and 1:
-            self.log += "[prob] " + self.cur_ctime + " cur_price: {:.5f}-{:.5f}-{:.5f}-{:.5f}".format(self.cur_price,self.market_lowest,self.market_highest,self.market_end) + \
+    def prob(self): ## "Thu Nov 13 16:45:00 2025" "Sun Dec  7 06:00:00 2025"
+        if ("Dec 10 07" in self.cur_ctime  or\
+            "Dec 10 08" in self.cur_ctime  or\
+            "Dec 10 09" in self.cur_ctime ) and 1:
+            self.log += "[prob] " + self.cur_ctime + " cur_price: {:.5f}-{:.5f}-{:.5f}-{:.5f}".format(self.cur_price,self.market_highest,self.market_lowest,self.market_end) + \
                                 " ref_24h: {:.5f}".format(self.m300) + " cur/ref: {:.1f}%".format(self.cur_price/self.m300*100) + \
                                 " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
                                 " cur_price_need: {:.1f}%".format((self.sell_short_water_line/self.cur_price-1)*100) + " m_stable {:.5f}\n".format(self.m60) + \
@@ -68,6 +69,11 @@ class coin_base():
                                                     ((self.m60 >= (self.last_hit_m_stable * self.hit_m_up)) ),
                                                     self.price_can_trade(self.m60)) + \
                                 "\n"
+            if  (self.balance>0.1) and (self.global_money>0.1) and(self.m60 >= self.sell_short_water_line) and \
+                (self.market_highest > self.m60) and ((self.m60 >= (self.last_hit_m_stable * self.hit_m_up)) and self.price_can_trade(self.m60)):
+                return True ## can trade
+            else:
+                return False
 
 
     def get_cur_hold(self):
@@ -187,11 +193,15 @@ class coin_base():
                                 "\n"
 
     def sell_short(self):##(self.cur_price > self.market_end) and \
-        self.prob()
+        prob_can_trade = self.prob()
+        if prob_can_trade: 
+            pass
         if (self.balance>0.1) and (self.global_money>0.1):
             if (self.m60 >= self.sell_short_water_line) and (self.market_highest > self.m60) and ((self.m60 >= (self.last_hit_m_stable * self.hit_m_up)) ):
             # if (self.sell_short_water_line < self.market_highest) and (self.market_piece[1] > self.market_piece[4]):
                 if self.price_can_trade(self.m60):
+                    if prob_can_trade:
+                        self.log += "enter\n"
                     trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.m60, "money":0.01, "gain":(self.m60/self.m300)-1, "mode":1, "deal_time":"", "deal_cnt": 0, "deal_price": 0, "blow": 0}
                     self.balance -=0.1
                     self.global_money -= 0.1

@@ -57,10 +57,13 @@ if __name__ == "__main__":
 
     if test_one:
         for test_coin in ["OKB", "DOGE", "CETUS", "ETH"]:
-        # for test_coin in ["DOGE"]:
+        # for test_coin in ["OKB"]:
             for burst in [0.01,0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]:
+            # for burst in [0.02]:
                 for gain in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]:
+                # for gain in [0.02]:
                     for m_base in [30, 60]:
+                    # for m_base in [30]:
                         total_gain = 0
                         round = 0
                         global_money = [initial_money]

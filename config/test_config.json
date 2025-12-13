@@ -1,8 +1,9 @@
 [
     {
         "CETUS"     :{"burst"  :0.03,
-                      "gain"   :0.01,
+                      "gain"   :0.05,
                       "money_u":1,
+                      "m_base" :30,
                       "lever"  :2,
                       "max_num":10,
                       "tdMode" : "isolated",

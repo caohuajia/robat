@@ -18,7 +18,6 @@ class coin_base():
         self.coin_name = coin_name
         self.get_self_config()
         self.global_cnt = 0
-        self.m_base = 60
 
         with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), self.coin_name), "r") as f:
             k_line_history = json.load(f)
@@ -254,7 +253,7 @@ class coin_base():
                 pass
 
     def get_stable(self):
-        n = -60
+        n = -self.m_base
         newest_n =  self.newest_history_price[n:]
         self.m60 = sum(newest_n)/len(newest_n)
         # print(self.coin_name,"m60:",self.m60)
@@ -307,6 +306,7 @@ class coin_base():
             self.burst   = config_dict["CETUS"]["burst"]
             self.gain    = config_dict["CETUS"]["gain"]
             self.lever   = config_dict["CETUS"]["lever"]
+            self.m_base  = config_dict["CETUS"]["m_base"]
             self.max_num = config_dict["CETUS"]["max_num"]
             self.stable_slope    = 0.001
             self.tdMode = 1 if config_dict["CETUS"]["tdMode"] == "isolated" else 0

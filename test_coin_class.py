@@ -22,14 +22,15 @@ class coin_base():
         with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), self.coin_name), "r") as f:
             k_line_history = json.load(f)
             # print(len(k_line_history))
-
-        self.market_end = float(k_line_history[0][4]) ## 近似值
         self.future_market = iter(k_line_history)
+        self.market_end = float(k_line_history[0][4]) ## 近似值
         self.newest_history_price = [self.market_end]
 
+        for i in range(300):
+            self.get_current_market()
+
+
         self.last_hit_m_stable = self.market_end
-
-
 
         self.prefer_mode = 0  ## >0, prefer bug long, <0 prefer sell short
         self.blow_up_num = 0
@@ -272,10 +273,6 @@ class coin_base():
         self.m300 = sum(newest_n)/len(newest_n)
         pass
 
-    def get_newest_history(self):
-        # self.newest_history_price.pop(0)
-        self.newest_history_price.append(self.market_end)
-
     def gen_current_parameter(self):
         self.get_stable()
 
@@ -325,18 +322,11 @@ class coin_base():
             self.hit_m_dn = config_dict["CETUS"]["hit_m_dn"]
 
     def get_current_market(self):
-        current_market = next(self.future_market)
         self.global_cnt += 1
-        return current_market
 
-
-    def run(self, global_money):
-        self.get_newest_history()
-
-        self.global_money = global_money[0]
         ## ["Sun Oct 13 20:26:00 2024", "0.21326", "0.21388", "0.21323", "0.21368", "6935", "69350", "14809.0594", "1"],
         try:
-            current_market = self.get_current_market()
+            current_market = next(self.future_market)
         except:
             return 1
         self.market_piece = current_market
@@ -344,12 +334,20 @@ class coin_base():
         self.market_highest = float(self.market_piece[2])
         self.market_lowest  = float(self.market_piece[3])
         self.market_end     = float(self.market_piece[4])
-
         self.cur_ctime = current_market[0]
 
+        self.newest_history_price.append(self.market_end)
+
+
+    def run(self, global_money):
+
+        self.global_money = global_money[0]
+        if self.get_current_market():
+            return 1
 
         if self.blow_up():
             return 1
+        
         self.deal()
 
         self.gen_current_parameter()

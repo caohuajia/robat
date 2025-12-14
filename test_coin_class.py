@@ -55,19 +55,25 @@ class coin_base():
                 f.write("\n")
 
     def prob(self): ## "Thu Nov 13 16:45:00 2025" "Sun Dec  7 06:00:00 2025"
-        if ("8" in self.cur_ctime  or\
-            "8" in self.cur_ctime  or\
-            "8" in self.cur_ctime ) and 1:
+        if (" 20 21:" in self.cur_ctime  or\
+            " 20 21:" in self.cur_ctime  or\
+            " 20 21:" in self.cur_ctime ) and 1:
             self.log += "[prob] " + self.cur_ctime + " cur_price: {:.5f}-{:.5f}-{:.5f}-{:.5f}".format(self.cur_price,self.market_highest,self.market_lowest,self.market_end) + \
                                 " ref_24h: {:.5f}".format(self.m300) + " cur/ref: {:.1f}%".format(self.cur_price/self.m300*100) + \
                                 " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
                                 " cur_price_need: {:.1f}%".format((self.sell_short_water_line/self.cur_price-1)*100) + " m_stable {:.5f}\n".format(self.m60) + \
                                 "       hold:" + self.get_cur_hold() + "\n"+\
-                                "       trade_cond: balance:{} waterline:{} price_trend:{} m_stable:{} price_can_trade:{}".format(
+                                "       sell trade_cond: balance:{} waterline:{} price_trend:{} m_stable:{} price_can_trade:{}".format(
                                                     (self.balance>0.1) and (self.global_money>0.1),
                                                     (self.m60 >= self.sell_short_water_line), 
                                                     (self.market_highest > self.m60),
                                                     ((self.m60 >= (self.last_hit_m_stable * self.hit_m_up)) ),
+                                                    self.price_can_trade(self.m60)) +"\n"+  \
+                                "       bug  trade_cond: balance:{} waterline:{} price_trend:{} m_stable:{} price_can_trade:{}".format(
+                                                    (self.balance>0.1) and (self.global_money>0.1),
+                                                    (self.m60 <= self.buy_long_water_line), 
+                                                    (self.market_lowest < self.m60),
+                                                    ((self.m60 <= (self.last_hit_m_stable * self.hit_m_dn)) ),
                                                     self.price_can_trade(self.m60)) + \
                                 "\n"
             if  (self.balance>0.1) and (self.global_money>0.1) and(self.m60 >= self.sell_short_water_line) and \
@@ -228,7 +234,7 @@ class coin_base():
             can_deal = 0
             if i["mode"]: ## sell, stop need buy
                 if self.price_can_trade(self.m60):
-                    delivery_benefit = 1-self.market_lowest/i["price"]
+                    delivery_benefit = 1-self.m60/i["price"]
                     if delivery_benefit > self.gain:
                     # if delivery_benefit > max(i["gain"]/1, self.gain):
                         can_deal = 1
@@ -239,7 +245,7 @@ class coin_base():
 
             else: ## buy, stop need sell
                 if self.price_can_trade(self.m60):
-                    delivery_benefit = self.market_highest/i["price"]-1
+                    delivery_benefit = self.m60/i["price"]-1
                     if delivery_benefit > self.gain:
                     # if delivery_benefit > max(i["gain"]/1, self.gain): ##self.gain:
                         can_deal = 1
@@ -249,17 +255,16 @@ class coin_base():
                     self.buy_long_num += 1
 
             if can_deal:
-                if self.price_can_trade(self.m60):
-                    self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
-                                                " deal: " + "{:.5f}".format(i["price"]) + "|-> " + "{:.5f}".format(self.m60) + " {:.3f}".format(delivery_benefit*self.lever*100) +"%\n"
-                    self.total_money += 0.1 * delivery_benefit * self.lever 
-                    self.balance     += 0.1 + 0.1 * delivery_benefit * self.lever 
-                    self.global_money+= 0.1 + 0.1 * delivery_benefit * self.lever 
-                    self.hold_list.remove(i)
-                    i["deal_time"] = self.cur_ctime
-                    i["deal_price"] = self.m60
-                    i["deal_cnt"] = self.global_cnt
-                    self.trade_history.append(i)
+                self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
+                                            " deal: " + "{:.5f}".format(i["price"]) + "|-> " + "{:.5f}".format(self.m60) + " {:.3f}".format(delivery_benefit*self.lever*100) +"%\n"
+                self.total_money += 0.1 * delivery_benefit * self.lever 
+                self.balance     += 0.1 + 0.1 * delivery_benefit * self.lever 
+                self.global_money+= 0.1 + 0.1 * delivery_benefit * self.lever 
+                self.hold_list.remove(i)
+                i["deal_time"] = self.cur_ctime
+                i["deal_price"] = self.m60
+                i["deal_cnt"] = self.global_cnt
+                self.trade_history.append(i)
             else:
                 pass
 
@@ -286,17 +291,17 @@ class coin_base():
 
         # self.buy_long_water_line   = self.m300 * (1-(self.burst + self.m_stable_gap + self.buy_long_num   * 0 + self.btc_change + self.eth_change))
         # self.sell_short_water_line = self.m300 * (1+(self.burst + self.m_stable_gap + self.sell_short_num * 0 + self.btc_change + self.eth_change))
-        self.buy_long_water_line   = self.m300 * (1-(self.burst))
-        self.sell_short_water_line = self.m300 * (1+(self.burst))
+        # self.buy_long_water_line   = self.m300 * (1-(self.burst))
+        # self.sell_short_water_line = self.m300 * (1+(self.burst))
+        self.buy_long_water_line   = self.last_hit_m_stable * (1-(self.burst))
+        self.sell_short_water_line = self.last_hit_m_stable * (1+(self.burst))
         # self.buy_long_stop    = self.buy_long_water_line    * (1+self.gain)
         # self.sell_short_stop  = self.sell_short_water_line  * (1-self.gain)
 
     def price_can_trade(self, price):
-        highest = float(self.market_piece[2])
-        lowest  = float(self.market_piece[3])
         price   = float(price)
-        if price > lowest:
-            if price < highest:
+        if price > self.market_lowest:
+            if price < self.market_highest:
                 return 1
         return 0
 

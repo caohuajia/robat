@@ -26,7 +26,7 @@ class coin_base():
         self.market_end = float(k_line_history[0][4]) ## 近似值
         self.newest_history_price = [self.market_end]
 
-        for i in range(300):
+        for i in range(100): ## 300/4/24=3days
             self.get_current_market()
 
 
@@ -55,9 +55,9 @@ class coin_base():
                 f.write("\n")
 
     def prob(self): ## "Thu Nov 13 16:45:00 2025" "Sun Dec  7 06:00:00 2025"
-        if ("Dec 10 07" in self.cur_ctime  or\
-            "Dec 10 08" in self.cur_ctime  or\
-            "Dec 10 09" in self.cur_ctime ) and 1:
+        if ("8" in self.cur_ctime  or\
+            "8" in self.cur_ctime  or\
+            "8" in self.cur_ctime ) and 1:
             self.log += "[prob] " + self.cur_ctime + " cur_price: {:.5f}-{:.5f}-{:.5f}-{:.5f}".format(self.cur_price,self.market_highest,self.market_lowest,self.market_end) + \
                                 " ref_24h: {:.5f}".format(self.m300) + " cur/ref: {:.1f}%".format(self.cur_price/self.m300*100) + \
                                 " sell short water line: {:.5f}".format(self.sell_short_water_line) + \

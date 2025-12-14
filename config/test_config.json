@@ -4,7 +4,7 @@
                       "gain"   :0.05,
                       "money_u":1,
                       "m_base" :30,
-                      "lever"  :2,
+                      "lever"  :5,
                       "max_num":10,
                       "tdMode" : "isolated",
                       "type"   : 1,

@@ -72,9 +72,9 @@ def show_k_line(kline):
             end_cnt = trade["deal_cnt"]
             end_price = trade["deal_price"]
             if trade["blow"] == 1: ## buy long
-                ax.arrow(begin_cnt, begin_price, end_cnt-begin_cnt, end_price-begin_price, head_width=0.2, head_length=ypoints[-1]*0.02, fc='lightblue', ec='green', alpha=1)
+                ax.arrow(begin_cnt, begin_price, end_cnt-begin_cnt, end_price-begin_price, head_width=ypoints[-1]*0.0002, head_length=ypoints[-1]*0.02, fc='lightblue', ec='green', alpha=1)
             else:
-                ax.arrow(begin_cnt, begin_price, end_cnt-begin_cnt, end_price-begin_price, head_width=0.2, head_length=ypoints[-1]*0.02, fc='lightcoral', ec='red', alpha=1)
+                ax.arrow(begin_cnt, begin_price, end_cnt-begin_cnt, end_price-begin_price, head_width=ypoints[-1]*0.0002, head_length=ypoints[-1]*0.02, fc='lightcoral', ec='red', alpha=1)
         #
     # ax.arrow(0, ypoints[0], len(ypoints)*0.9, ypoints[-1]-ypoints[0], head_width=0.2, head_length=ypoints[-1]*0.02, fc='lightblue', ec='lightblue', alpha=1)
 
@@ -104,6 +104,7 @@ test_one = 1
 # test_coin = "11test"
 test_coin = "DOGE"
 test_coin = "OKB"
+test_coin = "CETUS"
 # test_coin = "aa_data2"
 # test_coin = "aa_data1"
 
@@ -120,6 +121,8 @@ for one_coin in all_coins:
     kline = KLine(one_coin)
 
     kline.trade_history = joblib.load("./log/{}_trade_history.sva".format(one_coin))
+    for i in kline.trade_history:
+        print(i)
     kline.float_money_list = joblib.load("./log/{}_float_money_list.sva".format(one_coin))
 
 

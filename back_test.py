@@ -57,7 +57,7 @@ if __name__ == "__main__":
 
     if test_one:
         # for test_coin in ["OKB", "DOGE", "CETUS", "ETH", "BTC"]:
-        for test_coin in ["OKB"]:
+        for test_coin in ["BTC"]:
             # for burst in [0.01,0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]:
             for burst in [0.01]:
                 # for gain in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]:

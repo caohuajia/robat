@@ -230,29 +230,20 @@ class coin_base():
     def deal(self):
         self.buy_long_num   = 0
         self.sell_short_num = 0
+        delete_list = []
         for i in self.hold_list:
             can_deal = 0
-            if i["mode"]: ## sell, stop need buy
-                if self.price_can_trade(self.m60):
+            if self.price_can_trade(self.m60):
+                if i["mode"]: ## sell, stop need buy
                     delivery_benefit = 1-self.m60/i["price"]
                     if delivery_benefit > self.gain:
                     # if delivery_benefit > max(i["gain"]/1, self.gain):
                         can_deal = 1
-                    else:
-                        self.sell_short_num += 1
-                else:
-                    self.sell_short_num += 1
-
-            else: ## buy, stop need sell
-                if self.price_can_trade(self.m60):
+                else: ## buy, stop need sell
                     delivery_benefit = self.m60/i["price"]-1
                     if delivery_benefit > self.gain:
                     # if delivery_benefit > max(i["gain"]/1, self.gain): ##self.gain:
                         can_deal = 1
-                    else:
-                        self.buy_long_num += 1
-                else:
-                    self.buy_long_num += 1
 
             if can_deal:
                 self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
@@ -260,13 +251,17 @@ class coin_base():
                 self.total_money += 0.1 * delivery_benefit * self.lever 
                 self.balance     += 0.1 + 0.1 * delivery_benefit * self.lever 
                 self.global_money+= 0.1 + 0.1 * delivery_benefit * self.lever 
-                self.hold_list.remove(i)
+                delete_list.append(i)
                 i["deal_time"] = self.cur_ctime
                 i["deal_price"] = self.m60
                 i["deal_cnt"] = self.global_cnt
                 self.trade_history.append(i)
             else:
                 pass
+        for i in delete_list:
+            self.hold_list.remove(i)
+        self.buy_long_num = len([x for x in self.hold_list if x["mode"]==0])
+        self.sell_short_num = len([x for x in self.hold_list if x["mode"]==1])
 
     def get_stable(self):
         n = -self.m_base

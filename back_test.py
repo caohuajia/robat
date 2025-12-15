@@ -56,47 +56,52 @@ if __name__ == "__main__":
     global_money = [initial_money]
 
     if test_one:
-        for test_coin in ["OKB", "DOGE", "CETUS", "ETH", "BTC"]:
-        # for test_coin in ["CETUS"]:
-            for burst in [0.01,0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]:
-            # for burst in [0.00]:
-                for gain in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]:
-                # for gain in [0.01]:
-                    for m_base in [30, 60]:
-                    # for m_base in [30]:
-                        total_gain = 0
-                        round = 0
-                        global_money = [initial_money]
-                        all_coin_struct = get_all_coin_obj(all_coins)
-                        coin = all_coin_struct[test_coin]
-                        coin.burst = burst
-                        coin.gain = gain
-                        coin.m_base = m_base
-                        while 1:
-                            run_can_done = coin.run(global_money)
-                            if run_can_done: ## continue until finish
-                                coin.finish()
-                            all_result += "{:<10}:  float: {:.3f}  balance: {:.3f}  blow num: {}\n".format(test_coin, coin.float_money, coin.balance, coin.blow_up_num)
-                            # print(total_days,"days " + one_coin + " finish: total: ",coin.float_money, "balance: ", coin.balance)
-                            total_gain = (coin.float_money - 1)
-                            if run_can_done:
-                                break
+        for lever in [2, 5]:
+            for test_coin in ["OKB", "DOGE", "CETUS", "ETH", "BTC"]:
+            # for test_coin in ["CETUS"]:
+                for burst in [0.01,0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]:
+                # for burst in [0.00]:
+                    for gain in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08]:
+                    # for gain in [0.01]:
+                        for m_base in [30, 60]:
+                        # for m_base in [30]:
+                            for water_line_mode in ["m300", "last_hit_m_stable"]:
+                                total_gain = 0
+                                round = 0
+                                global_money = [initial_money]
+                                all_coin_struct = get_all_coin_obj(all_coins)
+                                coin = all_coin_struct[test_coin]
+                                coin.burst = burst
+                                coin.gain = gain
+                                coin.m_base = m_base
+                                coin.water_line_mode = water_line_mode
+                                coin.lever = lever
+                                while 1:
+                                    run_can_done = coin.run(global_money)
+                                    if run_can_done: ## continue until finish
+                                        coin.finish()
+                                    all_result += "{:<10}:  float: {:.3f}  balance: {:.3f}  blow num: {}\n".format(test_coin, coin.float_money, coin.balance, coin.blow_up_num)
+                                    # print(total_days,"days " + one_coin + " finish: total: ",coin.float_money, "balance: ", coin.balance)
+                                    total_gain = (coin.float_money - 1)
+                                    if run_can_done:
+                                        break
 
-                        all_result += "total gain: {}%".format((total_gain/1)*100)
-                        print("total gain: {}%".format((total_gain/1)*100))
-                        with open("./log/all_test_log", "w") as f:
-                            f.write(all_result)
+                                all_result += "total gain: {}%".format((total_gain/1)*100)
+                                print("total gain: {}%".format((total_gain/1)*100))
+                                with open("./log/all_test_log", "w") as f:
+                                    f.write(all_result)
 
-                        with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), test_coin), "r") as f:
-                            k_line_history = json.load(f)
-                            begin_price = float(k_line_history[0][1])
-                            begin_time = k_line_history[0][0]
-                            end_price = float(k_line_history[-1][1])
-                            end_time = k_line_history[-1][0]
-                        with open("./all_try_log.log", "a") as f:
-                            # print(len(k_line_history))
-                            f.write("{:<8} total_gain:{:>8}  m_base: {}  burst: {:.2f}  gain: {:.2f}  lever: {}  hit_m up/dn: {}-{}  time: {}  ~  {}  period_price: {:.2f}% \n".format(
-                                    coin.coin_name, "{:.2f}%".format((total_gain/1)*100), coin.m_base, coin.burst, coin.gain, coin.lever, coin.hit_m_up, coin.hit_m_dn, simplify_time(begin_time), simplify_time(end_time), ((end_price/begin_price)-1)*100))
+                                with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), test_coin), "r") as f:
+                                    k_line_history = json.load(f)
+                                    begin_price = float(k_line_history[0][1])
+                                    begin_time = k_line_history[0][0]
+                                    end_price = float(k_line_history[-1][1])
+                                    end_time = k_line_history[-1][0]
+                                with open("./all_try_log.log", "a") as f:
+                                    # print(len(k_line_history))
+                                    f.write("{:<8} total_gain:{:>8}  m_base: {}  burst: {:.2f}  gain: {:.2f}  lever: {} wt_line_mod: {}  hit_m up/dn: {}-{}  time: {}  ~  {}  period_price: {:.2f}% \n".format(
+                                            coin.coin_name, "{:.2f}%".format((total_gain/1)*100), coin.m_base, coin.burst, coin.gain, coin.lever, "1" if coin.water_line_mode == "m300" else "0", 
+                                                                            coin.hit_m_up, coin.hit_m_dn, simplify_time(begin_time), simplify_time(end_time), ((end_price/begin_price)-1)*100))
 
 
 

@@ -18,6 +18,7 @@ class coin_base():
         self.coin_name = coin_name
         self.get_self_config()
         self.global_cnt = 0
+        self.water_line_mode = "m300"
 
         with open("./data/{}/{}days/{}_price.json".format(interval, str(total_days), self.coin_name), "r") as f:
             k_line_history = json.load(f)
@@ -286,8 +287,10 @@ class coin_base():
 
         # self.buy_long_water_line   = self.m300 * (1-(self.burst + self.m_stable_gap + self.buy_long_num   * 0 + self.btc_change + self.eth_change))
         # self.sell_short_water_line = self.m300 * (1+(self.burst + self.m_stable_gap + self.sell_short_num * 0 + self.btc_change + self.eth_change))
-        self.buy_long_water_line   = self.m300 * (1-(self.burst))
-        self.sell_short_water_line = self.m300 * (1+(self.burst))
+
+        water_line_base = self.m300 if self.water_line_mode == "m300" else self.last_hit_m_stable
+        self.buy_long_water_line   = water_line_base * (1-(self.burst))
+        self.sell_short_water_line = water_line_base * (1+(self.burst))
         # self.buy_long_water_line   = self.last_hit_m_stable * (1-(self.burst))
         # self.sell_short_water_line = self.last_hit_m_stable * (1+(self.burst))
         # self.buy_long_stop    = self.buy_long_water_line    * (1+self.gain)

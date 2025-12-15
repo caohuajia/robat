@@ -184,7 +184,8 @@ class coin_base():
               ((self.m60 <= (self.last_hit_m_stable * self.hit_m_dn)) ):
             # if (self.buy_long_water_line > self.market_lowest) and (self.market_piece[1] < self.market_piece[4]):
                 if self.price_can_trade(self.m60):
-                    trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.m60, "money":0.01, "gain":1-(self.m300/self.m60), "mode":0, "deal_time":"", "deal_cnt": 0, "deal_price":0, "blow": 0}
+                    trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.m60, "money":0.01, "gain":(self.m300/self.m60), "mode":0, 
+                                  "deal_time":"", "deal_cnt": 0, "deal_price":0, "blow": 0}
                     self.balance -= 0.1
                     self.global_money -= 0.1
                     self.hold_list.append(trade_info)
@@ -210,7 +211,8 @@ class coin_base():
                 if self.price_can_trade(self.m60):
                     if prob_can_trade:
                         self.log += "enter\n"
-                    trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.m60, "money":0.01, "gain":(self.m60/self.m300)-1, "mode":1, "deal_time":"", "deal_cnt": 0, "deal_price": 0, "blow": 0}
+                    trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.m60, "money":0.01, "gain":(self.m60/self.m300), "mode":1, 
+                                  "deal_time":"", "deal_cnt": 0, "deal_price": 0, "blow": 0}
                     self.balance -=0.1
                     self.global_money -= 0.1
                     self.hold_list.append(trade_info)
@@ -238,12 +240,12 @@ class coin_base():
                 if i["mode"]: ## sell, stop need buy
                     delivery_benefit = 1-self.m60/i["price"]
                     if delivery_benefit > self.gain:
-                    # if delivery_benefit > max(i["gain"]/1, self.gain):
+                    # if delivery_benefit > ((i["gain"]-0.8) * self.gain):
                         can_deal = 1
                 else: ## buy, stop need sell
                     delivery_benefit = self.m60/i["price"]-1
                     if delivery_benefit > self.gain:
-                    # if delivery_benefit > max(i["gain"]/1, self.gain): ##self.gain:
+                    # if delivery_benefit > ((i["gain"]-0.8) * self.gain): ##self.gain:
                         can_deal = 1
 
             if can_deal:

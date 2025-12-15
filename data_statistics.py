@@ -104,7 +104,7 @@ test_one = 1
 test_coin = "DOGE"
 test_coin = "OKB"
 test_coin = "CETUS"
-# test_coin = "BTC"
+test_coin = "BTC"
 # test_coin = "aa_data2"
 # test_coin = "aa_data1"
 

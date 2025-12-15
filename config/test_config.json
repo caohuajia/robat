@@ -8,8 +8,8 @@
                       "max_num":10,
                       "tdMode" : "isolated",
                       "type"   : 1,
-                      "hit_m_up" : 1.002,
-                      "hit_m_dn" : 0.998
+                      "hit_m_up" : 1.005,
+                      "hit_m_dn" : 0.995
                      }
     },
     {

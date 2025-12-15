@@ -59,24 +59,23 @@ def show_k_line(kline):
 
     plt.xticks(ticks=x, labels=kline.x_lables)
 
-
-    ax.xaxis.set_major_locator(ticker.AutoLocator())  # 自动设置主刻度位置
-    # ax.xaxis.set_major_locator(mdates.DayLocator())  # 自动设置主刻度位置
-    # ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d %H:%M'))  # 设置日期格式
-    ax.yaxis.set_major_locator(ticker.AutoLocator())  # 自动设置主刻度位置
-    # ma5 = np.array(k_line_list)
     if len(kline.trade_history) > 0:
         for trade in kline.trade_history:
             begin_cnt = trade["begin_cnt"]
             begin_price = trade["price"]
             end_cnt = trade["deal_cnt"]
             end_price = trade["deal_price"]
-            if trade["blow"] == 1: ## buy long
-                ax.arrow(begin_cnt, begin_price, end_cnt-begin_cnt, end_price-begin_price, head_width=min(0.5,ypoints[-1]*0.02), head_length=min(0.5, ypoints[-1]*0.02), fc='lightblue', ec='green', alpha=1)
+            if trade["blow"] == 1:
+                ax.annotate('', xy=(end_cnt, end_price), xytext=(begin_cnt, begin_price), arrowprops=dict(arrowstyle='->', color='green'))
             else:
-                ax.arrow(begin_cnt, begin_price, end_cnt-begin_cnt, end_price-begin_price, head_width=min(0.5,ypoints[-1]*0.02), head_length=min(0.5, ypoints[-1]*0.02), fc='lightcoral', ec='red', alpha=1)
-        #
-    # ax.arrow(0, ypoints[0], len(ypoints)*0.9, ypoints[-1]-ypoints[0], head_width=0.2, head_length=ypoints[-1]*0.02, fc='lightblue', ec='lightblue', alpha=1)
+                ax.annotate('', xy=(end_cnt, end_price), xytext=(begin_cnt, begin_price), arrowprops=dict(arrowstyle='->', color='red'))
+
+
+    ax.xaxis.set_major_locator(ticker.AutoLocator())  # 自动设置主刻度位置
+    # ax.xaxis.set_major_locator(mdates.DayLocator())  # 自动设置主刻度位置
+    # ax.xaxis.set_major_formatter(mdates.DateFormatter('%m-%d %H:%M'))  # 设置日期格式
+    ax.yaxis.set_major_locator(ticker.AutoLocator())  # 自动设置主刻度位置
+    # ma5 = np.array(k_line_list)
 
     plt.grid(color='gray', linestyle='--', linewidth=0.5, alpha=0.3)
     plt.title(kline.name)
@@ -105,7 +104,7 @@ test_one = 1
 test_coin = "DOGE"
 test_coin = "OKB"
 test_coin = "CETUS"
-test_coin = "BTC"
+# test_coin = "BTC"
 # test_coin = "aa_data2"
 # test_coin = "aa_data1"
 
@@ -122,8 +121,8 @@ for one_coin in all_coins:
     kline = KLine(one_coin)
 
     kline.trade_history = joblib.load("./log/{}_trade_history.sva".format(one_coin))
-    for i in kline.trade_history:
-        print(i)
+    # for i in kline.trade_history:
+    #     print(i)
     kline.float_money_list = joblib.load("./log/{}_float_money_list.sva".format(one_coin))
 
 

@@ -286,10 +286,10 @@ class coin_base():
 
         # self.buy_long_water_line   = self.m300 * (1-(self.burst + self.m_stable_gap + self.buy_long_num   * 0 + self.btc_change + self.eth_change))
         # self.sell_short_water_line = self.m300 * (1+(self.burst + self.m_stable_gap + self.sell_short_num * 0 + self.btc_change + self.eth_change))
-        # self.buy_long_water_line   = self.m300 * (1-(self.burst))
-        # self.sell_short_water_line = self.m300 * (1+(self.burst))
-        self.buy_long_water_line   = self.last_hit_m_stable * (1-(self.burst))
-        self.sell_short_water_line = self.last_hit_m_stable * (1+(self.burst))
+        self.buy_long_water_line   = self.m300 * (1-(self.burst))
+        self.sell_short_water_line = self.m300 * (1+(self.burst))
+        # self.buy_long_water_line   = self.last_hit_m_stable * (1-(self.burst))
+        # self.sell_short_water_line = self.last_hit_m_stable * (1+(self.burst))
         # self.buy_long_stop    = self.buy_long_water_line    * (1+self.gain)
         # self.sell_short_stop  = self.sell_short_water_line  * (1-self.gain)
 

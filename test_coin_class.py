@@ -29,6 +29,8 @@ class coin_base():
 
         for i in range(100): ## 300/4/24=3days
             self.get_current_market()
+            if interval == "1m":
+                break
 
 
         self.last_hit_m_stable = self.market_end
@@ -44,7 +46,7 @@ class coin_base():
         self.float_money_list = []
 
         with open("./log/test.log", "w", encoding='utf-8') as f:
-            f.write("[    ] 时间                     总计/可用            m60     prefer_mode 持有：买入价格 杠杆后当前收益率       当前动作：开始价格，爆仓/结束价格\n") 
+            f.write("[    ] 时间                     总计/可用            m60      当前动作：开始价格，爆仓/结束价格  杠杆后当前收益率  prefer_mode 持有：买入价格 当前杠杆后收益      \n") 
         pass
 
     def log_info(self, log, keep_cur_line=0):
@@ -88,9 +90,9 @@ class coin_base():
         hold_str = " p_m: " + "{:.1f}".format(self.prefer_mode) + " hold:{"
         for i in self.hold_list:
             if i["mode"] == 0: ## buy more
-                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}%".format((self.cur_price/i["price"]-1)*100*self.lever) + " {:.3f}% ⬆; ".format((i["gain"]*100))
+                hold_str += "{:.5f}".format(i["price"]) + " {:.0f}%".format((self.cur_price/i["price"]-1)*100*self.lever) + " {:.3f}% ⬆; ".format((i["gain"]*100))
             else:
-                hold_str += "{:.5f}".format(i["price"]) + " " + "{:.0f}%".format((1-self.cur_price/i["price"])*100*self.lever) + " {:.3f}% ⬇; ".format((i["gain"]*100))
+                hold_str += "{:.5f}".format(i["price"]) + " {:.0f}%".format((1-self.cur_price/i["price"])*100*self.lever) + " {:.3f}% ⬇; ".format((i["gain"]*100))
         hold_str += "}"
         return hold_str
 
@@ -190,9 +192,9 @@ class coin_base():
                     self.global_money -= 0.1
                     self.hold_list.append(trade_info)
                     self.log += "[buy ] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
-                                "{:.5f}".format(self.m60)   + self.get_cur_hold() + \
+                                "{:.5f}".format(self.m60) + \
                                 " bug long: " +  "{:.5f}".format(self.m60) + " |-X " + "{:.5f}".format(self.m60*(1-(1/self.lever))) + \
-                                " gain: " + "{:.3f}".format((self.m60/self.m300-1)*100) + "%\n"
+                                " gain: " + "{:.3f}".format((self.m60/self.m300-1)*100) + "% "+ self.get_cur_hold()+"\n"
                     self.log += " refer: {:.5f}".format(self.m300) + " {:.5f}".format(self.cur_price/self.m300) +\
                                 " m_stable: {:.5f}".format(self.m60) + " {:.5f}".format(self.m60/self.cur_price) +\
                                 " cur_high: {}".format(self.market_highest) + " cur_low: {}".format(self.market_lowest) + \
@@ -217,9 +219,9 @@ class coin_base():
                     self.global_money -= 0.1
                     self.hold_list.append(trade_info)
                     self.log += "[sell] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
-                                "{:.5f}".format(self.m60) + self.get_cur_hold() + \
+                                "{:.5f}".format(self.m60) + \
                                 " sell short: " +  "{:.5f}".format(self.m60) + " |-X " + "{:.5f}".format(self.m60*(1+(1/self.lever))) + \
-                                " gain: " + "{:.3f}".format((self.m60/self.m300-1)*100) + "%\n"
+                                " gain: " + "{:.3f}".format((self.m60/self.m300-1)*100) + "% "+ self.get_cur_hold()+"\n"
                     self.log += " refer: {:.5f}".format(self.m300) + " {:.5f}".format(self.cur_price/self.m300) +\
                                 " m_stable: {:.5f}".format(self.m60) + " {:.5f}".format(self.m60/self.cur_price) +\
                                 " cur_high: {}".format(self.market_highest) + " cur_low: {}".format(self.market_lowest) + \
@@ -384,14 +386,100 @@ class coin_base():
 
 
 class coin_1m(coin_base):
-    
-    def get_stable(self):
-        n = -60
-        newest_n =  self.newest_history_price[n:]
-        self.m60 = sum(newest_n)/len(newest_n)
 
-        refer_before = self.newest_history_price[-60*24*1-20:-60*24*1+20] ## 24h before
-        self.m300 = sum(refer_before)/len(refer_before)
+    def gen_current_parameter(self):
+        super().gen_current_parameter()
+        self.buy_long_price = self.cur_price * 0.995
+        self.sell_short_price = self.cur_price * 1.005
+
+
+    def buy_long(self):
+        self.prob()
+        if (self.balance>0.1) and (self.global_money>0.1):
+            if (self.market_lowest < self.buy_long_price):
+                if self.price_can_trade(self.buy_long_price):
+                    trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.buy_long_price, "money":0.01, "gain":(self.m300/self.m60), "mode":0, 
+                                  "deal_time":"", "deal_cnt": 0, "deal_price":0, "blow": 0}
+                    self.balance -= 0.1
+                    self.global_money -= 0.1
+                    self.hold_list.append(trade_info)
+                    self.log += "[buy ] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
+                                "{:.5f}".format(self.m60) + \
+                                " bug   long: " +  "{:.5f}".format(self.buy_long_price) + " |-X " + "{:.5f}".format(self.cur_price*(1-(1/self.lever))) + \
+                                " gain: " + "{:.3f}".format((self.m60/self.m300-1)*100) + "% "+ self.get_cur_hold()+"\n"
+                    # self.log += " refer: {:.5f}".format(self.m300) + " {:.5f}".format(self.cur_price/self.m300) +\
+                    #             " m_stable: {:.5f}".format(self.m60) + " {:.5f}".format(self.m60/self.cur_price) +\
+                    #             " cur_high: {}".format(self.market_highest) + " cur_low: {}".format(self.market_lowest) + \
+                    #             " newest_10: {}".format(str(self.newest_history_price[-10:])) +\
+                    #             " burst: {:.5f}".format((1+(self.burst + self.m_stable_gap + self.sell_short_num * 0.15))) + \
+                    #             " btc/eth: {:.5f}".format( self.btc_change + self.eth_change) + \
+                    #             "\n"
+
+    def sell_short(self):##(self.cur_price > self.market_end) and \
+        prob_can_trade = self.prob()
+        if prob_can_trade: 
+            pass
+        if (self.balance>0.1) and (self.global_money>0.1):
+            if (self.market_highest > self.sell_short_price):
+                if self.price_can_trade(self.sell_short_price):
+                    if prob_can_trade:
+                        self.log += "enter\n"
+                    trade_info = {"time":self.cur_ctime, "begin_cnt": self.global_cnt, "price":self.sell_short_price, "money":0.01, "gain":(self.m60/self.m300), "mode":1, 
+                                  "deal_time":"", "deal_cnt": 0, "deal_price": 0, "blow": 0}
+                    self.balance -=0.1
+                    self.global_money -= 0.1
+                    self.hold_list.append(trade_info)
+                    self.log += "[sell] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + \
+                                "{:.5f}".format(self.m60) + \
+                                " sell short: " +  "{:.5f}".format(self.sell_short_price) + " |-X " + "{:.5f}".format(self.cur_price*(1+(1/self.lever))) + \
+                                " gain: " + "{:.3f}".format((self.m60/self.m300-1)*100) + "% "+ self.get_cur_hold()+"\n"
+                    # self.log += " refer: {:.5f}".format(self.m300) + " {:.5f}".format(self.cur_price/self.m300) +\
+                    #             " m_stable: {:.5f}".format(self.m60) + " {:.5f}".format(self.m60/self.cur_price) +\
+                    #             " cur_high: {}".format(self.market_highest) + " cur_low: {}".format(self.market_lowest) + \
+                    #             " newest_10: {}".format(str(self.newest_history_price[-10:])) +\
+                    #             " burst: {:.5f}".format((1+(self.burst + self.m_stable_gap + self.sell_short_num * 0.15))) + \
+                    #             " btc/eth: {:.5f}".format( self.btc_change + self.eth_change) + \
+                    #             " test{}".format(str(self.newest_history_price[-4*24-1:-4*24+3])) +\
+                    #             "\n"
+
+    def deal(self):
+        self.buy_long_num   = 0
+        self.sell_short_num = 0
+        delete_list = []
+        for i in self.hold_list:
+            can_deal = 0
+            # if self.price_can_trade(self.m60):
+            if i["mode"]: ## sell, stop need buy
+                delivery_benefit = 1-self.market_lowest/i["price"]
+                if delivery_benefit > self.gain:
+                    deal_price = i["price"] * (1 - self.gain)
+                # if delivery_benefit > ((i["gain"]-0.8) * self.gain):
+                    can_deal = 1
+            else: ## buy, stop need sell
+                delivery_benefit = self.market_highest/i["price"]-1
+                if delivery_benefit > self.gain:
+                    deal_price = i["price"] * (1 + self.gain)
+                # if delivery_benefit > ((i["gain"]-0.8) * self.gain): ##self.gain:
+                    can_deal = 1
+
+            if can_deal:
+                self.log += "[deal] " + self.cur_ctime + " u/b:" + "{:.5f}".format(self.float_money) + "/" + "{:.5f}".format(self.balance) + " " + "{:.5f}".format(self.cur_price) + self.get_cur_hold() + \
+                                            " deal: " + "{:.5f}".format(i["price"]) + "|-> " + "{:.5f}".format(deal_price) + " {:.3f}".format(delivery_benefit*self.lever*100) +"%\n"
+                self.total_money += 0.1 * delivery_benefit * self.lever 
+                self.balance     += 0.1 + 0.1 * delivery_benefit * self.lever 
+                self.global_money+= 0.1 + 0.1 * delivery_benefit * self.lever 
+                delete_list.append(i)
+                i["deal_time"] = self.cur_ctime
+                i["deal_price"] = deal_price
+                i["deal_cnt"] = self.global_cnt
+                self.trade_history.append(i)
+            else:
+                pass
+        for i in delete_list:
+            self.hold_list.remove(i)
+        self.buy_long_num = len([x for x in self.hold_list if x["mode"]==0])
+        self.sell_short_num = len([x for x in self.hold_list if x["mode"]==1])
+
 
 
 class coin_15m(coin_base):

@@ -97,14 +97,14 @@ def show_k_line(kline):
 
 
 total_days = 1 + 30
-interval = "15m"
-# interval = "1m"
+# interval = "15m"
+interval = "1m"
 test_one = 1
 # test_coin = "11test"
 test_coin = "DOGE"
 test_coin = "OKB"
 test_coin = "CETUS"
-test_coin = "BTC"
+# test_coin = "BTC"
 # test_coin = "aa_data2"
 # test_coin = "aa_data1"
 

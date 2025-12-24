@@ -24,8 +24,15 @@ def get_change_list(coin):
 
 def download(all_coins, interval, total_days):
     coin_num = len(all_coins)
+    if interval == "15m":
+        total_price_num = int(total_days * 24*60/100/15)  ## 15m
+    elif interval == "1m":
+        total_price_num = int(total_days * 24*60/100/1)  ## 1m  
+    else:
+        print("not support interval")
+        exit(0)
     for c in range(coin_num):
-        k_line_history = get_history_k_line(all_coins[c], interval, int(total_days * 24*60/100/15)) ##[new ... old]  2s/200min  15s/day  1day=1440min
+        k_line_history = get_history_k_line(all_coins[c], interval, total_price_num) ##[new ... old]  2s/200min  15s/day  1day=1440min
         k_line_history.reverse()
         # print(len(k_line_history))
         for i in k_line_history:

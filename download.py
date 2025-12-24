@@ -31,6 +31,7 @@ def download(all_coins, interval, total_days):
     else:
         print("not support interval")
         exit(0)
+    print("download {} {} days  {} price points each".format(interval, total_days, total_price_num))
     for c in range(coin_num):
         k_line_history = get_history_k_line(all_coins[c], interval, total_price_num) ##[new ... old]  2s/200min  15s/day  1day=1440min
         k_line_history.reverse()

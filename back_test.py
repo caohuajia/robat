@@ -56,15 +56,15 @@ if __name__ == "__main__":
     global_money = [initial_money]
 
     if test_one:
-        # for test_coin in ["OKB", "DOGE", "CETUS", "ETH", "BTC"]:
-        for test_coin in ["CETUS"]:
+        # for test_coin in ["OKB", "DOGE", "ETH", "BTC"]:
+        for test_coin in ["DOGE"]:
             # for burst in [0.01,0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]:
             for burst in [0.03]:
                 # for gain in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15]:
-                for gain in [0.005]:
+                for gain in [0.008]:
                     gain_list = []
                     # for lever in [2, 5]:
-                    for lever in [100]:
+                    for lever in [20]:
                         # for m_base in [30, 60]:
                         for m_base in [30]:
                             # for water_line_mode in ["m300", "last_hit_m_stable"]:

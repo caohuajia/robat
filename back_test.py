@@ -35,8 +35,8 @@ if __name__ == "__main__":
 
     total_days = 1 + 30
     initial_money = 0.2
-    # interval = "15m"
-    interval = "1m"
+    interval = "15m"
+    # interval = "1m"
     test_one = 1
     # test_coin = "11test"
     test_coin = "DOGE"
@@ -59,9 +59,9 @@ if __name__ == "__main__":
         # for test_coin in ["OKB", "DOGE", "ETH", "BTC"]:
         for test_coin in ["CETUS"]:
             # for burst in [0.01,0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]:
-            for burst in [0.01]:
+            for burst in [0.03]:
                 # for gain in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15]:
-                for gain in [0.008]:
+                for gain in [0.03]:
                     gain_list = []
                     # for lever in [2, 5]:
                     for lever in [20]:

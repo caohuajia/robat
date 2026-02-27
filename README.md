@@ -1,9 +1,14 @@
 # robat
 使用方法：
 1. 下载数据： python3 download.py
-2. 回测数据： python3 back_test.py  
-        策略在  test_coin_class.py
+2. 回测数据： python3 back_test.py    里边有一些参数可以调整，在log中生成 xxx_float_momory_list.sva xxx_trade_history.sva
+        运行逻辑在  test_coin_class.py 基本不用调整  
         log在  log/test.log
+
+3. 查看历史k线： python3 data_statistics.py     需要手动修改 test_coin，读取的是上述2个sva文件 
+
+
+
 
 3. balance 指的是现金， float 指的是当前总资产， total 指的是成交后的确认资产，未成交按买入价格算
 4. 2 倍杠杆下：

@@ -34,7 +34,7 @@ def get_all_coin_obj(all_coins):
 if __name__ == "__main__":
 
     total_days = 1 + 30
-    initial_money = 25
+    initial_money = 0.2
     # interval = "15m"
     interval = "1m"
     test_one = 1
@@ -57,9 +57,9 @@ if __name__ == "__main__":
 
     if test_one:
         # for test_coin in ["OKB", "DOGE", "ETH", "BTC"]:
-        for test_coin in ["DOGE"]:
+        for test_coin in ["CETUS"]:
             # for burst in [0.01,0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1]:
-            for burst in [0.03]:
+            for burst in [0.01]:
                 # for gain in [0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08, 0.09, 0.1, 0.11, 0.12, 0.13, 0.14, 0.15]:
                 for gain in [0.008]:
                     gain_list = []
@@ -79,6 +79,7 @@ if __name__ == "__main__":
                                 coin.m_base = m_base
                                 coin.water_line_mode = water_line_mode
                                 coin.lever = lever
+                                coin.total_money = initial_money
                                 while 1:
                                     run_can_done = coin.run(global_money)
                                     if run_can_done: ## continue until finish
@@ -86,12 +87,12 @@ if __name__ == "__main__":
                                     all_result += "{:<10}:  float: {:.3f}  balance: {:.3f}  blow num: {}\n".format(test_coin, coin.float_money, coin.balance, coin.blow_up_num)
                                     # print(total_days,"days " + one_coin + " finish: total: ",coin.float_money, "balance: ", coin.balance)
                                     if run_can_done:
-                                        total_gain = (coin.float_money - 1)
+                                        total_gain = (coin.float_money - initial_money)
                                         gain_list.append(total_gain)
                                         break
 
-                                all_result += "total gain: {}%".format((total_gain/1)*100)
-                                print("total gain: {}%".format((total_gain/1)*100))
+                                all_result += "total gain: {}%".format((total_gain/initial_money)*100)
+                                print("total gain: {}%".format((total_gain/initial_money)*100))
                                 with open("./log/all_test_log", "w") as f:
                                     f.write(all_result)
 

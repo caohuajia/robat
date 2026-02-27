@@ -60,7 +60,7 @@ class coin_base():
     def prob(self): ## "Thu Nov 13 16:45:00 2025" "Sun Dec  7 06:00:00 2025"
         if (" 20 21:" in self.cur_ctime  or\
             " 20 21:" in self.cur_ctime  or\
-            " 20 21:" in self.cur_ctime ) and 1:
+            " 20 21:" in self.cur_ctime ) and 0:
             self.log += "[prob] " + self.cur_ctime + " cur_price: {:.5f}-{:.5f}-{:.5f}-{:.5f}".format(self.cur_price,self.market_highest,self.market_lowest,self.market_end) + \
                                 " ref_24h: {:.5f}".format(self.m300) + " cur/ref: {:.1f}%".format(self.cur_price/self.m300*100) + \
                                 " sell short water line: {:.5f}".format(self.sell_short_water_line) + \
@@ -389,8 +389,8 @@ class coin_1m(coin_base):
 
     def gen_current_parameter(self):
         super().gen_current_parameter()
-        self.buy_long_price = self.cur_price * 0.995
-        self.sell_short_price = self.cur_price * 1.005
+        self.buy_long_price = self.cur_price * (1 - self.burst)
+        self.sell_short_price = self.cur_price * (1 + self.burst)
 
 
     def buy_long(self):

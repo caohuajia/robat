@@ -52,7 +52,7 @@ if __name__ == "__main__":
     total_days = 1 + 30
     initial_money = 25
     interval = "15m"
-    interval = "1m"
+    ##interval = "1m"
     all_coins = get_all_swap_list()
-    all_coins = ["CETUS"]
+    ##all_coins = ["CETUS"]
     download(all_coins, interval, total_days)

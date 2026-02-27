@@ -54,5 +54,5 @@ if __name__ == "__main__":
     interval = "15m"
     interval = "1m"
     all_coins = get_all_swap_list()
-    all_coins = ["DOGE"]
+    all_coins = ["CETUS"]
     download(all_coins, interval, total_days)
